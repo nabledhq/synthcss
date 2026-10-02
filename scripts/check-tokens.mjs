@@ -55,6 +55,8 @@ export const REQUIRED_TOKENS = [
   "--input-height",
   "--container-width",
   "--content-width",
+  "--sidebar-width",
+  "--grid-min",
   "--focus-color",
   "--focus-width",
   "--focus-offset",

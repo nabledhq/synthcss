@@ -78,6 +78,8 @@
   --input-height: 2.5rem;
   --container-width: 72rem;
   --content-width: 42rem;
+  --sidebar-width: 16rem;
+  --grid-min: 16rem;
 
   /* Focus */
   --focus-color: var(--color-primary);

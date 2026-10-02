@@ -10,3 +10,13 @@ All visual decisions (color, spacing, typography, radius, borders, shadows, sizi
 ```
 
 See [docs/tokens.md](docs/tokens.md) for the full token reference, override examples, guidance for AI agents and reduced-motion behavior. Run `npm test` to check that the tokens, the docs and the contrast requirements are in sync. It needs only Node.js 18 or later.
+
+## Layout primitives
+
+Eight intent-named layout classes in [`src/layout.css`](src/layout.css): `.container`, `.stack`, `.cluster`, `.grid`, `.sidebar`, `.split`, `.center` and `.cover`, plus `-sm`/`-lg` gap variants for `stack`, `cluster`, `grid`, `sidebar` and `split`. They respond to the space they are given, with no media queries or breakpoint classes. Load everything with the main bundle:
+
+```html
+<link rel="stylesheet" href="synthcss/src/synthcss.css">
+```
+
+See [docs/layout.md](docs/layout.md) for each primitive and a compact "AI Layout Vocabulary" table to give to a model, and [examples/layout.html](examples/layout.html) for a fixture page showing every primitive at narrow and wide widths.

@@ -1,0 +1,11 @@
+/*
+ * SynthCSS main bundle
+ *
+ * Link this one file to get everything SynthCSS ships:
+ *   <link rel="stylesheet" href="synthcss/src/synthcss.css">
+ *
+ * Tokens must load first: every other file reads them through var(--token).
+ */
+
+@import url("tokens.css");
+@import url("layout.css");

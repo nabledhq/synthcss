@@ -1,0 +1,152 @@
+/*
+ * SynthCSS layout primitives
+ *
+ * Eight intent-named layout classes built on Flexbox and Grid. They respond to
+ * the space they are given (intrinsic layout), so they need no media queries
+ * and no breakpoint classes. Every spacing and size value is a design token
+ * from tokens.css.
+ *
+ * Rules:
+ * - Visual order always follows DOM order (no `order`, no `*-reverse`,
+ *   no grid placement).
+ * - Classes work on any element and never select children by tag name.
+ * - Spacing between children comes from `gap` only, so nested primitives do
+ *   not leak margins or gaps into each other.
+ * - The -sm / -lg variants work alone (`stack-sm`) or together with the
+ *   base class (`stack stack-sm`).
+ *
+ * Reference: docs/layout.md
+ */
+
+/* Direct children of gap-based primitives drop their block margins (for
+   example the default margins of <p> and <h2>), so only `gap` sets spacing.
+   :where() keeps this at zero specificity, so any author rule wins. */
+:where(
+    .stack, .stack-sm, .stack-lg,
+    .cluster, .cluster-sm, .cluster-lg,
+    .grid, .grid-sm, .grid-lg,
+    .sidebar, .sidebar-sm, .sidebar-lg,
+    .split, .split-sm, .split-lg,
+    .cover
+  ) > * {
+  margin-block: 0;
+}
+
+/* Lists used as layouts (<ul class="cluster">) lose their bullets and indent.
+   Add role="list" to keep list semantics in Safari/VoiceOver. */
+:where(
+    .stack, .stack-sm, .stack-lg,
+    .cluster, .cluster-sm, .cluster-lg,
+    .grid, .grid-sm, .grid-lg,
+    .split, .split-sm, .split-lg
+  ):where(ul, ol) {
+  list-style: none;
+  padding-inline-start: 0;
+}
+
+/* Container: centered page-width wrapper with fluid side padding. */
+.container {
+  box-sizing: border-box;
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: clamp(var(--space-4), 4vw, var(--space-6));
+}
+
+/* Stack: vertical flow of children separated by a gap. */
+.stack,
+.stack-sm,
+.stack-lg {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--space-4);
+}
+
+.stack-sm { gap: var(--space-2); }
+.stack-lg { gap: var(--space-6); }
+
+/* Cluster: a wrapping row of items (tags, buttons, nav links). */
+.cluster,
+.cluster-sm,
+.cluster-lg {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.cluster-sm { gap: var(--space-2); }
+.cluster-lg { gap: var(--space-6); }
+
+/* Grid: as many equal columns as fit, never narrower than --grid-min. */
+.grid,
+.grid-sm,
+.grid-lg {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--grid-min), 100%), 1fr));
+  gap: var(--space-4);
+}
+
+.grid-sm { gap: var(--space-2); }
+.grid-lg { gap: var(--space-6); }
+
+/* Sidebar: first child is a fixed-basis sidebar, second child is the main
+   area. They sit side by side while the main area can be at least 50% wide,
+   and wrap into one column (sidebar first) when it cannot. */
+.sidebar,
+.sidebar-sm,
+.sidebar-lg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.sidebar-sm { gap: var(--space-2); }
+.sidebar-lg { gap: var(--space-6); }
+
+:is(.sidebar, .sidebar-sm, .sidebar-lg) > :first-child {
+  flex-basis: var(--sidebar-width);
+  flex-grow: 1;
+}
+
+:is(.sidebar, .sidebar-sm, .sidebar-lg) > :last-child:not(:first-child) {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-inline-size: 50%;
+}
+
+/* Split: items pushed to opposite ends of a row; wraps when tight. */
+.split,
+.split-sm,
+.split-lg {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.split-sm { gap: var(--space-2); }
+.split-lg { gap: var(--space-6); }
+
+/* Center: horizontally centered column with a readable maximum width. */
+.center {
+  box-sizing: content-box;
+  max-inline-size: var(--content-width);
+  margin-inline: auto;
+}
+
+/* Cover: at least one viewport tall; .cover-main (or an only child) is
+   vertically centered, other children sit at the top and bottom. */
+.cover {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-block-size: 100vh;
+  min-block-size: 100dvh;
+}
+
+.cover > .cover-main,
+.cover > :only-child {
+  margin-block: auto;
+}
