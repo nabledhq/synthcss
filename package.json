@@ -1,0 +1,15 @@
+{
+  "name": "synthcss",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A lightweight, opinionated CSS framework built for AI agents and code generators.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check:tokens": "node scripts/check-tokens.mjs",
+    "test": "node scripts/check-tokens.mjs && node --test scripts/check-tokens.test.mjs"
+  }
+}
