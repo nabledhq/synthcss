@@ -7,7 +7,7 @@ window, with no need to crawl these docs or read `src/`.
 | File | For | Notes |
 | --- | --- | --- |
 | [`synthcss.ai.json`](../synthcss.ai.json) | Tools and agents that read structured data | The canonical, machine-readable contract. |
-| [`synthcss.llm.md`](../synthcss.llm.md) | Pasting into a prompt | A terse hand-written twin of the JSON, one line per item, about 3,900 tokens. |
+| [`synthcss.llm.md`](../synthcss.llm.md) | Pasting into a prompt | A terse hand-written twin of the JSON, one line per item, about 5,700 tokens. |
 
 Both are published next to the showcase on GitHub Pages
 (`<site>/synthcss.llm.md`, `<site>/synthcss.ai.json`) and are in every release tag.
@@ -27,7 +27,8 @@ Class names are written **without** the leading dot. Token names keep their `--`
 | `intentMap` | array | `{ intent, use }` pairs: a plain-language need and the markup to use for it. |
 | `compositionRules` | object | `{ recommended: [], avoid: [] }`: how to combine primitives and components. |
 | `generationRules` | array | Exactly 10 rules an agent must follow when generating SynthCSS markup. |
-| `examples` | object | `{ valid: [], invalid: [] }`, each item `{ html, note }`. 2–4 valid examples; invalid ones show what not to generate. |
+| `extension` | object | The one fallback when the vocabulary lacks a pattern: `{ rule, steps, attribute, layer, values, properties, keywords, notCovered }`. `attribute` is `"data-ui"`, `layer` is `"synth.ext"`; `steps` is the rule in order; `properties` lists the CSS properties extension rules may set and `keywords` the bare words allowed next to `var(--…)` values. `notCovered` lists patterns with no class of their own, each `{ pattern, use, html }` for a composition of existing classes, plus `css` for a `data-ui` fallback. |
+| `examples` | object | `{ valid: [], invalid: [] }`, each item `{ html, note }`. 2–5 valid examples (one is a full app-shell page); invalid ones show what not to generate. |
 
 ```json
 {
@@ -42,6 +43,11 @@ Class names are written **without** the leading dot. Token names keep their `--`
   "intentMap": [{ "intent": "Vertical list of blocks", "use": ".stack" }],
   "compositionRules": { "recommended": ["…"], "avoid": ["…"] },
   "generationRules": ["Use only the classes and tokens in this contract; never invent class names.", "…"],
+  "extension": {
+    "rule": "…", "steps": ["…"], "attribute": "data-ui", "layer": "synth.ext", "values": "tokens only: …",
+    "properties": ["color", "padding-inline-start", "…"], "keywords": ["solid", "none"],
+    "notCovered": [{ "pattern": "Timeline", "use": "fallback, …", "html": "<ol class=\"stack\" role=\"list\">…</ol>", "css": "@layer synth.ext { … }" }]
+  },
   "examples": {
     "valid": [{ "html": "<ul class=\"cluster\" role=\"list\">…</ul>", "note": "…" }],
     "invalid": [{ "html": "<div class=\"flex-row-gap-large-center\">…</div>", "note": "Invented class. Use .cluster-lg." }]
@@ -63,9 +69,22 @@ class if its note names that class as the alternative (for example
 A version header (`SynthCSS <version> · contract <version>`), then these `##` sections:
 Design Tokens, Layout Vocabulary, Component Vocabulary, Intent Mapping, Composition
 Rules (with `### Recommended` and `### Avoid`), AI Generation Rules (numbered 1–10),
-Valid Examples (one `html` code block each) and Invalid / Discouraged Examples (one
-line each: `` - `<html>` — note ``). It is written by hand; keep it in step with the
-JSON.
+When the vocabulary is missing a pattern (the extension rule as numbered steps, then an
+`Allowed properties:` and an `Allowed keywords:` line listing the JSON arrays in order),
+Not covered yet (one line per `extension.notCovered` item:
+`` - Pattern — use: `<html>` ``, or `- Pattern — use` followed by an `html` and a `css`
+code block for a fallback), Valid Examples (one `html` code block each) and Invalid /
+Discouraged Examples (one line each: `` - `<html>` — note ``). It is written by hand;
+keep it in step with the JSON.
+
+## The extension rule
+
+When nothing in the vocabulary fits, there is one legal fallback: compose from the
+primitives first; otherwise mark the element with `data-ui="<name>"` and style it only
+with `[data-ui="<name>"]` selectors inside `@layer synth.ext { … }`, using `var(--…)`
+token values (plus the keywords `solid` and `none`), adding no class names and setting
+no property that a SynthCSS class on the same element already sets. SynthCSS's own
+layout and component rules are unlayered, so they win over anything in `synth.ext`.
 
 ## Changing the contract
 
@@ -91,6 +110,14 @@ workflow updates `synthcssVersion` and the Markdown header with
   Markdown header's contract version does not match `contractVersion`;
 - a Markdown section is missing, the intent table, composition rules or valid and
   invalid examples differ from the JSON, or there are not exactly 10 generation rules;
+- the extension rule is broken: `extension.attribute` is not `data-ui` or
+  `extension.layer` not `synth.ext`; CSS in a `<style>` block of a valid example or in a
+  `notCovered` item's `css` is not one `@layer synth.ext { … }` block of
+  `[data-ui="…"]` rules with listed properties and token values; a styled `data-ui`
+  name has no element, or an element's `data-ui` has no rule; a valid example or
+  `notCovered` snippet uses a class outside the contract or an inline style other than a
+  token override; or the Markdown extension section and Not covered yet list differ
+  from the JSON;
 - the showcase AI Contract section, the Pages workflow or the README no longer publish
   and describe the contract.
 

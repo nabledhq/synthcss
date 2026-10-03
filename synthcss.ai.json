@@ -1,6 +1,6 @@
 {
   "synthcssVersion": "0.7.0",
-  "contractVersion": "1.1.0",
+  "contractVersion": "1.2.0",
   "tokens": {
     "--color-background": "page background",
     "--color-surface": "subtle background for panels, table heads, footers",
@@ -268,13 +268,71 @@
     "Build structure from layout primitives and nest them; never write custom flex or grid CSS.",
     "Set spacing with the -sm / -lg gap variants, never with margins or utility classes.",
     "Never use inline styles except a token override such as style=\"--grid-min: 12rem\".",
-    "In any custom CSS, reference tokens with var(); never hard-code colors, px/rem sizes, shadows or durations.",
+    "Write custom CSS only by the extension rule: [data-ui] selectors inside @layer synth.ext, var() token values only; never hard-code colors, px/rem sizes, shadows or durations.",
     "Put components on semantic native elements and keep one component per element.",
     "Express state with attributes: disabled, checked, aria-disabled=\"true\", aria-busy=\"true\", aria-invalid=\"true\", aria-current=\"page\" (nav), aria-selected=\"true\" (tabs).",
     "Pick variants by meaning, not look: button-danger for destructive actions, badge-success for success.",
     "Write no media queries or breakpoint classes; primitives adapt to the space they get.",
     "Keep it accessible: aria-label on .button-icon, role=\"status\" or role=\"alert\" on .alert, a <label for> on every control."
   ],
+  "extension": {
+    "rule": "When no class or composition fits: mark your own element with data-ui=\"<name>\" and style it only inside @layer synth.ext, with var(--…) token values only. This is the only legal custom CSS.",
+    "steps": [
+      "Compose the pattern from layout primitives and existing components first (see notCovered).",
+      "Otherwise mark the element with data-ui=\"<name>\" (lowercase, dashed) and style it only with [data-ui=\"<name>\"] selectors inside @layer synth.ext { … }.",
+      "Use only var(--…) token values; the only bare words allowed are the keywords. No px, rem, %, hex, numbers or !important.",
+      "Add no class names; data-ui is the only hook.",
+      "Do not override internals of SynthCSS classes: never select a class, and on an element that has SynthCSS classes set only properties those classes leave alone (unlayered SynthCSS rules beat synth.ext)."
+    ],
+    "attribute": "data-ui",
+    "layer": "synth.ext",
+    "values": "tokens only: every value is var(--…), optionally with the keywords; never a hard-coded length, color, shadow or duration",
+    "properties": ["color", "background", "background-color", "border", "border-color", "border-width", "border-style", "border-radius", "border-block-start", "border-block-end", "border-inline-start", "border-inline-end", "box-shadow", "padding", "padding-block", "padding-inline", "padding-block-start", "padding-block-end", "padding-inline-start", "padding-inline-end", "font-family", "font-size", "font-weight", "line-height", "inline-size", "min-inline-size", "max-inline-size", "block-size", "min-block-size"],
+    "keywords": ["solid", "none"],
+    "notCovered": [
+      {
+        "pattern": "Avatar or initials",
+        "use": ".avatar, plus .avatar-round for people",
+        "html": "<span class=\"avatar avatar-round\" aria-hidden=\"true\">AL</span>"
+      },
+      {
+        "pattern": "Icon tile",
+        "use": ".avatar with a tint variant around an <svg aria-hidden=\"true\">",
+        "html": "<span class=\"avatar avatar-accent\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg></span>"
+      },
+      {
+        "pattern": "Nav link with current state",
+        "use": ".nav + .nav-link, aria-current=\"page\" on the current one",
+        "html": "<ul class=\"nav stack-sm\" role=\"list\"><li><a class=\"nav-link\" href=\"/\" aria-current=\"page\">Home</a></li><li><a class=\"nav-link\" href=\"/team\">Team</a></li></ul>"
+      },
+      {
+        "pattern": "Tabs or segmented control",
+        "use": ".tabs + .tabs-item, aria-selected on every tab",
+        "html": "<div class=\"tabs\" role=\"tablist\" aria-label=\"Range\"><button type=\"button\" class=\"tabs-item\" role=\"tab\" aria-selected=\"true\">Week</button><button type=\"button\" class=\"tabs-item\" role=\"tab\" aria-selected=\"false\">Month</button></div>"
+      },
+      {
+        "pattern": "Switch",
+        "use": ".switch on a <label> around <input type=\"checkbox\" role=\"switch\">",
+        "html": "<label class=\"switch\"><input type=\"checkbox\" role=\"switch\" checked> Email alerts</label>"
+      },
+      {
+        "pattern": "Input with attached button",
+        "use": ".input-group around one <input> and a .button",
+        "html": "<div class=\"input-group\"><input type=\"search\" aria-label=\"Search\"><button type=\"submit\" class=\"button\">Search</button></div>"
+      },
+      {
+        "pattern": "Narrow right column",
+        "use": ".sidebar + .sidebar-end, width from --sidebar-width",
+        "html": "<div class=\"sidebar sidebar-end\" style=\"--sidebar-width: 18rem\"><main>…</main><aside>…</aside></div>"
+      },
+      {
+        "pattern": "Timeline",
+        "use": "fallback, a .stack of items marked data-ui=\"timeline-item\" for the rail",
+        "html": "<ol class=\"stack\" role=\"list\">\n  <li class=\"stack-sm\" data-ui=\"timeline-item\"><time datetime=\"2026-10-01\">Oct 1</time><p>Ana merged #42</p></li>\n  <li class=\"stack-sm\" data-ui=\"timeline-item\"><time datetime=\"2026-09-28\">Sep 28</time><p>Ben joined</p></li>\n</ol>",
+        "css": "@layer synth.ext {\n  [data-ui=\"timeline-item\"] {\n    border-inline-start: var(--border-width) solid var(--color-border);\n    padding-inline-start: var(--space-4);\n  }\n}"
+      }
+    ]
+  },
   "examples": {
     "valid": [
       {
@@ -292,6 +350,10 @@
       {
         "html": "<div class=\"sidebar-lg sidebar-end\" style=\"--sidebar-width: 20rem\">\n  <main class=\"stack\">\n    <h1>Dashboard</h1>\n    <div class=\"alert alert-info\" role=\"status\">\n      <svg class=\"alert-icon\" aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg>\n      <p>Billing moves to the 1st of each month.</p>\n    </div>\n    <div class=\"grid\">\n      <div class=\"card\">\n        <div class=\"cluster-sm\"><span class=\"avatar avatar-accent\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg></span><h2>Revenue</h2></div>\n        <p>$12,400 this month.</p>\n      </div>\n      <div class=\"card\">…</div>\n    </div>\n  </main>\n  <aside class=\"panel\">\n    <div class=\"panel-header\"><h2>Activity</h2></div>\n    <ul class=\"panel-body stack-sm\" role=\"list\">\n      <li class=\"cluster-sm\"><span class=\"avatar avatar-round avatar-sm avatar-primary\" aria-hidden=\"true\">AL</span><span>Ana merged #42</span></li>\n      <li class=\"cluster-sm\"><img class=\"avatar avatar-round avatar-sm\" src=\"/ben.jpg\" alt=\"\"><span>Ben joined</span></li>\n    </ul>\n  </aside>\n</div>",
         "note": "Dashboard: main content first, narrow column on the right; an alert with an icon, an icon tile in a card, and people as avatars."
+      },
+      {
+        "html": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Overview · Acme</title>\n  <link rel=\"stylesheet\" href=\"synthcss.min.css\">\n  <style>\n    @layer synth.ext {\n      [data-ui=\"app\"] { font-family: var(--font-sans); font-size: var(--text-base); color: var(--color-text); background: var(--color-surface); }\n    }\n  </style>\n</head>\n<body data-ui=\"app\">\n  <div class=\"sidebar-lg\" style=\"--sidebar-width: 14rem\">\n    <nav class=\"panel\" aria-label=\"Main\">\n      <strong>Acme</strong>\n      <ul class=\"nav stack-sm\" role=\"list\">\n        <li><a class=\"nav-link\" href=\"/\" aria-current=\"page\">Overview</a></li>\n        <li><a class=\"nav-link\" href=\"/projects\">Projects</a></li>\n        <li><a class=\"nav-link\" href=\"/settings\">Settings</a></li>\n      </ul>\n    </nav>\n    <main class=\"container stack-lg\">\n      <header class=\"split\">\n        <h1>Overview</h1>\n        <button type=\"button\" class=\"button button-primary\">New project</button>\n      </header>\n      <ul class=\"grid\" role=\"list\" style=\"--grid-min: 12rem\">\n        <li class=\"card\"><p>Revenue</p><strong>$12,400</strong></li>\n        <li class=\"card\"><p>Active projects</p><strong>8</strong></li>\n        <li class=\"card\"><p>Open issues</p><strong>23</strong></li>\n      </ul>\n      <div class=\"sidebar-lg sidebar-end\">\n        <section class=\"card\">\n          <div class=\"card-header\"><h2>Recent projects</h2></div>\n          <div class=\"table-wrap\" tabindex=\"0\">\n            <table class=\"table\">\n              <thead><tr><th>Name</th><th>Status</th></tr></thead>\n              <tbody><tr><td>Atlas</td><td><span class=\"badge badge-success\">Active</span></td></tr></tbody>\n            </table>\n          </div>\n        </section>\n        <aside class=\"panel\">\n          <div class=\"panel-header\"><h2>Team</h2></div>\n          <ul class=\"panel-body stack-sm\" role=\"list\">\n            <li class=\"cluster-sm\"><span class=\"avatar avatar-round avatar-sm\" aria-hidden=\"true\">AL</span><span>Ana Lee</span></li>\n          </ul>\n        </aside>\n      </div>\n    </main>\n  </div>\n</body>\n</html>",
+        "note": "App shell: a full page with .sidebar navigation, a .container stack-lg main area, a .split header with the main action, a .grid of stat cards and a main/side row. Body font setup uses the extension rule with tokens only."
       }
     ],
     "invalid": [

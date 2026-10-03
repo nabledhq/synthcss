@@ -1,6 +1,6 @@
 # SynthCSS AI Contract
 
-Version: SynthCSS 0.7.0 · contract 1.1.0 · machine-readable twin: synthcss.ai.json
+Version: SynthCSS 0.7.0 · contract 1.2.0 · machine-readable twin: synthcss.ai.json
 
 The complete public vocabulary of SynthCSS. Use only the classes and tokens listed here; anything else does not exist.
 Load: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.7.0/dist/synthcss.min.css">`
@@ -208,12 +208,61 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
 2. Build structure from layout primitives and nest them; never write custom flex or grid CSS.
 3. Set spacing with the -sm / -lg gap variants, never with margins or utility classes.
 4. Never use inline styles except a token override such as `style="--grid-min: 12rem"`.
-5. In any custom CSS, reference tokens with `var()`; never hard-code colors, px/rem sizes, shadows or durations.
+5. Write custom CSS only by the extension rule below: `[data-ui]` selectors inside `@layer synth.ext`, `var()` token values only; never hard-code colors, px/rem sizes, shadows or durations.
 6. Put components on semantic native elements and keep one component per element.
 7. Express state with attributes: `disabled`, `checked`, `aria-disabled="true"`, `aria-busy="true"`, `aria-invalid="true"`, `aria-current="page"` (nav), `aria-selected="true"` (tabs).
 8. Pick variants by meaning, not look: `button-danger` for destructive actions, `badge-success` for success.
 9. Write no media queries or breakpoint classes; primitives adapt to the space they get.
 10. Keep it accessible: `aria-label` on `.button-icon`, `role="status"` or `role="alert"` on `.alert`, a `<label for>` on every control.
+
+## When the vocabulary is missing a pattern
+
+There is exactly one fallback. Follow it in order; any other custom CSS breaks the contract.
+
+1. Compose the pattern from layout primitives and existing components first (see Not covered yet).
+2. Otherwise mark the element with `data-ui="<name>"` (lowercase, dashed) and style it only with `[data-ui="<name>"]` selectors inside `@layer synth.ext { … }`.
+3. Use only `var(--…)` token values; the only bare words allowed are the keywords below. No px, rem, %, hex, numbers or `!important`.
+4. Add no class names; `data-ui` is the only hook.
+5. Do not override internals of SynthCSS classes: never select a class, and on an element that has SynthCSS classes set only properties those classes leave alone (unlayered SynthCSS rules beat `synth.ext`).
+
+Allowed properties: `color`, `background`, `background-color`, `border`, `border-color`, `border-width`, `border-style`, `border-radius`, `border-block-start`, `border-block-end`, `border-inline-start`, `border-inline-end`, `box-shadow`, `padding`, `padding-block`, `padding-inline`, `padding-block-start`, `padding-block-end`, `padding-inline-start`, `padding-inline-end`, `font-family`, `font-size`, `font-weight`, `line-height`, `inline-size`, `min-inline-size`, `max-inline-size`, `block-size`, `min-block-size`.
+Allowed keywords: `solid`, `none`.
+Never `display`, flex, grid, `gap`, `margin`, `position` or `order`: layout comes from the primitives.
+
+```css
+@layer synth.ext {
+  [data-ui="<name>"] { padding-inline-start: var(--space-4); }
+}
+```
+
+## Not covered yet
+
+Patterns generators tend to invent classes for. Use the composition; only a fallback uses `data-ui`.
+
+- Avatar or initials — `.avatar`, plus `.avatar-round` for people: `<span class="avatar avatar-round" aria-hidden="true">AL</span>`
+- Icon tile — `.avatar` with a tint variant around an `<svg aria-hidden="true">`: `<span class="avatar avatar-accent"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg></span>`
+- Nav link with current state — `.nav` + `.nav-link`, `aria-current="page"` on the current one: `<ul class="nav stack-sm" role="list"><li><a class="nav-link" href="/" aria-current="page">Home</a></li><li><a class="nav-link" href="/team">Team</a></li></ul>`
+- Tabs or segmented control — `.tabs` + `.tabs-item`, `aria-selected` on every tab: `<div class="tabs" role="tablist" aria-label="Range"><button type="button" class="tabs-item" role="tab" aria-selected="true">Week</button><button type="button" class="tabs-item" role="tab" aria-selected="false">Month</button></div>`
+- Switch — `.switch` on a `<label>` around `<input type="checkbox" role="switch">`: `<label class="switch"><input type="checkbox" role="switch" checked> Email alerts</label>`
+- Input with attached button — `.input-group` around one `<input>` and a `.button`: `<div class="input-group"><input type="search" aria-label="Search"><button type="submit" class="button">Search</button></div>`
+- Narrow right column — `.sidebar` + `.sidebar-end`, width from `--sidebar-width`: `<div class="sidebar sidebar-end" style="--sidebar-width: 18rem"><main>…</main><aside>…</aside></div>`
+- Timeline — fallback, a `.stack` of items marked `data-ui="timeline-item"` for the rail
+
+```html
+<ol class="stack" role="list">
+  <li class="stack-sm" data-ui="timeline-item"><time datetime="2026-10-01">Oct 1</time><p>Ana merged #42</p></li>
+  <li class="stack-sm" data-ui="timeline-item"><time datetime="2026-09-28">Sep 28</time><p>Ben joined</p></li>
+</ol>
+```
+
+```css
+@layer synth.ext {
+  [data-ui="timeline-item"] {
+    border-inline-start: var(--border-width) solid var(--color-border);
+    padding-inline-start: var(--space-4);
+  }
+}
+```
 
 ## Valid Examples
 
@@ -314,6 +363,65 @@ Dashboard: main content first, narrow column on the right; an alert with an icon
     </ul>
   </aside>
 </div>
+```
+
+App shell: a full page with .sidebar navigation, a .container stack-lg main area, a .split header with the main action, a .grid of stat cards and a main/side row. Body font setup uses the extension rule with tokens only.
+
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Overview · Acme</title>
+  <link rel="stylesheet" href="synthcss.min.css">
+  <style>
+    @layer synth.ext {
+      [data-ui="app"] { font-family: var(--font-sans); font-size: var(--text-base); color: var(--color-text); background: var(--color-surface); }
+    }
+  </style>
+</head>
+<body data-ui="app">
+  <div class="sidebar-lg" style="--sidebar-width: 14rem">
+    <nav class="panel" aria-label="Main">
+      <strong>Acme</strong>
+      <ul class="nav stack-sm" role="list">
+        <li><a class="nav-link" href="/" aria-current="page">Overview</a></li>
+        <li><a class="nav-link" href="/projects">Projects</a></li>
+        <li><a class="nav-link" href="/settings">Settings</a></li>
+      </ul>
+    </nav>
+    <main class="container stack-lg">
+      <header class="split">
+        <h1>Overview</h1>
+        <button type="button" class="button button-primary">New project</button>
+      </header>
+      <ul class="grid" role="list" style="--grid-min: 12rem">
+        <li class="card"><p>Revenue</p><strong>$12,400</strong></li>
+        <li class="card"><p>Active projects</p><strong>8</strong></li>
+        <li class="card"><p>Open issues</p><strong>23</strong></li>
+      </ul>
+      <div class="sidebar-lg sidebar-end">
+        <section class="card">
+          <div class="card-header"><h2>Recent projects</h2></div>
+          <div class="table-wrap" tabindex="0">
+            <table class="table">
+              <thead><tr><th>Name</th><th>Status</th></tr></thead>
+              <tbody><tr><td>Atlas</td><td><span class="badge badge-success">Active</span></td></tr></tbody>
+            </table>
+          </div>
+        </section>
+        <aside class="panel">
+          <div class="panel-header"><h2>Team</h2></div>
+          <ul class="panel-body stack-sm" role="list">
+            <li class="cluster-sm"><span class="avatar avatar-round avatar-sm" aria-hidden="true">AL</span><span>Ana Lee</span></li>
+          </ul>
+        </aside>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
 ```
 
 ## Invalid / Discouraged Examples
