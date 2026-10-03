@@ -153,6 +153,27 @@
       </div>
     </section>
 
+    <!-- =================================================== sidebar-end -->
+    <section class="stack" id="sidebar-end">
+      <h2><code>.sidebar-end</code> (narrow column on the right)</h2>
+      <h3>Narrow (stacks, main first)</h3>
+      <div class="demo-frame demo-frame-narrow stack" data-fixture="sidebar-end-narrow">
+        <div class="sidebar sidebar-end" data-check="sidebar-end"><div class="demo-box">Main content grows to fill the rest of the row.</div><aside class="demo-box">Side</aside></div>
+        <div class="sidebar-sm sidebar-end" data-check="sidebar-end"><div class="demo-box">Main</div><aside class="demo-box">sm</aside></div>
+        <div class="sidebar-lg sidebar-end" data-check="sidebar-end"><div class="demo-box">Main</div><aside class="demo-box">lg</aside></div>
+        <div class="sidebar sidebar-end" data-check="sidebar-end-wide" style="--sidebar-width: 20rem"><div class="demo-box">Main</div><aside class="demo-box">20rem</aside></div>
+        <div class="sidebar sidebar-end" data-check="sidebar-end-only"><div class="demo-box">Only child keeps the full width.</div></div>
+      </div>
+      <h3>Wide (side by side, narrow column last)</h3>
+      <div class="demo-frame demo-frame-wide stack" data-fixture="sidebar-end-wide">
+        <div class="sidebar sidebar-end" data-check="sidebar-end"><div class="demo-box">Main content grows to fill the rest of the row.</div><aside class="demo-box">Side</aside></div>
+        <div class="sidebar-sm sidebar-end" data-check="sidebar-end"><div class="demo-box">Main</div><aside class="demo-box">sm</aside></div>
+        <div class="sidebar-lg sidebar-end" data-check="sidebar-end"><div class="demo-box">Main</div><aside class="demo-box">lg</aside></div>
+        <div class="sidebar sidebar-end" data-check="sidebar-end-wide" style="--sidebar-width: 20rem"><div class="demo-box">Main</div><aside class="demo-box">20rem</aside></div>
+        <div class="sidebar sidebar-end" data-check="sidebar-end-only"><div class="demo-box">Only child keeps the full width.</div></div>
+      </div>
+    </section>
+
     <!-- ========================================================= split -->
     <section class="stack" id="split">
       <h2><code>.split</code>, <code>.split-sm</code>, <code>.split-lg</code></h2>

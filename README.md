@@ -36,7 +36,7 @@ The main bundle also applies the tokens to plain markup: `--font-sans`, `--color
 
 ## Layout primitives
 
-Eight intent-named layout classes in [`src/layout.css`](src/layout.css): `.container`, `.stack`, `.cluster`, `.grid`, `.sidebar`, `.split`, `.center` and `.cover`, plus `-sm`/`-lg` gap variants for `stack`, `cluster`, `grid`, `sidebar` and `split`. They respond to the space they are given, with no media queries or breakpoint classes. Load everything with the main bundle:
+Eight intent-named layout classes in [`src/layout.css`](src/layout.css): `.container`, `.stack`, `.cluster`, `.grid`, `.sidebar`, `.split`, `.center` and `.cover`, plus `-sm`/`-lg` gap variants for `stack`, `cluster`, `grid`, `sidebar` and `split`, and a `.sidebar-end` modifier that puts the sidebar's narrow column on the right. They respond to the space they are given, with no media queries or breakpoint classes. Load everything with the main bundle:
 
 ```html
 <link rel="stylesheet" href="synthcss/src/synthcss.css">

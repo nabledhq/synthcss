@@ -104,7 +104,7 @@ Subtle and low-opacity. Use them for elevation only, not for decoration.
 | `--input-height` | `2.5rem` | Height of text inputs and selects. Keep it equal to `--control-height` so they line up. |
 | `--container-width` | `72rem` | Maximum width of the main page container (`.container`). |
 | `--content-width` | `42rem` | Maximum width of readable text blocks, about 65–75 characters per line. Used by `.center`. |
-| `--sidebar-width` | `16rem` | Preferred width of the first child of a `.sidebar` layout before it wraps. |
+| `--sidebar-width` | `16rem` | Preferred width of the narrow column of a `.sidebar` layout (the first child, or the last with `.sidebar-end`) before it wraps. |
 | `--grid-min` | `16rem` | Minimum column width of a `.grid` before it drops a column. |
 
 ### Focus

@@ -55,3 +55,17 @@ test("fails when the fixture does not use a variant", () => {
   const fixture = files.fixture.replaceAll("grid-lg", "grid");
   assertError(errorsWith({ fixture }), "does not use .grid-lg");
 });
+
+test("fails when .sidebar-end is missing, incomplete or not in the fixture", () => {
+  const noReset = files.layoutCss.replace("  min-inline-size: auto;\n", "");
+  assertError(errorsWith({ layoutCss: noReset }), "must set min-inline-size: auto");
+  const weaker = files.layoutCss.replace(
+    ".sidebar-end:is(.sidebar, .sidebar-sm, .sidebar-lg) > :first-child",
+    ".sidebar-end > :first-child",
+  );
+  assertError(errorsWith({ layoutCss: weaker }), 'no ".sidebar-end:is(.sidebar, .sidebar-sm, .sidebar-lg) > :first-child" rule');
+  const reversed = files.layoutCss.replace("flex-grow: 999;\n  min-inline-size: 50%;\n}\n\n.sidebar-end", "flex-direction: row-reverse;\n}\n\n.sidebar-end");
+  assertError(errorsWith({ layoutCss: reversed }), "reading-order-changing value");
+  const fixture = files.fixture.replaceAll(" sidebar-end", "");
+  assertError(errorsWith({ fixture }), "does not use .sidebar-end");
+});

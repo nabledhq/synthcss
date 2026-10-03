@@ -22,7 +22,7 @@ Class names are written **without** the leading dot. Token names keep their `--`
 | `contractVersion` | string (semver) | Version of the contract format. Bump the major for a breaking change to this schema. |
 | `tokens` | object | Token name → short purpose, for every custom property on `:root` in `src/tokens.css`. |
 | `baseStyles` | object | `{ note, rules }`: what the base styles in `src/base.css` apply. `note` is a one-sentence summary that the Markdown Design Tokens section repeats; `rules` maps each selector (without `:where()`) to its declarations, exactly as in `src/base.css`. |
-| `layouts` | object | Layout class → intent: the eight primitives, their `-sm` / `-lg` gap variants and `cover-main`. |
+| `layouts` | object | Layout class → intent: the eight primitives, their `-sm` / `-lg` gap variants, `cover-main` and `sidebar-end`. |
 | `components` | object | Component base class → `{ intent, parts, variants }`. `parts` and `variants` map class → purpose (empty `{}` when there are none). |
 | `intentMap` | array | `{ intent, use }` pairs: a plain-language need and the markup to use for it. |
 | `compositionRules` | object | `{ recommended: [], avoid: [] }`: how to combine primitives and components. |
