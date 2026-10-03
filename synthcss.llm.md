@@ -1,9 +1,9 @@
 # SynthCSS AI Contract
 
-Version: SynthCSS 0.1.0 · contract 1.0.0 · machine-readable twin: synthcss.ai.json
+Version: SynthCSS 0.2.0 · contract 1.0.0 · machine-readable twin: synthcss.ai.json
 
 The complete public vocabulary of SynthCSS. Use only the classes and tokens listed here; anything else does not exist.
-Load: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.1.0/dist/synthcss.min.css">`
+Load: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.2.0/dist/synthcss.min.css">`
 
 ## Design Tokens
 
