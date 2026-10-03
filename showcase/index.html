@@ -31,6 +31,7 @@
             <li><a href="#components">Components</a></li>
             <li><a href="#composed">Composed</a></li>
             <li><a href="#ai-examples">AI examples</a></li>
+            <li><a href="#ai-contract">AI contract</a></li>
           </ul>
         </nav>
       </header>
@@ -921,6 +922,76 @@
 }</code></pre></div>
           </li>
         </ul>
+      </div>
+    </section>
+
+    <section id="ai-contract" class="sc-band sc-band-alt" aria-labelledby="ai-contract-title">
+      <div class="container stack-lg">
+        <div class="stack-sm">
+          <h2 id="ai-contract-title">AI Contract</h2>
+          <p class="sc-muted">
+            One compact file teaches a model the whole public vocabulary of SynthCSS: every
+            token, layout primitive, component, part and variant, an intent table, composition
+            rules, ten generation rules and valid and invalid examples. Paste
+            <code>synthcss.llm.md</code> into a prompt, or read the same contract as structured
+            data from <code>synthcss.ai.json</code>. Both are versioned with the framework and
+            checked against the CSS on every change.
+          </p>
+        </div>
+        <div class="cluster">
+          <a class="sc-button" href="../synthcss.llm.md">View synthcss.llm.md</a>
+          <a class="sc-button sc-button-secondary" href="../synthcss.ai.json" download>Download synthcss.ai.json</a>
+          <a href="https://github.com/nabledhq/synthcss/blob/main/synthcss.llm.md">Read it on GitHub</a>
+          <span class="badge badge-info">≈ 2,830 tokens</span>
+        </div>
+        <p class="sc-muted">
+          Size estimated as characters ÷ 4 (about 11,300 characters), small enough for one
+          context window with room to spare.
+        </p>
+        <article class="sc-card sidebar-lg">
+          <div class="stack-sm">
+            <p class="sc-label">Prompt</p>
+            <p>"Build a team page: a title with an invite button and a table of members with
+              their role and status."</p>
+            <p class="sc-muted">Given only <code>synthcss.llm.md</code>, a model answers with
+              classes from the contract and nothing else.</p>
+          </div>
+          <div class="stack">
+            <p class="sc-label">Generated HTML, rendered with SynthCSS</p>
+            <div class="sc-demo">
+              <section class="stack">
+                <header class="split">
+                  <h3>Team</h3>
+                  <button type="button" class="button button-primary">Invite</button>
+                </header>
+                <div class="table-wrap" tabindex="0">
+                  <table class="table">
+                    <thead><tr><th>Name</th><th>Role</th><th>Status</th></tr></thead>
+                    <tbody>
+                      <tr><td>Ana</td><td>Admin</td><td><span class="badge badge-success">Active</span></td></tr>
+                      <tr><td>Ben</td><td>Editor</td><td><span class="badge badge-warning">Invited</span></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+            <div class="sc-code"><pre><code>&lt;section class="stack"&gt;
+  &lt;header class="split"&gt;
+    &lt;h3&gt;Team&lt;/h3&gt;
+    &lt;button type="button" class="button button-primary"&gt;Invite&lt;/button&gt;
+  &lt;/header&gt;
+  &lt;div class="table-wrap" tabindex="0"&gt;
+    &lt;table class="table"&gt;
+      &lt;thead&gt;&lt;tr&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Role&lt;/th&gt;&lt;th&gt;Status&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;&lt;td&gt;Ana&lt;/td&gt;&lt;td&gt;Admin&lt;/td&gt;&lt;td&gt;&lt;span class="badge badge-success"&gt;Active&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td&gt;Ben&lt;/td&gt;&lt;td&gt;Editor&lt;/td&gt;&lt;td&gt;&lt;span class="badge badge-warning"&gt;Invited&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre></div>
+          </div>
+        </article>
       </div>
     </section>
   </main>

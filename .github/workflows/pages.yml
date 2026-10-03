@@ -1,4 +1,4 @@
-# Publishes the static showcase (showcase/) to GitHub Pages.
+# Publishes the static showcase (showcase/) and the AI contract files to GitHub Pages.
 # One-time setup after merge: Settings → Pages → Source → "GitHub Actions".
 # The artifact mirrors the repository layout (showcase/ next to src/) so the
 # relative stylesheet link in showcase/index.html works locally and deployed.
@@ -10,6 +10,8 @@ on:
     paths:
       - "showcase/**"
       - "src/**.css"
+      - "synthcss.llm.md"
+      - "synthcss.ai.json"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -46,6 +48,8 @@ jobs:
           mkdir -p _site/showcase _site/src
           cp showcase/index.html showcase/showcase.css showcase/showcase.js _site/showcase/
           cp src/*.css _site/src/
+          # The AI contract, linked from the showcase as ../synthcss.llm.md and ../synthcss.ai.json.
+          cp synthcss.llm.md synthcss.ai.json _site/
           # Cache busting: Pages lets browsers cache files for 10 minutes, so add the
           # commit to every local stylesheet, script and @import URL. Each deploy then
           # loads fresh files. Snippets on the page are HTML-escaped and not matched.

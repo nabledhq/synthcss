@@ -60,6 +60,12 @@ Eight semantic components in [`src/components.css`](src/components.css), include
 
 See [docs/components.md](docs/components.md) for each component's variants, composition with the layout primitives and accessibility notes, plus a compact "AI Component Reference" table to give to a model.
 
+## AI contract
+
+[`synthcss.llm.md`](synthcss.llm.md) is the whole public vocabulary in one prompt-ready file of about 2,800 tokens: every token, layout primitive, component, part and variant, an intent table, composition rules, ten generation rules and valid and invalid examples. Paste it into a model's context. [`synthcss.ai.json`](synthcss.ai.json) is the same contract as structured data and the canonical source. Both state the SynthCSS version they describe; the schema is in [docs/ai-contract.md](docs/ai-contract.md).
+
+**Any change to the public API (a class or token added, renamed or removed, or a new version) must update both contract files in the same pull request.** `npm test` runs `scripts/verify-ai-contract.mjs`, which fails when the contract and the CSS or `package.json` disagree.
+
 ## Showcase
 
-[`showcase/`](showcase/) is a static page built with SynthCSS that shows the tokens, layout primitives and components live, plus a composed settings screen, with copyable snippets and width-adjustable demos. Open `showcase/index.html` in a browser to preview it. It is published to GitHub Pages by [`.github/workflows/pages.yml`](.github/workflows/pages.yml). See [showcase/README.md](showcase/README.md) for local preview, deployment, the one-time Pages setting and how to add a section.
+[`showcase/`](showcase/) is a static page built with SynthCSS that shows the tokens, layout primitives and components live, plus a composed settings screen and the AI contract, with copyable snippets and width-adjustable demos. Open `showcase/index.html` in a browser to preview it. It is published to GitHub Pages by [`.github/workflows/pages.yml`](.github/workflows/pages.yml). See [showcase/README.md](showcase/README.md) for local preview, deployment, the one-time Pages setting and how to add a section.

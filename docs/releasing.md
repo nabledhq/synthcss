@@ -49,6 +49,10 @@ From 1.0.0, breaking changes need a major bump.
    npm version minor --no-git-tag-version   # or: patch, major, or an exact 0.2.0
    ```
 
+   In the same change, set `synthcssVersion` in `synthcss.ai.json` and the version in
+   the header (and CDN link) of `synthcss.llm.md` to the new version. `npm test` fails
+   until they match (see [ai-contract.md](ai-contract.md)).
+
 2. Open a pull request and merge it into `main`.
 3. On merge, the **Release** workflow runs `npm test`, builds `dist/`, pushes the
    `vX.Y.Z` tag and creates the GitHub release. If the tag already exists it does

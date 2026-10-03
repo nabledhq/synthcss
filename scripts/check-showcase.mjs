@@ -10,7 +10,7 @@ import { parseBlocks, parseDeclarations, parseTokens } from "./check-tokens.mjs"
 import { PRIMITIVES, VARIANTS, HELPER_CLASSES } from "./check-layout.mjs";
 import { COMPONENTS, COMPONENT_CLASSES } from "./check-components.mjs";
 
-export const SECTIONS = ["hero", "why", "tokens", "layouts", "responsive", "components", "composed", "ai-examples"];
+export const SECTIONS = ["hero", "why", "tokens", "layouts", "responsive", "components", "composed", "ai-examples", "ai-contract"];
 // The composed interface must use at least this many different components.
 export const MIN_COMPOSED_COMPONENTS = 6;
 export const RESPONSIVE = ["grid", "sidebar", "cluster", "split"];
