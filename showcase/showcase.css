@@ -18,15 +18,17 @@
   line-height: var(--leading-normal);
 }
 
-.sc-page :where(h1, h2, h3, h4) {
+/* Page-level element rules use :where() or element-only specificity, so the
+   heading and link styles of SynthCSS components (card, alert, button…) win. */
+:where(.sc-page) :where(h1, h2, h3, h4) {
   margin: 0;
   line-height: var(--leading-tight);
   font-weight: var(--weight-semibold);
 }
 
-.sc-page h2 { font-size: var(--text-3xl); }
-.sc-page h3 { font-size: var(--text-xl); }
-.sc-page h4 { font-size: var(--text-base); color: var(--color-text-secondary); }
+:where(.sc-page) h2 { font-size: var(--text-3xl); }
+:where(.sc-page) h3 { font-size: var(--text-xl); }
+:where(.sc-page) h4 { font-size: var(--text-base); color: var(--color-text-secondary); }
 
 .sc-page :where(h1, h2, h3, h4) code { font-size: inherit; }
 
@@ -37,8 +39,8 @@
   font-size: var(--text-sm);
 }
 
-.sc-page :where(a) { color: var(--color-primary); }
-.sc-page :where(a:hover) { color: var(--color-primary-hover); }
+:where(.sc-page) :where(a) { color: var(--color-primary); }
+:where(.sc-page) :where(a:hover) { color: var(--color-primary-hover); }
 
 .sc-page :focus-visible,
 .sc-focus-preview {
