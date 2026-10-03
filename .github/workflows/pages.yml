@@ -46,6 +46,15 @@ jobs:
           mkdir -p _site/showcase _site/src
           cp showcase/index.html showcase/showcase.css showcase/showcase.js _site/showcase/
           cp src/*.css _site/src/
+          # Cache busting: Pages lets browsers cache files for 10 minutes, so add the
+          # commit to every local stylesheet, script and @import URL. Each deploy then
+          # loads fresh files. Snippets on the page are HTML-escaped and not matched.
+          v="${GITHUB_SHA::7}"
+          sed -i -E \
+            -e "s#(<link [^>]*href=\")([^\":]+\.css)\"#\1\2?v=$v\"#g" \
+            -e "s#(<script [^>]*src=\")([^\":]+\.js)\"#\1\2?v=$v\"#g" \
+            _site/showcase/index.html
+          sed -i -E "s#@import url\(\"([^\":]+\.css)\"\)#@import url(\"\1?v=$v\")#g" _site/src/*.css
           # The site root forwards to the showcase page.
           cat > _site/index.html <<'HTML'
           <!doctype html>
