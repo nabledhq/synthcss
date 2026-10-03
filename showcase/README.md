@@ -53,6 +53,12 @@ Because `showcase/` sits next to `src/`, the same relative link works locally an
 Pages. The page is served at `https://<owner>.github.io/synthcss/showcase/` and the site
 root forwards there. Nothing generated is committed.
 
+GitHub Pages lets browsers cache files for 10 minutes, so after a deploy a returning
+visitor could get the new page with old stylesheets. To prevent that, the workflow
+appends `?v=<commit>` to the page's stylesheet and script links and to the `@import`
+URLs in the deployed `src/synthcss.css`, so every deploy loads fresh files. Only the
+deployed copies change; the files in the repository keep plain links.
+
 ### One-time setup
 
 A maintainer must do this once after the workflow is merged: in the repository open
