@@ -106,6 +106,23 @@ export function checkBundle(bundleCss) {
   return errors;
 }
 
+// Every style-rule selector of a stylesheet, including those nested in @media/@supports.
+function selectorsOf(css) {
+  const out = [];
+  for (const { prelude, body } of parseBlocks(css)) {
+    if (/^@(media|supports|layer|container)\b/.test(prelude)) out.push(...selectorsOf(body));
+    else if (!prelude.startsWith("@")) out.push(...splitSelectors(prelude));
+  }
+  return out;
+}
+
+// A selector that styles the page or headings everywhere: html, body or h1–h6, bare or
+// wrapped in :where()/:is(). Scoped selectors such as .card-header :where(h2) are fine.
+const PAGE_OR_HEADING = /^(html|body|h[1-6])$/;
+const unwrap = (selector) => selector.replace(/^:(?:where|is)\(([^()]+)\)$/, "$1");
+export const isPageOrHeadingSelector = (selector) =>
+  splitSelectors(unwrap(selector)).every((part) => PAGE_OR_HEADING.test(part));
+
 // The modular files must work without the base layer and must not pull it in.
 export function checkModular(modular) {
   const errors = [];
@@ -113,6 +130,9 @@ export function checkModular(modular) {
     const code = stripComments(css);
     if (importsOf(code).includes("base.css")) errors.push(`${file} must not import base.css`);
     if (/@layer\b/.test(code)) errors.push(`${file} must not use @layer; base styles live only in base.css`);
+    for (const selector of selectorsOf(code)) {
+      if (isPageOrHeadingSelector(selector)) errors.push(`${file}: "${selector}" styles the page or headings; base styles live only in base.css`);
+    }
   }
   return errors;
 }
