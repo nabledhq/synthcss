@@ -9,7 +9,7 @@ npm account.
 
 - **`dist/`** holds the distributable stylesheets. `npm run build` writes them from
   `src/`: `dist/synthcss.css` is the bundle with every `@import` inlined, and
-  `dist/tokens.css`, `dist/layout.css` and `dist/components.css` are the parts on
+  `dist/tokens.css`, `dist/base.css`, `dist/layout.css` and `dist/components.css` are the parts on
   their own. A new file in `src/` must be added to `OUTPUTS` in `scripts/build.mjs`
   to be published on its own; anything imported by `src/synthcss.css` is always in
   the bundle. Each file starts

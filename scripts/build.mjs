@@ -10,7 +10,7 @@ import { dirname, resolve } from "node:path";
 
 export const REPO_URL = "https://github.com/nabledhq/synthcss";
 // Standalone files. synthcss.css is the bundle with every @import inlined.
-export const OUTPUTS = ["synthcss.css", "tokens.css", "layout.css", "components.css"];
+export const OUTPUTS = ["synthcss.css", "tokens.css", "base.css", "layout.css", "components.css"];
 
 const IMPORT = /^@import\s+url\(\s*["']?([^"')]+)["']?\s*\)\s*;[ \t]*$/gm;
 const toLf = (text) => text.replace(/\r\n/g, "\n");

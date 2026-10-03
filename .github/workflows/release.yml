@@ -140,6 +140,7 @@ jobs:
 
           - Unminified bundle: ${cdn}/dist/synthcss.css
           - Tokens only: ${cdn}/dist/tokens.min.css
+          - Base styles only (load tokens first): ${cdn}/dist/base.min.css
           - Layout only (load tokens first): ${cdn}/dist/layout.min.css
           - Components only (load tokens first): ${cdn}/dist/components.min.css
           - AI contract: ${cdn}/synthcss.llm.md and ${cdn}/synthcss.ai.json
@@ -159,7 +160,7 @@ jobs:
           major=${VERSION%%.*}
           minor=${VERSION%.*}
           for alias in "$major" "$minor"; do
-            for file in synthcss tokens layout components; do
+            for file in synthcss tokens base layout components; do
               for ext in css min.css; do
                 curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${alias}/dist/${file}.${ext}" >/dev/null
               done

@@ -5,6 +5,7 @@ import { build, inlineImports, OUTPUTS } from "./build.mjs";
 const fakeSrc = {
   "synthcss.css": '/* bundle */\r\n@import url("tokens.css");\r\n@import url(\'layout.css\');\r\n',
   "tokens.css": ":root { --space-1: 0.25rem; }\n",
+  "base.css": "@layer synth.base { :where(html) { color: red; } }\n",
   "layout.css": ".stack { gap: var(--space-1); }\n",
   "components.css": ".card { padding: var(--space-1); }\n",
 };

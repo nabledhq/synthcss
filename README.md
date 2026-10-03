@@ -16,8 +16,9 @@ Load the bundle from the jsDelivr CDN, pinned to a [release](https://github.com/
 
 | File | Contents |
 | --- | --- |
-| `dist/synthcss.css` | Everything: tokens, layout primitives and components in one file. |
+| `dist/synthcss.css` | Everything: tokens, base styles, layout primitives and components in one file. |
 | `dist/tokens.css` | Design tokens only. |
+| `dist/base.css` | Base styles only (page font and colors, `h1`–`h4` sizes). Load `tokens.css` first. |
 | `dist/layout.css` | Layout primitives only. Load `tokens.css` first. |
 | `dist/components.css` | Components only. Load `tokens.css` first. |
 
@@ -31,7 +32,7 @@ All visual decisions (color, spacing, typography, radius, borders, shadows, sizi
 :root { --color-primary: #YOUR_COLOR; --radius-md: 0.5rem; --space-3: 0.75rem; }
 ```
 
-See [docs/tokens.md](docs/tokens.md) for the full token reference, override examples, guidance for AI agents and reduced-motion behavior. Run `npm test` to check that the tokens, the docs and the contrast requirements are in sync. It needs only Node.js 18 or later.
+The main bundle also applies the tokens to plain markup: `--font-sans`, `--color-text` and `--color-background` on the page and the `--text-*` scale on `h1`–`h4`, in a zero-specificity `synth.base` cascade layer that any rule of your own overrides ([`src/base.css`](src/base.css)). See [docs/tokens.md](docs/tokens.md) for the full token reference, override examples, guidance for AI agents and reduced-motion behavior. Run `npm test` to check that the tokens, the docs and the contrast requirements are in sync. It needs only Node.js 18 or later.
 
 ## Layout primitives
 

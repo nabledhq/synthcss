@@ -5,10 +5,13 @@
  *   <link rel="stylesheet" href="synthcss/src/synthcss.css">
  *
  * Tokens must load first: every other file reads them through var(--token).
+ * Base styles come next: zero-specificity page and heading defaults in the
+ * synth.base layer, which every later or author rule overrides.
  * Components load last so they can be combined with layout primitives on the
  * same element (for example class="card-footer split").
  */
 
 @import url("tokens.css");
+@import url("base.css");
 @import url("layout.css");
 @import url("components.css");

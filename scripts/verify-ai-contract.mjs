@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { parseTokens } from "./check-tokens.mjs";
 import { buildBundle, classesInCss } from "./check-components.mjs";
+import { parseBase } from "./check-base.mjs";
 
 export const DEFAULT_MAX_TOKENS = 8000;
 // Class selectors in the framework CSS that are internal helpers, not public API,
@@ -20,6 +21,7 @@ export const JSON_KEYS = [
   "synthcssVersion",
   "contractVersion",
   "tokens",
+  "baseStyles",
   "layouts",
   "components",
   "intentMap",
@@ -48,7 +50,8 @@ export const JSON_FILE = "synthcss.ai.json";
 // `.name` not preceded by a word character, dot, slash or dash, so file names
 // (synthcss.ai.json), URLs and "e.g." are not read as classes.
 const CLASS_MENTION = /(?<![\w./-])\.([a-z][a-z0-9-]*)/g;
-const TOKEN_MENTION = /(?<![\w-])(--[a-z][a-z0-9-]*)/g;
+// A token family written as `--text-*` is not a token mention.
+const TOKEN_MENTION = /(?<![\w-])(--[a-z][a-z0-9-]*)(?![\w*-])/g;
 const CLASS_ATTR = /\bclass="([^"]*)"/g;
 
 const sorted = (set) => [...set].sort();
@@ -161,6 +164,15 @@ function checkJsonShape(c) {
       errors.push(`${JSON_FILE}: ${key} must map each name to a short purpose string`);
     }
   }
+  const base = c.baseStyles;
+  if (
+    !isObject(base) ||
+    typeof base.note !== "string" ||
+    !isObject(base.rules) ||
+    !Object.values(base.rules).every((d) => isObject(d) && Object.values(d).every((v) => typeof v === "string"))
+  ) {
+    errors.push(`${JSON_FILE}: baseStyles must be { note, rules: { selector: { property: value } } }`);
+  }
   if (!isObject(c.components)) errors.push(`${JSON_FILE}: components must be an object`);
   else {
     for (const [name, comp] of Object.entries(c.components)) {
@@ -248,6 +260,18 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
   }
   for (const token of diff(cssTokens, jsonTokens)) errors.push(`token ${token} is defined on :root but missing from ${JSON_FILE}`);
 
+  // Base styles against src/base.css.
+  const baseRules = parseBase(files.baseCss ?? "").rules;
+  const jsonBase = contract.baseStyles.rules;
+  for (const [selector, decls] of baseRules) {
+    if (JSON.stringify(jsonBase[selector]) !== JSON.stringify(decls)) {
+      errors.push(`${JSON_FILE}: baseStyles.rules["${selector}"] must be ${JSON.stringify(decls)} as in src/base.css`);
+    }
+  }
+  for (const selector of Object.keys(jsonBase)) {
+    if (!baseRules.has(selector)) errors.push(`${JSON_FILE}: baseStyles.rules["${selector}"] is not a rule in src/base.css`);
+  }
+
   contract.examples.valid.forEach((e, i) => {
     for (const cls of sorted(classAttrs(e.html))) {
       if (!cssClasses.has(cls)) errors.push(`${JSON_FILE}: valid example ${i + 1} uses .${cls}, which is not a SynthCSS class`);
@@ -284,6 +308,10 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
   }
   for (const cls of diff(vocab, mdVocab)) errors.push(`class .${cls} is in ${JSON_FILE} but not in the ${LLM_FILE} vocabulary`);
   for (const cls of diff(mdVocab, vocab)) errors.push(`class .${cls} is in the ${LLM_FILE} vocabulary but not in ${JSON_FILE}`);
+  // The Markdown may wrap names in backticks.
+  if (!section("Design Tokens").replace(/`/g, "").replace(/\s+/g, " ").includes(contract.baseStyles.note.replace(/\s+/g, " "))) {
+    errors.push(`${LLM_FILE}: the Design Tokens section must state the ${JSON_FILE} baseStyles note`);
+  }
   for (const token of diff(jsonTokens, mdTokens)) errors.push(`token ${token} is in ${JSON_FILE} but not in the ${LLM_FILE} Design Tokens`);
   for (const token of diff(mdTokens, jsonTokens)) errors.push(`token ${token} is in the ${LLM_FILE} Design Tokens but not in ${JSON_FILE}`);
 
@@ -408,6 +436,7 @@ export function readRepoFiles(repo) {
     md: read(LLM_FILE),
     pkg: read("package.json"),
     builtCss: buildBundle(resolve(repo, "src/synthcss.css"), (p) => readFileSync(p, "utf8")),
+    baseCss: read("src/base.css"),
     showcaseHtml: read("showcase/index.html"),
     workflow: read(".github/workflows/pages.yml"),
     readme: read("README.md"),
