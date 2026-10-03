@@ -66,8 +66,10 @@ JSON.
 
 ## Changing the contract
 
-Any change to the public API (a class or token added, renamed or removed, or a version
-bump in `package.json`) must update **both** files in the same pull request.
+Any change to the public API (a class or token added, renamed or removed) must update
+**both** files in the same pull request. Version bumps are automatic: the release
+workflow updates `synthcssVersion` and the Markdown header with
+[`scripts/bump-version.mjs`](../scripts/bump-version.mjs) (see [releasing.md](releasing.md)).
 
 `npm test` runs [`scripts/verify-ai-contract.mjs`](../scripts/verify-ai-contract.mjs)
 (also `npm run check:ai-contract`). It needs only Node.js and fails when:
