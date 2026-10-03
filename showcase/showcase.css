@@ -1,0 +1,316 @@
+/*
+ * Showcase-only styles.
+ *
+ * Layout comes from the SynthCSS primitives in ../src/layout.css and every
+ * value comes from a token in ../src/tokens.css. This file only adds what the
+ * framework does not ship yet: base typography, demo boxes, frames and the
+ * copy buttons. Every class here starts with `sc-` so it never restyles a
+ * framework class. Checked by `npm run check:showcase`.
+ */
+
+/* Base page typography. */
+.sc-page {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+.sc-page :where(h1, h2, h3, h4) {
+  margin: 0;
+  line-height: var(--leading-tight);
+  font-weight: var(--weight-semibold);
+}
+
+.sc-page h2 { font-size: var(--text-3xl); }
+.sc-page h3 { font-size: var(--text-xl); }
+.sc-page h4 { font-size: var(--text-base); color: var(--color-text-secondary); }
+
+.sc-page :where(h1, h2, h3, h4) code { font-size: inherit; }
+
+.sc-page :where(p) { margin: 0; }
+
+.sc-page :where(code, kbd, pre) {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.sc-page :where(a) { color: var(--color-primary); }
+.sc-page :where(a:hover) { color: var(--color-primary-hover); }
+
+.sc-page :focus-visible,
+.sc-focus-preview {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+.sc-muted { color: var(--color-text-muted); }
+
+/* Hero */
+.sc-hero {
+  background: var(--color-surface);
+  border-block-end: var(--border-width) solid var(--border-color);
+}
+
+/* .container sets box-sizing: border-box, so this padding stays inside the
+   one-viewport-tall .cover. */
+.sc-hero-cover { padding-block: var(--space-4) var(--space-6); }
+
+.sc-brand {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+}
+
+.sc-hero-title {
+  font-size: calc(var(--text-3xl) * 2);
+  font-weight: var(--weight-bold);
+}
+
+.sc-tagline {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+}
+
+.sc-lead {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+}
+
+.sc-callout {
+  padding: var(--space-4);
+  background: var(--color-surface-elevated);
+  border-inline-start: calc(var(--border-width) * 4) solid var(--color-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Section bands */
+.sc-band { padding-block: var(--space-6); }
+.sc-band-alt { background: var(--color-surface); }
+
+.sc-footer {
+  padding-block: var(--space-5);
+  border-block-start: var(--border-width) solid var(--border-color);
+  color: var(--color-text-muted);
+}
+
+/* Cards and demo pieces */
+.sc-card {
+  min-inline-size: 0;
+  padding: var(--space-5);
+  background: var(--color-surface-elevated);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.sc-label {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+}
+
+.sc-button {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-block-size: var(--control-height);
+  padding-inline: var(--space-4);
+  border: var(--border-width) solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font: inherit;
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.sc-page a.sc-button { color: var(--color-on-primary); }
+.sc-button:hover { background: var(--color-primary-hover); }
+
+.sc-button-secondary,
+.sc-page a.sc-button-secondary {
+  background: var(--color-surface-elevated);
+  color: var(--color-primary);
+}
+
+.sc-button-secondary:hover { background: var(--color-surface); }
+
+.sc-input {
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  font: inherit;
+}
+
+.sc-box {
+  box-sizing: border-box;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.sc-tag {
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+}
+
+.sc-outline { outline: var(--border-width) dashed var(--color-primary); }
+
+.sc-demo {
+  padding: var(--space-3);
+  background: var(--color-background);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+/* The real .cover is at least one viewport tall; the demo is shorter. */
+.sc-cover-demo { min-block-size: calc(var(--space-6) * 6); }
+
+/* Width-adjustable frames for the responsive demos. */
+.sc-frame {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: calc(var(--space-6) * 3);
+  padding: var(--space-3);
+  overflow: auto;
+  resize: horizontal;
+  background: var(--color-background);
+  border: var(--border-width) dashed var(--color-text-muted);
+  border-radius: var(--radius-md);
+}
+
+.sc-range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Token specimens */
+.sc-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.sc-swatch-chip {
+  block-size: calc(var(--space-6) * 2);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.sc-value { color: var(--color-text-muted); }
+
+.sc-specimen { overflow-wrap: anywhere; }
+
+/* A tinted backdrop for specimens that are hard to see on white. */
+.sc-stage {
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.sc-bar {
+  display: block;
+  flex-shrink: 0;
+  max-inline-size: 100%;
+  block-size: var(--space-4);
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+}
+
+.sc-tile {
+  display: block;
+  inline-size: calc(var(--space-6) * 2);
+  block-size: calc(var(--space-6) * 2);
+  background: var(--color-primary);
+}
+
+.sc-tile-raised {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-md);
+}
+
+.sc-bordered {
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.sc-track {
+  position: relative;
+  display: block;
+  block-size: var(--space-5);
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+}
+
+.sc-dot {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition-property: inset-inline-start;
+  transition-timing-function: var(--ease-standard);
+}
+
+[data-motion].sc-is-playing .sc-dot { inset-inline-start: calc(100% - var(--space-5)); }
+
+/* Code samples. `contain: inline-size` stops long lines from widening the
+   grid or flex item around them; the block scrolls instead. */
+.sc-code {
+  position: relative;
+  contain: inline-size;
+}
+
+.sc-code pre {
+  margin: 0;
+  padding: var(--space-4);
+  padding-block-start: calc(var(--space-6) + var(--space-3));
+  overflow-x: auto;
+  background: var(--color-text);
+  color: var(--color-background);
+  border-radius: var(--radius-md);
+  line-height: var(--leading-normal);
+}
+
+.sc-copy {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  background: var(--color-text-secondary);
+  color: var(--color-background);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.sc-copy:hover { background: var(--color-text-muted); }
+
+/* The copy button sits on the dark code block, so its ring uses the light
+   background color to stay visible. */
+.sc-copy:focus-visible { outline-color: var(--color-background); }

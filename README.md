@@ -20,3 +20,7 @@ Eight intent-named layout classes in [`src/layout.css`](src/layout.css): `.conta
 ```
 
 See [docs/layout.md](docs/layout.md) for each primitive and a compact "AI Layout Vocabulary" table to give to a model, and [examples/layout.html](examples/layout.html) for a fixture page showing every primitive at narrow and wide widths.
+
+## Showcase
+
+[`showcase/`](showcase/) is a static page built with SynthCSS that shows the tokens and layout primitives live, with copyable snippets and width-adjustable demos. Open `showcase/index.html` in a browser to preview it. It is published to GitHub Pages by [`.github/workflows/pages.yml`](.github/workflows/pages.yml). See [showcase/README.md](showcase/README.md) for local preview, deployment, the one-time Pages setting and how to add a section.
