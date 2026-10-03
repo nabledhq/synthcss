@@ -69,6 +69,24 @@ test("lists nav and tabs with their intent rows and one state attribute each", (
   assertError(errorsWith({ md }), "the Intent Mapping table has");
 });
 
+test("lists switch and input-group with intent rows and one valid example each", () => {
+  assert.ok(contract.components.switch);
+  assert.ok(contract.components["input-group"]);
+  assert.ok(contract.intentMap.some((e) => e.intent === "On/off setting" && e.use.includes(".switch")));
+  assert.ok(contract.intentMap.some((e) => e.intent === "Input with an attached button or select" && e.use === ".input-group"));
+  assert.match(files.md, /^\| On\/off setting \| `\.switch` .*\|$/m);
+  assert.match(files.md, /^\| Input with an attached button or select \| `\.input-group` \|$/m);
+  for (const cls of ["switch", "input-group"]) {
+    const uses = contract.examples.valid.filter((e) => new RegExp(`class="${cls}"`).test(e.html));
+    assert.equal(uses.length, 1, `.${cls} appears in exactly one valid example`);
+  }
+  assert.ok(contract.examples.valid.some((e) => /<label class="switch"><input type="checkbox" role="switch"/.test(e.html)));
+  const json = withJson((c) => delete c.components["input-group"]);
+  assertError(errorsWith(json), "class .input-group is in the SynthCSS CSS but missing from synthcss.ai.json");
+  const md = files.md.replace(/^- `\.switch` — .*\n/m, "");
+  assertError(errorsWith({ md }), "class .switch is in synthcss.ai.json but not in the synthcss.llm.md vocabulary");
+});
+
 test("fails when the contract drops or changes a state attribute, or allows aria-pressed", () => {
   const json = withJson((c) => (c.components.tabs.parts["tabs-item"] = "<button role=\"tab\">; selected: aria-pressed=\"true\""));
   assertError(errorsWith(json), 'synthcss.ai.json: the .tabs-item entry must name its state attribute aria-selected="true"');

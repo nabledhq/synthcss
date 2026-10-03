@@ -1,10 +1,11 @@
 # Components
 
-SynthCSS ships eleven semantic components in [`src/components.css`](../src/components.css):
-`.button`, `.field`, `.card`, `.badge`, `.alert`, `.panel`, `.table`, `.empty-state`,
-`.nav`, `.tabs` and `.avatar`. Each one names a UI intent, so a model can map a request
-("a delete button", "an error message", "a table of invoices", "a segmented filter",
-"a user's initials") to one predictable class.
+SynthCSS ships thirteen semantic components in [`src/components.css`](../src/components.css):
+`.button`, `.field`, `.switch`, `.input-group`, `.card`, `.badge`, `.alert`, `.panel`,
+`.table`, `.empty-state`, `.nav`, `.tabs` and `.avatar`. Each one names a UI intent, so a
+model can map a request ("a delete button", "an on/off setting", "a URL with a copy
+button", "an error message", "a table of invoices", "a segmented filter", "a user's
+initials") to one predictable class.
 
 They are part of the main bundle, together with the [design tokens](tokens.md) and the
 [layout primitives](layout.md):
@@ -22,7 +23,7 @@ How the components behave:
 - **Naming.** `.component` for the base, `.component-variant` for a variant
   (`.button-danger`) and `.component-part` for a part (`.card-header`). The one
   exception is the `.numeric` table cell.
-- **State from native attributes, not classes.** Use `disabled`,
+- **State from native attributes, not classes.** Use `disabled`, `checked`,
   `aria-disabled="true"`, `aria-busy="true"`, `aria-invalid="true"`,
   `aria-current="page"` (current nav link) and `aria-selected="true"` (selected tab).
   There is no `.is-disabled`, `.button-loading`, `.field-invalid`, `.is-active` or
@@ -30,7 +31,7 @@ How the components behave:
 - **Native elements.** Put `.button` on `<button>` or `<a>`, `.table` on `<table>`, and
   native `input`, `select` and `textarea` inside `.field`. Native focus and keyboard
   behavior are kept.
-- **Focus.** Buttons, field controls, nav links, tabs and a focusable `.table-wrap` show a
+- **Focus.** Buttons, field controls, switches, input-group controls, nav links, tabs and a focusable `.table-wrap` show a
   `:focus-visible` ring made of `--focus-width`, `--focus-color` and `--focus-offset`.
 - **Disabled.** Disabled buttons and controls are faded and show a `not-allowed`
   cursor. The variant color stays recognizable, so a disabled danger button still looks
@@ -57,6 +58,8 @@ Paste this table into a model's context together with the
 | Icon-only, smaller or larger button | `.button button-icon` + `aria-label="…"`; add `.button-sm` / `.button-lg` |
 | Unavailable or in-progress action | `disabled` or `aria-disabled="true"`; `aria-busy="true"` |
 | Labeled input with help or error text | `.field` > `.field-label` + native control + `.field-help` / `.field-error`; `aria-invalid="true"` on an invalid control |
+| On/off setting that applies at once | `<label class="switch"><input type="checkbox" role="switch"> Text</label>`; `checked`, `disabled` |
+| Input with an attached button or select | `.input-group` > `<input>` + `.button` and/or `<select>`; inside `.field` for a label |
 | Self-contained item (project, product, user) | `.card` with `.card-header`, `.card-body`, `.card-footer`, `.card-media`, `.card-actions` |
 | Short status label | `.badge` + `.badge-success` / `-warning` / `-danger` / `-info` |
 | Message or notification | `.alert` + `.alert-info` / `-success` / `-warning` / `-danger`, `role="status"` or `role="alert"`; optional leading `<svg class="alert-icon">` |
@@ -241,6 +244,143 @@ buttons in a `.cluster`:
 - Using a placeholder instead of a `.field-label`.
 - Showing an error only by making the border red: add `aria-invalid="true"` and a
   `.field-error` message.
+
+## `.switch`
+
+### Purpose
+
+An on/off toggle for a setting that takes effect at once ("Require admin approval",
+"Email notifications"). It is a native `<input type="checkbox" role="switch">` inside a
+`<label class="switch">` with its text. The checkbox is drawn as a track with a thumb;
+`checked` and `disabled` are its only states, with no extra classes.
+
+### Example
+
+```html
+<label class="switch"><input type="checkbox" role="switch" checked> Require admin approval</label>
+```
+
+### Variants
+
+| State | Look |
+| --- | --- |
+| Off | A `--color-text-muted` track with the thumb at the start side. |
+| `checked` | A `--color-primary` track with the thumb at the end side (the right in left-to-right text). |
+| `disabled` | Faded track with a `not-allowed` cursor; the label text turns `--color-text-muted`. |
+
+The track is 1.75 × `--space-5` wide and `--space-5` tall with `--radius-full` corners;
+the thumb is a `--color-surface-elevated` circle with `--shadow-sm`. The track color and
+thumb slide over `--duration-fast` with `--ease-standard`; with
+`prefers-reduced-motion: reduce` those tokens are `0ms`, so the thumb jumps. There are
+no size variants.
+
+### Composition
+
+Stack several switches in a `.stack-sm`, or put one in a `.field` with `.field-help`
+under it. A switch looks the same inside and outside `.field`:
+
+```html
+<fieldset class="field">
+  <legend class="field-label">Workspace</legend>
+  <div class="stack-sm">
+    <label class="switch"><input type="checkbox" role="switch" checked aria-describedby="approval-help"> Require admin approval</label>
+    <label class="switch"><input type="checkbox" role="switch" disabled> Single sign-on</label>
+  </div>
+  <p class="field-help" id="approval-help">New members wait until an admin approves them.</p>
+</fieldset>
+```
+
+### Accessibility
+
+- `role="switch"` makes screen readers announce "on" / "off" instead of "checked".
+- It stays a native checkbox: reachable with Tab, toggled with Space, and the wrapping
+  label makes its text clickable. No script is needed.
+- A `:focus-visible` ring from the `--focus-*` tokens shows on keyboard focus.
+- The state is shown by the thumb position as well as the track color.
+
+### Recommended use
+
+Settings that apply immediately, such as preferences and feature toggles.
+
+### Misuse
+
+- An option that is only applied when a form is submitted, or a group of options; use a
+  checkbox or radios in a `.field`.
+- A switch without `role="switch"`, or outside its `<label class="switch">`.
+- Classes such as `.is-on` or `.switch-checked`; use the `checked` attribute.
+
+## `.input-group`
+
+### Purpose
+
+An input joined in one row with one or more buttons and/or selects: a URL with a Copy
+button, a search box with a Search button, an amount with a currency select. Neighbours
+share one border, only the outer corners are rounded, and every child has the same
+height. No custom flex CSS is needed.
+
+### Example
+
+```html
+<div class="input-group">
+  <input type="url" readonly value="https://example.com/invite/4f2a" aria-label="Invite link">
+  <button type="button" class="button">Copy</button>
+</div>
+```
+
+### Variants
+
+| Child | Behavior |
+| --- | --- |
+| `<input>` | Grows to fill the row (`flex: 1 1 auto; min-inline-size: 0`), at least `--input-height` tall. Styled with the same tokens as `.field` inputs, for any text-like `type`. |
+| `<select>` | Keeps its own width, at least `--input-height` tall. |
+| `.button` (any variant) | Keeps its own width, at least `--control-height` tall. |
+| `disabled` on an input or select | Faded on `--color-surface` with a `not-allowed` cursor. |
+
+Children overlap by `--border-width`, so shared borders are never doubled. The first
+child keeps its start corners and the last child its end corners (`--radius-md`);
+inner corners are square. A hovered or focused child is raised over its neighbours, so
+its border and `:focus-visible` ring are never covered. `.input-group` is inline: on
+its own it is as wide as its content, inside `.field` or a `.stack` it fills the
+column. There are no size variants, vertical groups or text addons.
+
+### Composition
+
+Put an input group in a `.field` for its label, help and error text. The label points
+at the input:
+
+```html
+<div class="field">
+  <label class="field-label" for="amount">Amount</label>
+  <div class="input-group">
+    <input id="amount" type="number" aria-describedby="amount-help">
+    <select aria-label="Currency"><option>EUR</option><option>USD</option></select>
+    <button type="submit" class="button button-primary">Send</button>
+  </div>
+  <p class="field-help" id="amount-help">Sent within one business day.</p>
+</div>
+```
+
+Put several groups in a `.stack`, or one next to other controls in a `.cluster`.
+
+### Accessibility
+
+- Label the input with a `<label for>` (inside `.field`) or with `aria-label`. A select
+  without a visible label needs an `aria-label`.
+- Buttons keep their own text; an icon-only `.button-icon` needs an `aria-label`.
+- Every child keeps its own `:focus-visible` ring.
+- Copying to the clipboard or submitting is the page's own script or form.
+
+### Recommended use
+
+Copy fields for links and keys, search boxes with a button, and amounts with a unit
+select.
+
+### Misuse
+
+- Plain text or icons as children: text addons are not supported; put the text in the
+  label or `.field-help`.
+- Checkboxes, textareas or more than one input in a group.
+- Wrapping buttons in a `.cluster` or writing custom flex CSS to attach them.
 
 ## `.card`
 
@@ -809,7 +949,7 @@ filters, and tabbed sections on one page.
 
 - Navigating to other pages; use `.nav` with `aria-current="page"`.
 - Toggle buttons with `aria-pressed`; SynthCSS tabs use `aria-selected`.
-- A single on/off option; use a checkbox in a `.field`.
+- A single on/off setting; use a `.switch`.
 
 ## `.avatar`
 
@@ -895,8 +1035,11 @@ dashboard stats.
   card, panel and avatar background (including every avatar tone on its tint), and on the
   current nav link and default and selected tabs, meets 4.5:1 contrast; that avatars are
   sized from `--control-height`, tones tint with 12% of `--tone`, and only an alert with
-  an `.alert-icon` switches to a grid; that buttons, field controls, nav links, tabs and `.table-wrap`
-  have `:focus-visible` rings; that `.nav` resets the list without setting a layout,
+  an `.alert-icon` switches to a grid; that buttons, field controls, switches, input-group controls, nav links, tabs and `.table-wrap`
+  have `:focus-visible` rings; that the switch is a native checkbox drawn with
+  `appearance: none`, fills the track with `--color-primary` and moves the thumb when
+  checked, and styles `:disabled`; that `.input-group` children overlap by one border,
+  round only the outer corners, let the input grow and raise the focused child; that `.nav` resets the list without setting a layout,
   the current nav link (`aria-current="page"`) and selected tab
   (`aria-selected="true"`) are styled from those attributes, `aria-pressed` is not used
   and `.tabs` wraps; that buttons and fields have disabled
@@ -908,7 +1051,9 @@ dashboard stats.
   and 1280px and checks that the components render with their tokens, that tables
   scroll inside `.table-wrap` without the page overflowing, that the current nav link
   and the selected tab look different from the others, that `.tabs` does not overflow
-  at 320px, and that focus rings show.
+  at 320px, that switches follow `checked` and `disabled` and toggle with Space, that
+  `.input-group` children share one height and one border with rounded outer corners
+  only, and that focus rings show and a focused input-group child is raised.
   It needs Playwright: run `npm install --no-save playwright` and
   `npx playwright install chromium` first.
 - The [showcase](../showcase/index.html) shows every component and a composed settings

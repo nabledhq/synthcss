@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkComponents, readRepoFiles, COMPONENT_CLASSES } from "./check-components.mjs";
+import { checkComponents, readRepoFiles, COMPONENT_CLASSES, MAX_REFERENCE_ROWS } from "./check-components.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const files = readRepoFiles(repo);
@@ -148,7 +148,7 @@ test("fails when docs miss a component, a section or the reference table", () =>
   const noRef = files.componentDocs.replace("## AI Component Reference", "## Reference");
   assertError(errorsWith({ componentDocs: noRef }), "AI Component Reference");
   const longRef = files.componentDocs.replace("| Nothing to show yet |", "| Extra | `.x` |\n".repeat(5) + "| Nothing to show yet |");
-  assertError(errorsWith({ componentDocs: longRef }), "max 15");
+  assertError(errorsWith({ componentDocs: longRef }), `max ${MAX_REFERENCE_ROWS}`);
   const noRoles = files.componentDocs.replaceAll('role="alert"', 'role="note"');
   assertError(errorsWith({ componentDocs: noRoles }), 'role="alert" and role="status"');
 });
@@ -196,4 +196,54 @@ test("fails when .alert-icon does not switch the alert layout or .alert itself c
   assertError(errorsWith(noGrid), ".alert:has(> .alert-icon) must switch to display: grid");
   const changed = withCss((css) => css.replace(/(\.alert \{[^}]*)display: flex;/, "$1display: grid;"));
   assertError(errorsWith(changed), ".alert must stay display: flex");
+});
+
+const SWITCH = '.switch > input[type="checkbox"]';
+
+test("fails when the switch is not a restyled native checkbox driven by :checked and :disabled", () => {
+  const native = withCss((css) => css.replace(/(\.switch > input\[type="checkbox"\] \{[^}]*?)\n  appearance: none;/, "$1"));
+  assertError(errorsWith(native), `${SWITCH} must set appearance: none`);
+  const noThumb = withCss((css) => css.replace(/(\.switch > input\[type="checkbox"\]::before \{[^}]*?)content: "";/, "$1"));
+  assertError(errorsWith(noThumb), `${SWITCH}::before must draw the thumb`);
+  const color = withCss((css) => css.replace(/(\.switch > input\[type="checkbox"\]:checked \{[^}]*?)background: var\(--color-primary\)/, "$1background: var(--color-info)"));
+  assertError(errorsWith(color), `${SWITCH}:checked must fill the track with var(--color-primary)`);
+  const still = withCss((css) => css.replace(`${SWITCH}:checked::before {`, `${SWITCH}:hover::before {`));
+  assertError(errorsWith(still), "must move the thumb to the end side");
+  const motion = withCss((css) => css.replace("transition: inset-inline-start var(--duration-fast) var(--ease-standard);", "transition: inset-inline-start 0.2s ease;"));
+  assertError(errorsWith(motion), `${SWITCH}::before must transition with var(--duration-fast) var(--ease-standard)`);
+  const noDisabled = withCss((css) => css.replace(`${SWITCH}:disabled {`, `${SWITCH}:indeterminate {`));
+  assertError(errorsWith(noDisabled), `${SWITCH}:disabled must be styled`);
+  const noLabel = withCss((css) => css.replace(".switch:has(> input:disabled) {", ".switch:has(> input:invalid) {"));
+  assertError(errorsWith(noLabel), ".switch:has(> input:disabled) must style the label");
+  const noFocus = withCss((css) => css.replace(`${SWITCH}:focus-visible {`, `${SWITCH}:focus {`));
+  assertError(errorsWith(noFocus), "switch needs a :focus-visible rule");
+  const literal = withCss((css) => css.replace(/(\.switch > input\[type="checkbox"\]::before \{[^}]*?)background: var\(--color-surface-elevated\)/, "$1background: white"));
+  assertError(errorsWith(literal), "named color");
+});
+
+test("fails when the input group doubles borders, rounds inner corners or lets the focus ring be covered", () => {
+  const doubled = withCss((css) => css.replace("margin-inline-start: calc(var(--border-width) * -1);", "margin-inline-start: 0;"));
+  assertError(errorsWith(doubled), "must overlap by one border");
+  const inner = withCss((css) => css.replace(/(\.input-group > :where\(:not\(:last-child\)\) \{[^}]*?)border-start-end-radius: 0;/, "$1"));
+  assertError(errorsWith(inner), ".input-group > :where(:not(:last-child)) must set border-start-end-radius: 0");
+  const outer = withCss((css) => css.replace(/(\.input-group > :where\(:not\(:first-child\)\) \{[^}]*?)border-end-start-radius: 0;/, "$1"));
+  assertError(errorsWith(outer), ".input-group > :where(:not(:first-child)) must set border-end-start-radius: 0");
+  const noGrow = withCss((css) => css.replace("flex: 1 1 auto;", "flex: none;"));
+  assertError(errorsWith(noGrow), ".input-group inputs must grow");
+  const shrink = withCss((css) => css.replace(/(\.input-group > :where\(select, \.button\) \{[^}]*?)flex: none;/, "$1flex: 1 1 auto;"));
+  assertError(errorsWith(shrink), ".input-group buttons and selects must keep their size");
+  const covered = withCss((css) => css.replace(/(\.input-group > :focus-visible \{[^}]*?)z-index: 2;/, "$1"));
+  assertError(errorsWith(covered), ".input-group > :focus-visible must raise the focused child");
+  const noFocus = withCss((css) => css.replace(".input-group > :where(input, select):focus-visible {", ".input-group > :where(input, select):focus {"));
+  assertError(errorsWith(noFocus), "input-group controls needs a :focus-visible rule");
+  const height = withCss((css) => css.replace(/(\.input-group > :where\(input, select\) \{[^}]*?)min-block-size: var\(--input-height\);/, "$1min-block-size: 2rem;"));
+  assertError(errorsWith(height), "hard-coded length");
+  assertError(errorsWith(height), ".input-group controls must set min-block-size: var(--input-height)");
+  const block = withCss((css) => css.replace(/(\.input-group \{[^}]*?)display: inline-flex;/, "$1display: block;"));
+  assertError(errorsWith(block), ".input-group must be a flex row");
+});
+
+test("margins may use --border-width but no other non-spacing token", () => {
+  const radius = withCss((css) => css.replace("margin-inline-start: calc(var(--border-width) * -1);", "margin-inline-start: calc(var(--radius-sm) * -1);"));
+  assertError(errorsWith(radius), "must use a var(--space-N) token");
 });

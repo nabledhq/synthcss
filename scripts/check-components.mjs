@@ -13,6 +13,8 @@ import { contrastRatio, parseBlocks, parseColor, parseDeclarations, parseTokens,
 export const COMPONENTS = {
   button: ["button", "button-primary", "button-secondary", "button-danger", "button-sm", "button-lg", "button-icon"],
   field: ["field", "field-label", "field-help", "field-error"],
+  switch: ["switch"],
+  "input-group": ["input-group"],
   card: ["card", "card-header", "card-body", "card-footer", "card-media", "card-actions"],
   badge: ["badge", "badge-success", "badge-warning", "badge-danger", "badge-info"],
   alert: ["alert", "alert-info", "alert-success", "alert-warning", "alert-danger", "alert-icon"],
@@ -76,7 +78,7 @@ const STATE_COLORS = [
 ];
 
 export const DOC_SECTIONS = ["Purpose", "Example", "Variants", "Composition", "Accessibility", "Recommended use"];
-export const MAX_REFERENCE_ROWS = 15;
+export const MAX_REFERENCE_ROWS = 17;
 
 const COLOR_LITERAL = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/i;
 const NAMED_COLOR =
@@ -215,7 +217,8 @@ export function checkComponentsCss(componentsCss, tokensCss) {
         errors.push(`color in ${w} must be a var(--token), a color-mix() of two tokens, transparent or currentColor`);
       }
       if (HARD_CODED_LENGTH.test(d.value)) errors.push(`hard-coded length in ${w}; use a var(--token)`);
-      if (SPACING_PROPS.test(d.prop) && !/^(0|auto)$/.test(d.value) && !/var\(--space-\d+\)/.test(d.value)) {
+      // Margins may also use --border-width, so .input-group children overlap by one border.
+      if (SPACING_PROPS.test(d.prop) && !/^(0|auto)$/.test(d.value) && !/var\(--(space-\d+|border-width)\)/.test(d.value)) {
         errors.push(`spacing in ${w} must use a var(--space-N) token`);
       }
       if (TOKEN_PROPS[d.prop] && !TOKEN_PROPS[d.prop].test(d.value)) errors.push(`${w} must use a matching var(--token)`);
@@ -245,6 +248,8 @@ export function checkComponentsCss(componentsCss, tokensCss) {
     ["table-wrap", /\.table-wrap:focus-visible/],
     ["nav-link", /^\.nav-link:focus-visible$/],
     ["tabs-item", /^\.tabs-item:focus-visible$/],
+    ["switch", /^\.switch > input\[type="checkbox"\]:focus-visible$/],
+    ["input-group controls", /^\.input-group > :where\(input, select\):focus-visible$/],
   ];
   for (const [what, re] of focusTargets) {
     if (!has((r) => sel(r, re) && focusRing(r))) {
@@ -344,6 +349,60 @@ export function checkComponentsCss(componentsCss, tokensCss) {
     if (!decls.some((d) => d.prop === "background" && d.value === "color-mix(in srgb, var(--tone) 12%, var(--color-background))")) {
       errors.push(`.avatar-${tone} must use background: color-mix(in srgb, var(--tone) 12%, var(--color-background))`);
     }
+  }
+
+  // Switch: a native checkbox drawn as a track with a thumb; state from
+  // :checked and :disabled only.
+  const switchInput = '.switch > input[type="checkbox"]';
+  if (!declsOf(switchInput).some((d) => d.prop === "appearance" && d.value === "none")) {
+    errors.push(`${switchInput} must set appearance: none`);
+  }
+  if (!declsOf(`${switchInput}::before`).some((d) => d.prop === "content")) {
+    errors.push(`${switchInput}::before must draw the thumb`);
+  }
+  const checked = declsOf(`${switchInput}:checked`);
+  if (!checked.some((d) => /^background(-color)?$/.test(d.prop) && d.value === "var(--color-primary)")) {
+    errors.push(`${switchInput}:checked must fill the track with var(--color-primary)`);
+  }
+  if (!declsOf(`${switchInput}:checked::before`).some((d) => d.prop === "inset-inline-start")) {
+    errors.push(`${switchInput}:checked::before must move the thumb to the end side (inset-inline-start)`);
+  }
+  for (const s of [switchInput, `${switchInput}::before`]) {
+    if (!declsOf(s).some((d) => d.prop === "transition" && /var\(--duration-fast\) var\(--ease-standard\)/.test(d.value))) {
+      errors.push(`${s} must transition with var(--duration-fast) var(--ease-standard)`);
+    }
+  }
+  if (!disabled(/^\.switch > input\[type="checkbox"\]:disabled$/)) errors.push(`${switchInput}:disabled must be styled (with cursor: not-allowed)`);
+  if (!disabled(/^\.switch:has\(> input:disabled\)$/)) errors.push(".switch:has(> input:disabled) must style the label (with cursor: not-allowed)");
+
+  // Input group: one row, shared borders, outer corners only, growing input,
+  // focused child raised above its neighbours.
+  if (!declsOf(".input-group").some((d) => d.prop === "display" && /^(inline-)?flex$/.test(d.value))) {
+    errors.push(".input-group must be a flex row");
+  }
+  if (!declsOf(".input-group > :where(* + *)").some((d) => d.prop === "margin-inline-start" && d.value === "calc(var(--border-width) * -1)")) {
+    errors.push(".input-group > :where(* + *) must overlap by one border (margin-inline-start: calc(var(--border-width) * -1))");
+  }
+  for (const [s, props] of [
+    [".input-group > :where(:not(:first-child))", ["border-start-start-radius", "border-end-start-radius"]],
+    [".input-group > :where(:not(:last-child))", ["border-start-end-radius", "border-end-end-radius"]],
+  ]) {
+    for (const prop of props) {
+      if (!declsOf(s).some((d) => d.prop === prop && d.value === "0")) errors.push(`${s} must set ${prop}: 0`);
+    }
+  }
+  const grow = declsOf(".input-group > :where(input)");
+  if (!grow.some((d) => d.prop === "flex" && d.value === "1 1 auto") || !grow.some((d) => d.prop === "min-inline-size" && d.value === "0")) {
+    errors.push(".input-group inputs must grow (flex: 1 1 auto; min-inline-size: 0)");
+  }
+  if (!declsOf(".input-group > :where(select, .button)").some((d) => d.prop === "flex" && d.value === "none")) {
+    errors.push(".input-group buttons and selects must keep their size (flex: none)");
+  }
+  if (!declsOf(".input-group > :where(input, select)").some((d) => d.prop === "min-block-size" && d.value === "var(--input-height)")) {
+    errors.push(".input-group controls must set min-block-size: var(--input-height)");
+  }
+  if (!declsOf(".input-group > :focus-visible").some((d) => d.prop === "z-index")) {
+    errors.push(".input-group > :focus-visible must raise the focused child (z-index) so its ring is not covered");
   }
 
   // Alert icon: only an alert with an .alert-icon child changes layout.
