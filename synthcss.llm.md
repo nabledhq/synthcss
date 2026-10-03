@@ -25,6 +25,7 @@ Base styles apply `--font-sans`, `--color-text` and `--color-background` to the 
 - `--color-warning` — warning status
 - `--color-danger` — errors and destructive actions
 - `--color-info` — neutral informational status
+- `--color-accent` — decorative violet with no status meaning (avatar tiles)
 - `--space-1` — 0.25rem spacing step
 - `--space-2` — 0.5rem spacing step (-sm gaps)
 - `--space-3` — 0.75rem spacing step
@@ -126,6 +127,7 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
   - variant `.alert-success` — action succeeded
   - variant `.alert-warning` — needs attention
   - variant `.alert-danger` — error
+  - part `.alert-icon` — leading `<svg aria-hidden="true">` as a direct child; sits left of the content, top-aligned
 - `.panel` — flat bordered group of secondary content
   - part `.panel-header` — title area with a bottom border
   - part `.panel-body` — content area
@@ -138,6 +140,16 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
   - part `.nav-link` — an `<a href>` in `.nav`, optional leading `<svg>`; current page: `aria-current="page"`
 - `.tabs` — tab list or segmented filter; `role="tablist"` + `aria-label`; wraps when narrow. CSS only: arrow keys and panel switching are your script
   - part `.tabs-item` — `<button role="tab">`; selected: `aria-selected="true"`, others `aria-selected="false"`
+- `.avatar` — fixed square for initials, a photo or an icon, on `<span>`, `<div>` or `<img>`
+  - variant `.avatar-round` — circle; usual for people
+  - variant `.avatar-sm` — smaller (0.75× `--control-height`)
+  - variant `.avatar-lg` — larger (1.5× `--control-height`)
+  - variant `.avatar-primary` — primary tint
+  - variant `.avatar-success` — success tint
+  - variant `.avatar-warning` — warning tint
+  - variant `.avatar-danger` — danger tint
+  - variant `.avatar-info` — info tint
+  - variant `.avatar-accent` — violet tint with no status meaning
 
 ## Intent Mapping
 
@@ -158,12 +170,14 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
 | Labeled input with help or error | `.field` + `.field-label` + `.field-help` / `.field-error` |
 | Self-contained item | `.card` + parts |
 | Status label | `.badge` + `.badge-success` / -warning / -danger / -info |
-| Message or notification | `.alert` + `.alert-info` / -success / -warning / -danger |
+| Message or notification | `.alert` + `.alert-info` / -success / -warning / -danger; optional `.alert-icon` |
 | Secondary grouped content | `.panel` + `.panel-header` / `.panel-body` |
 | Tabular data | `.table-wrap` > `.table`; `.table-hover`, `.numeric` |
 | No data yet | `.empty-state` |
 | Navigation links | `.nav` + `.nav-link` |
 | Tabs or segmented filter | `.tabs` + `.tabs-item` |
+| Person initials or photo | `.avatar` / `.avatar-round` |
+| Icon on a tinted tile | `.avatar` + `.avatar-primary` / -success / -warning / -danger / -info / -accent |
 
 ## Composition Rules
 
@@ -265,17 +279,30 @@ Data view: split header with an action, scrollable table with status badges.
 </section>
 ```
 
-Dashboard: main content first, narrow column on the right with a per-instance width.
+Dashboard: main content first, narrow column on the right; an alert with an icon, an icon tile in a card, and people as avatars.
 
 ```html
 <div class="sidebar-lg sidebar-end" style="--sidebar-width: 20rem">
   <main class="stack">
     <h1>Dashboard</h1>
-    <div class="grid"><div class="card">…</div><div class="card">…</div></div>
+    <div class="alert alert-info" role="status">
+      <svg class="alert-icon" aria-hidden="true" viewBox="0 0 24 24">…</svg>
+      <p>Billing moves to the 1st of each month.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="cluster-sm"><span class="avatar avatar-accent"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg></span><h2>Revenue</h2></div>
+        <p>$12,400 this month.</p>
+      </div>
+      <div class="card">…</div>
+    </div>
   </main>
   <aside class="panel">
     <div class="panel-header"><h2>Activity</h2></div>
-    <div class="panel-body">Recent events.</div>
+    <ul class="panel-body stack-sm" role="list">
+      <li class="cluster-sm"><span class="avatar avatar-round avatar-sm avatar-primary" aria-hidden="true">AL</span><span>Ana merged #42</span></li>
+      <li class="cluster-sm"><img class="avatar avatar-round avatar-sm" src="/ben.jpg" alt=""><span>Ben joined</span></li>
+    </ul>
   </aside>
 </div>
 ```
@@ -291,3 +318,4 @@ Never generate these. Each line: wrong markup — why — what to use instead.
 - `<p class="mt-4">Saved.</p>` — Spacing utility. Use .stack on the parent.
 - `<a class="nav-link active" href="/team">Team</a>` — State class. Use .nav-link with aria-current="page".
 - `<button class="tabs-item" aria-pressed="true">Week</button>` — aria-pressed for a tab. Use .tabs-item with role="tab" and aria-selected="true".
+- `<span class="user-avatar rounded-full">AL</span>` — Invented classes. Use .avatar and .avatar-round.

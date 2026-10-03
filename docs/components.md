@@ -1,10 +1,10 @@
 # Components
 
-SynthCSS ships ten semantic components in [`src/components.css`](../src/components.css):
+SynthCSS ships eleven semantic components in [`src/components.css`](../src/components.css):
 `.button`, `.field`, `.card`, `.badge`, `.alert`, `.panel`, `.table`, `.empty-state`,
-`.nav` and `.tabs`. Each one names a UI intent, so a model can map a request ("a delete
-button", "an error message", "a table of invoices", "a segmented filter") to one
-predictable class.
+`.nav`, `.tabs` and `.avatar`. Each one names a UI intent, so a model can map a request
+("a delete button", "an error message", "a table of invoices", "a segmented filter",
+"a user's initials") to one predictable class.
 
 They are part of the main bundle, together with the [design tokens](tokens.md) and the
 [layout primitives](layout.md):
@@ -54,18 +54,18 @@ Paste this table into a model's context together with the
 | Main action of a form or page | `<button class="button button-primary">` |
 | Secondary or cancel action | `.button button-secondary`, or plain `.button` |
 | Destructive action (delete, remove) | `.button button-danger` |
-| Icon-only action | `.button button-icon` + `aria-label="…"` |
-| Smaller or larger button | add `.button-sm` / `.button-lg` |
+| Icon-only, smaller or larger button | `.button button-icon` + `aria-label="…"`; add `.button-sm` / `.button-lg` |
 | Unavailable or in-progress action | `disabled` or `aria-disabled="true"`; `aria-busy="true"` |
 | Labeled input with help or error text | `.field` > `.field-label` + native control + `.field-help` / `.field-error`; `aria-invalid="true"` on an invalid control |
 | Self-contained item (project, product, user) | `.card` with `.card-header`, `.card-body`, `.card-footer`, `.card-media`, `.card-actions` |
 | Short status label | `.badge` + `.badge-success` / `-warning` / `-danger` / `-info` |
-| Message or notification | `.alert` + `.alert-info` / `-success` / `-warning` / `-danger`, `role="status"` or `role="alert"` |
+| Message or notification | `.alert` + `.alert-info` / `-success` / `-warning` / `-danger`, `role="status"` or `role="alert"`; optional leading `<svg class="alert-icon">` |
 | Flat group of secondary content | `.panel` with `.panel-header`, `.panel-body` |
 | Tabular data | `<table class="table">` inside `.table-wrap`; `.table-hover`, `.numeric` cells |
 | Nothing to show yet | `.empty-state` with heading, text and an optional action |
 | Navigation links | `<ul class="nav stack-sm">` or `nav cluster-sm` > `<a class="nav-link">`; `aria-current="page"` on the current one |
 | Tabs or segmented filter | `.tabs` + `role="tablist"` > `<button class="tabs-item" role="tab">`; `aria-selected="true"` / `"false"` |
+| Person initials, photo, or an icon on a tinted tile | `.avatar` (+ `.avatar-round`, `.avatar-sm` / `.avatar-lg`, `.avatar-primary` / `-success` / `-warning` / `-danger` / `-info` / `-accent`) |
 
 Rules: state comes from attributes, never from classes; put components on native
 elements; arrange them with `.stack`, `.cluster`, `.split` and `.grid`.
@@ -402,6 +402,20 @@ and buttons can go inside in any order without special parts: children are space
 Every alert has a thick start border, so it reads as a callout even without color; the
 variant also tints the background. Body text stays `--color-text`.
 
+| Part | Use |
+| --- | --- |
+| `.alert-icon` | An `<svg>` (or `<img>`) as a direct child. The alert becomes two columns: the icon, 1.25em wide and one text line tall, sits at the top of the first; every other child stacks in the second with the usual gap. Alerts without it are unchanged. |
+
+```html
+<div class="alert alert-warning" role="status">
+  <svg class="alert-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+  <h2>Trial ends in 3 days</h2>
+  <p>Upgrade to keep your projects running.</p>
+</div>
+```
+
+Wrap loose text in a `<p>` when the alert has an icon, so it lands in the content column.
+
 ```html
 <div class="alert alert-danger" role="alert">
   <h2>Payment failed</h2>
@@ -437,6 +451,8 @@ Put an alert at the top of a `.stack` (page or form), and actions inside it in a
   the page loads can omit the role.
 - Start the message with what happened ("Payment failed"), so it is clear without
   color.
+- An `.alert-icon` is decoration: give it `aria-hidden="true"`; the text carries the
+  message.
 
 ### Recommended use
 
@@ -795,6 +811,80 @@ filters, and tabbed sections on one page.
 - Toggle buttons with `aria-pressed`; SynthCSS tabs use `aria-selected`.
 - A single on/off option; use a checkbox in a `.field`.
 
+## `.avatar`
+
+### Purpose
+
+A small fixed square for a person's initials or photo, or an icon on a tinted tile. It
+works on a `<span>`, a `<div>` or directly on an `<img>`. Content is centered both ways,
+initials do not wrap, and anything larger is clipped.
+
+### Example
+
+```html
+<span class="avatar avatar-round avatar-primary">AL</span>
+<img class="avatar avatar-round" src="/people/ana.jpg" alt="Ana Lima">
+<span class="avatar avatar-accent"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+```
+
+### Variants
+
+| Class | Use |
+| --- | --- |
+| `.avatar` | `--control-height` square with `--radius-md` corners on `--color-surface`, in `--color-text`. Initials in `--text-base`, semibold. |
+| `.avatar-round` | A circle (`--radius-full`), the usual shape for people. |
+| `.avatar-sm`, `.avatar-lg` | 0.75× and 1.5× `--control-height`, with `--text-sm` and `--text-2xl` initials. |
+| `.avatar-primary`, `.avatar-success`, `.avatar-warning`, `.avatar-danger`, `.avatar-info`, `.avatar-accent` | A tone: the variant sets `--tone` to its color token, the background is `color-mix(in srgb, var(--tone) 12%, var(--color-background))` and the content is drawn in the tone. |
+
+A child `<img>`, or `.avatar` on an `<img>`, fills the box with `object-fit: cover`. A
+child `<svg>` takes 55% of the box; draw it with `currentColor` (`fill` or `stroke`) so
+it takes the tone. `.avatar-accent` uses `--color-accent`, a violet with no status
+meaning, for decorative tiles.
+
+With the default tokens every tone meets 4.5:1 on its tint, and `npm test` checks it:
+primary 6.21:1, success 5.02:1, warning 4.60:1, danger 5.02:1, info 5.14:1, accent
+5.64:1. `--color-success` alone is 4.46:1 on its 12% tint, so `.avatar-success` draws
+its content in `color-mix(in srgb, var(--tone) 90%, var(--color-text))`.
+
+### Composition
+
+Put an avatar in front of a name with `.cluster`, or at the start of a table cell or
+list row. Size steps follow `--control-height`, so a compact theme shrinks them too:
+
+```html
+<ul class="stack-sm" role="list">
+  <li class="cluster-sm">
+    <span class="avatar avatar-round avatar-info avatar-sm" aria-hidden="true">BK</span>
+    <span>Ben Kim</span>
+  </li>
+  <li class="cluster-sm">
+    <img class="avatar avatar-round avatar-sm" src="/people/ana.jpg" alt="">
+    <span>Ana Lima</span>
+  </li>
+</ul>
+```
+
+### Accessibility
+
+- Next to the person's name, the avatar repeats it: hide initials with
+  `aria-hidden="true"` and give a photo `alt=""`.
+- On its own, name the person: `alt="Ana Lima"` on an `<img>`, or `role="img"` with
+  `aria-label="Ana Lima"` on initials.
+- Icons in a tile are decoration: `aria-hidden="true"` on the `<svg>`, with a visible
+  label next to the tile.
+- A tone is decoration too; do not use `.avatar-danger` as the only sign of an error.
+
+### Recommended use
+
+Members and authors in lists, tables and cards, account menus, and icon tiles on
+dashboard stats.
+
+### Misuse
+
+- Long text: an avatar holds one to three characters.
+- Buttons or links styled as avatars; wrap the avatar in a `.button` or `<a>` instead.
+- Status dots, stacks or badges on avatars: SynthCSS has none of these.
+
 ## Verification
 
 - `npm test` runs [`scripts/check-components.mjs`](../scripts/check-components.mjs). It
@@ -802,8 +892,10 @@ filters, and tabbed sections on one page.
   (`src/synthcss.css` with its imports inlined) and no other class is added; that every
   declaration uses tokens defined in `tokens.css`, with no hex, `rgb()`, `hsl()` or named
   color literals and no hard-coded lengths; that text on every button, badge, alert,
-  card and panel background, and on the current nav link and default and selected tabs,
-  meets 4.5:1 contrast; that buttons, field controls, nav links, tabs and `.table-wrap`
+  card, panel and avatar background (including every avatar tone on its tint), and on the
+  current nav link and default and selected tabs, meets 4.5:1 contrast; that avatars are
+  sized from `--control-height`, tones tint with 12% of `--tone`, and only an alert with
+  an `.alert-icon` switches to a grid; that buttons, field controls, nav links, tabs and `.table-wrap`
   have `:focus-visible` rings; that `.nav` resets the list without setting a layout,
   the current nav link (`aria-current="page"`) and selected tab
   (`aria-selected="true"`) are styled from those attributes, `aria-pressed` is not used

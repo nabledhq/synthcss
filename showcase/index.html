@@ -116,6 +116,7 @@
             <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-warning)"></span><code>--color-warning</code><code class="sc-value" data-token="--color-warning"></code></li>
             <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-danger)"></span><code>--color-danger</code><code class="sc-value" data-token="--color-danger"></code></li>
             <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-info)"></span><code>--color-info</code><code class="sc-value" data-token="--color-info"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-accent)"></span><code>--color-accent</code><code class="sc-value" data-token="--color-accent"></code></li>
           </ul>
         </div>
 
@@ -452,7 +453,7 @@
         <div class="stack-sm">
           <h2 id="components-title">Components</h2>
           <p class="sc-muted">
-            Ten semantic components built only from tokens. State comes from native
+            Eleven semantic components built only from tokens. State comes from native
             attributes such as <code>disabled</code>, <code>aria-busy</code>,
             <code>aria-invalid</code>, <code>aria-current</code> and
             <code>aria-selected</code>. Press <kbd>Tab</kbd> to see the focus rings.
@@ -612,10 +613,13 @@
 
           <article class="sc-card stack" aria-labelledby="component-alert">
             <h3 id="component-alert"><code>.alert</code></h3>
-            <p>A message box for status and errors. Headings, paragraphs and buttons inside are spaced automatically.</p>
+            <p>A message box for status and errors. Headings, paragraphs and buttons inside are spaced automatically; an <code>.alert-icon</code> sits to their left.</p>
             <div class="sc-demo">
               <div class="stack-sm">
-                <div class="alert alert-info" role="status"><p>A new version is available.</p></div>
+                <div class="alert alert-info" role="status">
+                  <svg class="alert-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+                  <p>A new version is available.</p>
+                </div>
                 <div class="alert alert-success" role="status"><p>Settings saved.</p></div>
                 <div class="alert alert-warning" role="status">
                   <h4>Trial ends in 3 days</h4>
@@ -623,6 +627,7 @@
                   <button type="button" class="button button-sm">Add payment method</button>
                 </div>
                 <div class="alert alert-danger" role="alert">
+                  <svg class="alert-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16h.01"/></svg>
                   <h4>Deployment failed</h4>
                   <p>The build step exited with code 1.</p>
                 </div>
@@ -633,6 +638,7 @@
   &lt;p&gt;Settings saved.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="alert alert-danger" role="alert"&gt;
+  &lt;svg class="alert-icon" aria-hidden="true" viewBox="0 0 24 24"&gt;…&lt;/svg&gt;
   &lt;h2&gt;Deployment failed&lt;/h2&gt;
   &lt;p&gt;The build step exited with code 1.&lt;/p&gt;
   &lt;button type="button" class="button button-sm"&gt;View logs&lt;/button&gt;
@@ -766,6 +772,35 @@
   &lt;button type="button" class="tabs-item" role="tab" aria-selected="false"&gt;Admins&lt;/button&gt;
   &lt;button type="button" class="tabs-item" role="tab" aria-selected="false"&gt;Invited&lt;/button&gt;
 &lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-avatar">
+            <h3 id="component-avatar"><code>.avatar</code></h3>
+            <p>A fixed square for initials, a photo or an icon on a 12% tint of its tone. Sizes follow <code>--control-height</code>.</p>
+            <div class="sc-demo">
+              <div class="stack">
+                <div class="cluster-sm">
+                  <span class="avatar avatar-sm avatar-round avatar-primary" aria-hidden="true">AL</span>
+                  <span class="avatar avatar-round avatar-info" aria-hidden="true">BK</span>
+                  <span class="avatar avatar-lg avatar-round" aria-hidden="true">CM</span>
+                  <img class="avatar avatar-round" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%237d93ab'/%3E%3Ccircle cx='20' cy='16' r='7' fill='%23e8edf2'/%3E%3Cpath d='M6 40a14 14 0 0 1 28 0z' fill='%23e8edf2'/%3E%3C/svg%3E" alt="Placeholder photo">
+                </div>
+                <div class="cluster-sm">
+                  <span class="avatar avatar-primary"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+                  <span class="avatar avatar-success"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+                  <span class="avatar avatar-warning"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+                  <span class="avatar avatar-danger"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+                  <span class="avatar avatar-info"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+                  <span class="avatar avatar-accent"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+                </div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="cluster-sm"&gt;
+  &lt;span class="avatar avatar-round avatar-primary" aria-hidden="true"&gt;AL&lt;/span&gt;
+  &lt;span&gt;Ana Lima&lt;/span&gt;
+&lt;/div&gt;
+&lt;img class="avatar avatar-round avatar-lg" src="/people/ben.jpg" alt="Ben Kim"&gt;
+&lt;span class="avatar avatar-accent"&gt;&lt;svg aria-hidden="true" viewBox="0 0 24 24"&gt;…&lt;/svg&gt;&lt;/span&gt;</code></pre></div>
           </article>
 
         </div>
@@ -1004,10 +1039,10 @@
           <a class="sc-button" href="../synthcss.llm.md">View synthcss.llm.md</a>
           <a class="sc-button sc-button-secondary" href="../synthcss.ai.json" download>Download synthcss.ai.json</a>
           <a href="https://github.com/nabledhq/synthcss/blob/main/synthcss.llm.md">Read it on GitHub</a>
-          <span class="badge badge-info">≈ 3,490 tokens</span>
+          <span class="badge badge-info">≈ 3,930 tokens</span>
         </div>
         <p class="sc-muted">
-          Size estimated as characters ÷ 4 (about 11,300 characters), small enough for one
+          Size estimated as characters ÷ 4 (about 15,700 characters), small enough for one
           context window with room to spare.
         </p>
         <article class="sc-card sidebar-lg">

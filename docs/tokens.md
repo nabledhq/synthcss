@@ -34,6 +34,7 @@ not tied to any brand. Text colors meet WCAG AA, and `npm test` checks this (see
 | `--color-warning` | `#9a5b0c` | Warning state: needs attention, not blocking. |
 | `--color-danger` | `#b3362e` | Error and destructive state: errors, delete actions. |
 | `--color-info` | `#2f6694` | Neutral informational state: tips, notices. |
+| `--color-accent` | `#6847b0` | Decorative violet with no status meaning: avatars, icon tiles, categories. Meets 4.5:1 as text on its own 12% tint. |
 
 ### Spacing
 
@@ -204,6 +205,9 @@ computed styles of fixture pages in Chromium. It needs Playwright.
 - Use semantic color tokens for their stated purpose. For example, use
   `--color-danger` for destructive actions, not because you want red.
 - If text is placed on `--color-primary`, color it with `--color-on-primary`.
+- Use `--color-accent` for decoration that carries no status, such as an
+  `.avatar-accent` tile. If you change it, keep it at least 4.5:1 as text on
+  `color-mix(in srgb, var(--color-accent) 12%, var(--color-background))`.
 
 Common requests and the tokens to change:
 
@@ -228,5 +232,6 @@ Keep the spacing scale increasing (`--space-1` < `--space-2` < …) when you cha
   - `--color-text-muted` on `--color-background`: at least 4.5:1
   - `--color-on-primary` on `--color-primary`: at least 4.5:1
   - `--focus-color` on `--color-background`: at least 3:1
+  - `--color-accent` on `--color-background`: at least 4.5:1
 
 When you add or rename a token, add it to the matching table in this file in the same change.

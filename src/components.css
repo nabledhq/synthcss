@@ -1,13 +1,15 @@
 /*
  * SynthCSS components
  *
- * Ten semantic components on top of the design tokens and layout
+ * Eleven semantic components on top of the design tokens and layout
  * primitives: button, field, card, badge, alert, panel, table, empty-state,
- * nav and tabs.
+ * nav, tabs and avatar.
  *
  * Rules:
  * - Every color, space, radius, font size, weight and shadow is a token from
  *   tokens.css. No color literals; tints are color-mix() of two tokens.
+ *   The only local custom property is --tone, set by the avatar tone
+ *   variants to a color token.
  * - Naming is .component, .component-variant, .component-part.
  * - State comes from native attributes, not classes: :disabled,
  *   [aria-disabled="true"], [aria-busy="true"], [aria-invalid="true"],
@@ -562,6 +564,34 @@
   background: color-mix(in srgb, var(--color-danger) 8%, var(--color-background));
 }
 
+/* With an .alert-icon child the alert becomes two columns: the icon at the
+   top of the first, everything else stacked in the second with the same gap.
+   Alerts without an icon keep the column flexbox above. */
+.alert:has(> .alert-icon) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--space-3);
+}
+
+.alert:has(> .alert-icon) > :where(:not(.alert-icon)) {
+  grid-column: 2;
+}
+
+.alert:has(> .alert-icon) > :where(button, a, .button) {
+  justify-self: start;
+}
+
+/* An <svg> or <img>, 1.25em wide and one body line tall, so it lines up
+   with the first line of text. */
+.alert-icon {
+  grid-column: 1;
+  grid-row: 1;
+  inline-size: 1.25em;
+  block-size: calc(var(--leading-normal) * 1em);
+  object-fit: contain;
+}
+
 /* -------------------------------------------------------------------------
    Panel: a flat, bordered grouping. Lighter than .card: no shadow, smaller
    radius and padding, surface background.
@@ -832,4 +862,87 @@
 .tabs-item:focus-visible {
   outline: var(--focus-width) solid var(--focus-color);
   outline-offset: var(--focus-offset);
+}
+
+/* -------------------------------------------------------------------------
+   Avatar: a fixed square chip for initials, a photo or an icon. Put it on a
+   <span>, <div> or directly on an <img>. Tone variants tint the background
+   with 12% of their color and use the color itself for the content.
+   ------------------------------------------------------------------------- */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  inline-size: var(--control-height);
+  block-size: var(--control-height);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* A photo fills the box, cropped to the square. */
+.avatar:where(img),
+.avatar > :where(img) {
+  object-fit: cover;
+}
+
+.avatar > :where(img) {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/* An icon takes about half the box and draws in the avatar's color when it
+   uses currentColor (fill="currentColor" or stroke="currentColor"). */
+.avatar > :where(svg) {
+  flex-shrink: 0;
+  inline-size: 55%;
+  block-size: 55%;
+}
+
+.avatar-round {
+  border-radius: var(--radius-full);
+}
+
+.avatar-sm {
+  inline-size: calc(var(--control-height) * 0.75);
+  block-size: calc(var(--control-height) * 0.75);
+  font-size: var(--text-sm);
+}
+
+.avatar-lg {
+  inline-size: calc(var(--control-height) * 1.5);
+  block-size: calc(var(--control-height) * 1.5);
+  font-size: var(--text-2xl);
+}
+
+.avatar-primary { --tone: var(--color-primary); }
+.avatar-success { --tone: var(--color-success); }
+.avatar-warning { --tone: var(--color-warning); }
+.avatar-danger { --tone: var(--color-danger); }
+.avatar-info { --tone: var(--color-info); }
+.avatar-accent { --tone: var(--color-accent); }
+
+.avatar-primary,
+.avatar-success,
+.avatar-warning,
+.avatar-danger,
+.avatar-info,
+.avatar-accent {
+  background: color-mix(in srgb, var(--tone) 12%, var(--color-background));
+  color: var(--tone);
+}
+
+/* --color-success alone is 4.46:1 on its 12% tint; 10% of --color-text
+   brings the content to 5:1. */
+.avatar-success {
+  color: color-mix(in srgb, var(--tone) 90%, var(--color-text));
 }

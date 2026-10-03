@@ -21,6 +21,7 @@ export const REQUIRED_TOKENS = [
   "--color-warning",
   "--color-danger",
   "--color-info",
+  "--color-accent",
   "--space-1",
   "--space-2",
   "--space-3",
@@ -77,6 +78,7 @@ export const CONTRAST_PAIRS = [
   ["--color-text-muted", "--color-background", 4.5],
   ["--color-on-primary", "--color-primary", 4.5],
   ["--focus-color", "--color-background", 3],
+  ["--color-accent", "--color-background", 4.5],
 ];
 
 const COLOR_NAME_RE =

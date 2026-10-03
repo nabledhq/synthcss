@@ -16,6 +16,7 @@
     "--color-warning": "warning status",
     "--color-danger": "errors and destructive actions",
     "--color-info": "neutral informational status",
+    "--color-accent": "decorative violet with no status meaning (avatar tiles)",
     "--space-1": "0.25rem spacing step",
     "--space-2": "0.5rem spacing step (-sm gaps)",
     "--space-3": "0.75rem spacing step",
@@ -145,7 +146,9 @@
     },
     "alert": {
       "intent": "message box; role=\"status\" or role=\"alert\"",
-      "parts": {},
+      "parts": {
+        "alert-icon": "leading <svg aria-hidden=\"true\"> as a direct child; sits left of the content, top-aligned"
+      },
       "variants": {
         "alert-info": "neutral information",
         "alert-success": "action succeeded",
@@ -189,6 +192,21 @@
         "tabs-item": "<button role=\"tab\">; selected: aria-selected=\"true\", others aria-selected=\"false\""
       },
       "variants": {}
+    },
+    "avatar": {
+      "intent": "fixed square for initials, a photo or an icon, on <span>, <div> or <img>",
+      "parts": {},
+      "variants": {
+        "avatar-round": "circle; usual for people",
+        "avatar-sm": "smaller (0.75× --control-height)",
+        "avatar-lg": "larger (1.5× --control-height)",
+        "avatar-primary": "primary tint",
+        "avatar-success": "success tint",
+        "avatar-warning": "warning tint",
+        "avatar-danger": "danger tint",
+        "avatar-info": "info tint",
+        "avatar-accent": "violet tint with no status meaning"
+      }
     }
   },
   "intentMap": [
@@ -207,12 +225,14 @@
     { "intent": "Labeled input with help or error", "use": ".field + .field-label + .field-help / .field-error" },
     { "intent": "Self-contained item", "use": ".card + parts" },
     { "intent": "Status label", "use": ".badge + .badge-success / -warning / -danger / -info" },
-    { "intent": "Message or notification", "use": ".alert + .alert-info / -success / -warning / -danger" },
+    { "intent": "Message or notification", "use": ".alert + .alert-info / -success / -warning / -danger; optional .alert-icon" },
     { "intent": "Secondary grouped content", "use": ".panel + .panel-header / .panel-body" },
     { "intent": "Tabular data", "use": ".table-wrap > .table; .table-hover, .numeric" },
     { "intent": "No data yet", "use": ".empty-state" },
     { "intent": "Navigation links", "use": ".nav + .nav-link" },
-    { "intent": "Tabs or segmented filter", "use": ".tabs + .tabs-item" }
+    { "intent": "Tabs or segmented filter", "use": ".tabs + .tabs-item" },
+    { "intent": "Person initials or photo", "use": ".avatar / .avatar-round" },
+    { "intent": "Icon on a tinted tile", "use": ".avatar + .avatar-primary / -success / -warning / -danger / -info / -accent" }
   ],
   "compositionRules": {
     "recommended": [
@@ -258,8 +278,8 @@
         "note": "Data view: split header with an action, scrollable table with status badges."
       },
       {
-        "html": "<div class=\"sidebar-lg sidebar-end\" style=\"--sidebar-width: 20rem\">\n  <main class=\"stack\">\n    <h1>Dashboard</h1>\n    <div class=\"grid\"><div class=\"card\">…</div><div class=\"card\">…</div></div>\n  </main>\n  <aside class=\"panel\">\n    <div class=\"panel-header\"><h2>Activity</h2></div>\n    <div class=\"panel-body\">Recent events.</div>\n  </aside>\n</div>",
-        "note": "Dashboard: main content first, narrow column on the right with a per-instance width."
+        "html": "<div class=\"sidebar-lg sidebar-end\" style=\"--sidebar-width: 20rem\">\n  <main class=\"stack\">\n    <h1>Dashboard</h1>\n    <div class=\"alert alert-info\" role=\"status\">\n      <svg class=\"alert-icon\" aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg>\n      <p>Billing moves to the 1st of each month.</p>\n    </div>\n    <div class=\"grid\">\n      <div class=\"card\">\n        <div class=\"cluster-sm\"><span class=\"avatar avatar-accent\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg></span><h2>Revenue</h2></div>\n        <p>$12,400 this month.</p>\n      </div>\n      <div class=\"card\">…</div>\n    </div>\n  </main>\n  <aside class=\"panel\">\n    <div class=\"panel-header\"><h2>Activity</h2></div>\n    <ul class=\"panel-body stack-sm\" role=\"list\">\n      <li class=\"cluster-sm\"><span class=\"avatar avatar-round avatar-sm avatar-primary\" aria-hidden=\"true\">AL</span><span>Ana merged #42</span></li>\n      <li class=\"cluster-sm\"><img class=\"avatar avatar-round avatar-sm\" src=\"/ben.jpg\" alt=\"\"><span>Ben joined</span></li>\n    </ul>\n  </aside>\n</div>",
+        "note": "Dashboard: main content first, narrow column on the right; an alert with an icon, an icon tile in a card, and people as avatars."
       }
     ],
     "invalid": [
@@ -290,6 +310,10 @@
       {
         "html": "<button class=\"tabs-item\" aria-pressed=\"true\">Week</button>",
         "note": "aria-pressed for a tab. Use .tabs-item with role=\"tab\" and aria-selected=\"true\"."
+      },
+      {
+        "html": "<span class=\"user-avatar rounded-full\">AL</span>",
+        "note": "Invented classes. Use .avatar and .avatar-round."
       }
     ]
   }

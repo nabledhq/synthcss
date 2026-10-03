@@ -15,13 +15,31 @@ export const COMPONENTS = {
   field: ["field", "field-label", "field-help", "field-error"],
   card: ["card", "card-header", "card-body", "card-footer", "card-media", "card-actions"],
   badge: ["badge", "badge-success", "badge-warning", "badge-danger", "badge-info"],
-  alert: ["alert", "alert-info", "alert-success", "alert-warning", "alert-danger"],
+  alert: ["alert", "alert-info", "alert-success", "alert-warning", "alert-danger", "alert-icon"],
   panel: ["panel", "panel-header", "panel-body"],
   table: ["table", "table-wrap", "table-hover", "numeric"],
   "empty-state": ["empty-state"],
   nav: ["nav", "nav-link"],
   tabs: ["tabs", "tabs-item"],
+  avatar: [
+    "avatar",
+    "avatar-round",
+    "avatar-sm",
+    "avatar-lg",
+    "avatar-primary",
+    "avatar-success",
+    "avatar-warning",
+    "avatar-danger",
+    "avatar-info",
+    "avatar-accent",
+  ],
 };
+// Tone variants of .avatar: each sets the local --tone to a color token and is
+// tinted with color-mix(in srgb, var(--tone) 12%, var(--color-background)).
+export const AVATAR_TONES = ["primary", "success", "warning", "danger", "info", "accent"];
+// The only custom properties components.css may set, each to a var(--color-*)
+// token on the component's own variant classes.
+export const LOCAL_PROPERTIES = ["--tone"];
 export const COMPONENT_NAMES = Object.keys(COMPONENTS);
 export const COMPONENT_CLASSES = Object.values(COMPONENTS).flat();
 
@@ -44,6 +62,8 @@ const COLOR_VARIANTS = [
   ["alert-danger", "alert"],
   ["card", "card"],
   ["panel", "panel"],
+  ["avatar", "avatar"],
+  ...AVATAR_TONES.map((t) => [`avatar-${t}`, "avatar"]),
 ];
 
 // Attribute-driven states: [label, selectors merged in order]. The text color
@@ -132,6 +152,11 @@ export function classesInCss(css) {
   return out;
 }
 
+// Custom properties set in a list of declarations (such as --tone), resolved
+// on top of the tokens.
+const withLocals = (tokens, decls) =>
+  new Map([...tokens, ...decls.filter((d) => d.prop.startsWith("--")).map((d) => [d.prop, d.value])]);
+
 function colorOf(value, tokens) {
   const v = value.trim();
   let m = /^var\((--[\w-]+)\)$/.exec(v);
@@ -178,7 +203,12 @@ export function checkComponentsCss(componentsCss, tokensCss) {
   for (const r of rules) {
     for (const d of r.decls) {
       const w = where(r, d);
-      if (d.prop.startsWith("--")) errors.push(`components.css must not define custom properties: ${w}`);
+      if (d.prop.startsWith("--") && !LOCAL_PROPERTIES.includes(d.prop)) {
+        errors.push(`components.css must not define custom properties other than ${LOCAL_PROPERTIES.join(", ")}: ${w}`);
+      }
+      if (LOCAL_PROPERTIES.includes(d.prop) && !/^var\(--color-[\w-]+\)$/.test(d.value)) {
+        errors.push(`${w} must be a var(--color-*) token`);
+      }
       if (COLOR_LITERAL.test(d.value)) errors.push(`hard-coded color literal in ${w}; use a var(--color-*) token`);
       if (NAMED_COLOR.test(d.value)) errors.push(`named color in ${w}; use a var(--color-*) token`);
       if (COLOR_PROPS.test(d.prop) && !TOKEN_COLOR.test(d.value)) {
@@ -190,7 +220,9 @@ export function checkComponentsCss(componentsCss, tokensCss) {
       }
       if (TOKEN_PROPS[d.prop] && !TOKEN_PROPS[d.prop].test(d.value)) errors.push(`${w} must use a matching var(--token)`);
       for (const m of d.value.matchAll(/var\(\s*(--[\w-]+)/g)) {
-        if (!tokens.has(m[1])) errors.push(`${w} references ${m[1]}, which is not defined in tokens.css`);
+        if (!tokens.has(m[1]) && !LOCAL_PROPERTIES.includes(m[1])) {
+          errors.push(`${w} references ${m[1]}, which is not defined in tokens.css`);
+        }
       }
     }
   }
@@ -282,6 +314,44 @@ export function checkComponentsCss(componentsCss, tokensCss) {
     errors.push('components.css must not style aria-pressed; tabs use aria-selected="true"');
   }
 
+  // Avatar: a fixed square sized from --control-height, round variant, tones
+  // that tint with 12% of --tone so token overrides propagate.
+  const avatar = declsOf(".avatar");
+  for (const prop of ["inline-size", "block-size"]) {
+    if (!avatar.some((d) => d.prop === prop && d.value === "var(--control-height)")) {
+      errors.push(`.avatar must set ${prop}: var(--control-height)`);
+    }
+  }
+  for (const [prop, value] of [["overflow", "hidden"], ["flex-shrink", "0"], ["border-radius", "var(--radius-md)"], ["white-space", "nowrap"]]) {
+    if (!avatar.some((d) => d.prop === prop && d.value === value)) errors.push(`.avatar must set ${prop}: ${value}`);
+  }
+  if (!declsOf(".avatar-round").some((d) => d.prop === "border-radius" && d.value === "var(--radius-full)")) {
+    errors.push(".avatar-round must set border-radius: var(--radius-full)");
+  }
+  for (const size of ["avatar-sm", "avatar-lg"]) {
+    for (const prop of ["inline-size", "block-size"]) {
+      if (!declsOf(`.${size}`).some((d) => d.prop === prop && /^calc\(var\(--control-height\) \* [\d.]+\)$/.test(d.value))) {
+        errors.push(`.${size} must set ${prop} to calc(var(--control-height) * N)`);
+      }
+    }
+  }
+  if (!has((r) => sel(r, /\.avatar\b.*img/) && decl(r, "object-fit", /^cover$/))) errors.push(".avatar images must use object-fit: cover");
+  for (const tone of AVATAR_TONES) {
+    const decls = declsOf(`.avatar-${tone}`);
+    if (!decls.some((d) => d.prop === "--tone" && d.value === `var(--color-${tone})`)) {
+      errors.push(`.avatar-${tone} must set --tone: var(--color-${tone})`);
+    }
+    if (!decls.some((d) => d.prop === "background" && d.value === "color-mix(in srgb, var(--tone) 12%, var(--color-background))")) {
+      errors.push(`.avatar-${tone} must use background: color-mix(in srgb, var(--tone) 12%, var(--color-background))`);
+    }
+  }
+
+  // Alert icon: only an alert with an .alert-icon child changes layout.
+  if (!has((r) => sel(r, /^\.alert:has\(> \.alert-icon\)$/) && decl(r, "display", /^grid$/))) {
+    errors.push(".alert:has(> .alert-icon) must switch to display: grid");
+  }
+  if (declsOf(".alert").some((d) => d.prop === "display" && d.value !== "flex")) errors.push(".alert must stay display: flex");
+
   // Contrast of text on each variant's and state's background.
   const plainDecls = (cls) => declsOf(`.${cls}`);
   const last = (decls, props) => decls.filter((d) => props.includes(d.prop)).at(-1)?.value;
@@ -301,8 +371,9 @@ export function checkComponentsCss(componentsCss, tokensCss) {
       continue;
     }
     try {
-      const a = colorOf(fg, tokens);
-      const b = colorOf(bg, tokens);
+      const scope = withLocals(tokens, decls);
+      const a = colorOf(fg, scope);
+      const b = colorOf(bg, scope);
       if (!a || !b) throw new Error("could not resolve colors");
       const ratio = contrastRatio(a, b);
       if (ratio < 4.5) errors.push(`contrast too low in ${label}: ${ratio.toFixed(2)}:1 (min 4.5:1)`);
