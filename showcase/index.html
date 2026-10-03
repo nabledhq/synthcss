@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SynthCSS: CSS designed to be written by machines and used by humans</title>
+  <meta name="description" content="SynthCSS is a small, semantic CSS framework for AI-generated interfaces: design tokens and intent-named layout primitives.">
+  <!-- The real framework bundle. The relative path works from a checkout and
+       on GitHub Pages, where the workflow publishes src/ next to showcase/. -->
+  <link rel="stylesheet" href="../src/synthcss.css">
+  <link rel="stylesheet" href="showcase.css">
+  <script src="showcase.js" defer></script>
+</head>
+<body class="sc-page">
+  <!--
+    Every section below is a self-contained <section id="..."> block.
+    To show a new primitive or component, append a new section to <main>.
+    See showcase/README.md.
+  -->
+
+  <section id="hero" class="cover sc-hero" aria-labelledby="hero-title">
+    <header class="container split">
+      <a class="sc-brand" href="#hero">SynthCSS</a>
+      <nav aria-label="Sections">
+        <ul class="cluster-sm" role="list">
+          <li><a href="#why">Why</a></li>
+          <li><a href="#tokens">Tokens</a></li>
+          <li><a href="#layouts">Layouts</a></li>
+          <li><a href="#responsive">Responsive</a></li>
+          <li><a href="#ai-examples">AI examples</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="cover-main container">
+      <div class="center stack-lg">
+        <h1 id="hero-title" class="sc-hero-title">SynthCSS</h1>
+        <p class="sc-tagline">CSS designed to be written by machines and used by humans.</p>
+        <p class="sc-lead">
+          A lightweight, opinionated CSS framework: a small set of design tokens and
+          intent-named layout primitives that respond to the space they are given.
+        </p>
+        <p class="sc-callout">
+          <strong>Built for AI-generated interfaces.</strong>
+          SynthCSS targets interfaces written by AI agents and code generators, so its
+          vocabulary is small, semantic and predictable.
+        </p>
+        <div class="cluster">
+          <a class="sc-button" href="https://github.com/nabledhq/synthcss">View on GitHub</a>
+          <a class="sc-button sc-button-secondary" href="https://github.com/nabledhq/synthcss#readme">Read the docs</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="container sc-muted">This page is built with SynthCSS itself.</p>
+  </section>
+
+  <main>
+    <section id="why" class="sc-band" aria-labelledby="why-title">
+      <div class="container stack-lg">
+        <h2 id="why-title">Why SynthCSS</h2>
+        <ul class="grid" role="list">
+          <li class="sc-card stack-sm">
+            <h3>Frameworks are built for humans</h3>
+            <p>Traditional frameworks are optimized for people hand-writing every class.</p>
+          </li>
+          <li class="sc-card stack-sm">
+            <h3>AI output is inconsistent</h3>
+            <p>Models generating free-form CSS produce different values and patterns every time.</p>
+          </li>
+          <li class="sc-card stack-sm">
+            <h3>A small, predictable vocabulary</h3>
+            <p>SynthCSS offers a few semantic tokens and classes that mean one thing each.</p>
+          </li>
+          <li class="sc-card stack-sm">
+            <h3>Designed for model ergonomics</h3>
+            <p>Class names state intent, so a model can map a request to markup reliably.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="tokens" class="sc-band sc-band-alt" aria-labelledby="tokens-title">
+      <div class="container stack-lg">
+        <div class="stack-sm">
+          <h2 id="tokens-title">Design tokens</h2>
+          <p class="sc-muted">
+            Every swatch and specimen below is drawn with the framework's own custom
+            properties from <code>src/tokens.css</code>. Values are read live from the
+            stylesheet.
+          </p>
+        </div>
+
+        <div class="sc-card stack">
+          <h3>Colors</h3>
+          <ul class="grid-sm" role="list" style="--grid-min: 11rem">
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-background)"></span><code>--color-background</code><code class="sc-value" data-token="--color-background"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-surface)"></span><code>--color-surface</code><code class="sc-value" data-token="--color-surface"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-surface-elevated)"></span><code>--color-surface-elevated</code><code class="sc-value" data-token="--color-surface-elevated"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-text)"></span><code>--color-text</code><code class="sc-value" data-token="--color-text"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-text-secondary)"></span><code>--color-text-secondary</code><code class="sc-value" data-token="--color-text-secondary"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-text-muted)"></span><code>--color-text-muted</code><code class="sc-value" data-token="--color-text-muted"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-border)"></span><code>--color-border</code><code class="sc-value" data-token="--color-border"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-primary)"></span><code>--color-primary</code><code class="sc-value" data-token="--color-primary"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-primary-hover)"></span><code>--color-primary-hover</code><code class="sc-value" data-token="--color-primary-hover"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-on-primary)"></span><code>--color-on-primary</code><code class="sc-value" data-token="--color-on-primary"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-success)"></span><code>--color-success</code><code class="sc-value" data-token="--color-success"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-warning)"></span><code>--color-warning</code><code class="sc-value" data-token="--color-warning"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-danger)"></span><code>--color-danger</code><code class="sc-value" data-token="--color-danger"></code></li>
+            <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-info)"></span><code>--color-info</code><code class="sc-value" data-token="--color-info"></code></li>
+          </ul>
+        </div>
+
+        <div class="sc-card stack">
+          <h3>Typography</h3>
+          <div class="grid">
+            <div class="stack-sm">
+              <h4>Families</h4>
+              <p style="font-family: var(--font-sans)"><code>--font-sans</code> The quick brown fox jumps over the lazy dog.</p>
+              <p style="font-family: var(--font-mono)"><code>--font-mono</code> The quick brown fox jumps over the lazy dog.</p>
+            </div>
+            <div class="stack-sm">
+              <h4>Weights</h4>
+              <p style="font-weight: var(--weight-normal)">Normal <code>--weight-normal</code></p>
+              <p style="font-weight: var(--weight-medium)">Medium <code>--weight-medium</code></p>
+              <p style="font-weight: var(--weight-semibold)">Semibold <code>--weight-semibold</code></p>
+              <p style="font-weight: var(--weight-bold)">Bold <code>--weight-bold</code></p>
+            </div>
+          </div>
+          <div class="stack-sm">
+            <h4>Sizes</h4>
+            <p class="sc-specimen" style="font-size: var(--text-3xl)">Aa Interface <code>--text-3xl</code></p>
+            <p class="sc-specimen" style="font-size: var(--text-2xl)">Aa Interface <code>--text-2xl</code></p>
+            <p class="sc-specimen" style="font-size: var(--text-xl)">Aa Interface <code>--text-xl</code></p>
+            <p class="sc-specimen" style="font-size: var(--text-lg)">Aa Interface <code>--text-lg</code></p>
+            <p class="sc-specimen" style="font-size: var(--text-base)">Aa Interface <code>--text-base</code></p>
+            <p class="sc-specimen" style="font-size: var(--text-sm)">Aa Interface <code>--text-sm</code></p>
+          </div>
+          <div class="stack-sm">
+            <h4>Line heights</h4>
+            <div class="grid">
+              <p class="sc-leading" style="line-height: var(--leading-tight)"><code>--leading-tight</code> Short headings and labels use a tight line height so stacked lines stay together.</p>
+              <p class="sc-leading" style="line-height: var(--leading-normal)"><code>--leading-normal</code> Body text uses the normal line height for comfortable reading at any width.</p>
+              <p class="sc-leading" style="line-height: var(--leading-relaxed)"><code>--leading-relaxed</code> Long-form text can use a relaxed line height for extra breathing room.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="sc-card stack">
+            <h3>Spacing</h3>
+            <ul class="stack-sm" role="list">
+              <li class="cluster-sm"><span class="sc-bar" style="inline-size: var(--space-1)"></span><code>--space-1</code><code class="sc-value" data-token="--space-1"></code></li>
+              <li class="cluster-sm"><span class="sc-bar" style="inline-size: var(--space-2)"></span><code>--space-2</code><code class="sc-value" data-token="--space-2"></code></li>
+              <li class="cluster-sm"><span class="sc-bar" style="inline-size: var(--space-3)"></span><code>--space-3</code><code class="sc-value" data-token="--space-3"></code></li>
+              <li class="cluster-sm"><span class="sc-bar" style="inline-size: var(--space-4)"></span><code>--space-4</code><code class="sc-value" data-token="--space-4"></code></li>
+              <li class="cluster-sm"><span class="sc-bar" style="inline-size: var(--space-5)"></span><code>--space-5</code><code class="sc-value" data-token="--space-5"></code></li>
+              <li class="cluster-sm"><span class="sc-bar" style="inline-size: var(--space-6)"></span><code>--space-6</code><code class="sc-value" data-token="--space-6"></code></li>
+            </ul>
+          </div>
+
+          <div class="sc-card stack">
+            <h3>Radius</h3>
+            <ul class="cluster" role="list">
+              <li class="stack-sm"><span class="sc-tile" style="border-radius: var(--radius-sm)"></span><code>--radius-sm</code></li>
+              <li class="stack-sm"><span class="sc-tile" style="border-radius: var(--radius-md)"></span><code>--radius-md</code></li>
+              <li class="stack-sm"><span class="sc-tile" style="border-radius: var(--radius-lg)"></span><code>--radius-lg</code></li>
+              <li class="stack-sm"><span class="sc-tile" style="border-radius: var(--radius-full)"></span><code>--radius-full</code></li>
+            </ul>
+          </div>
+
+          <div class="sc-card stack">
+            <h3>Shadows</h3>
+            <ul class="cluster-lg" role="list">
+              <li class="stack-sm"><span class="sc-tile sc-tile-raised" style="box-shadow: var(--shadow-sm)"></span><code>--shadow-sm</code></li>
+              <li class="stack-sm"><span class="sc-tile sc-tile-raised" style="box-shadow: var(--shadow-md)"></span><code>--shadow-md</code></li>
+              <li class="stack-sm"><span class="sc-tile sc-tile-raised" style="box-shadow: var(--shadow-lg)"></span><code>--shadow-lg</code></li>
+            </ul>
+          </div>
+
+          <div class="sc-card stack">
+            <h3>Borders</h3>
+            <p class="sc-bordered">
+              <code>--border-width</code> <code class="sc-value" data-token="--border-width"></code>
+              in <code>--border-color</code>, which points at <code>--color-border</code>.
+            </p>
+          </div>
+
+          <div class="sc-card stack">
+            <h3>Focus states</h3>
+            <p class="sc-muted">Press <kbd>Tab</kbd> to move focus. The ring uses <code>--focus-color</code>, <code>--focus-width</code> and <code>--focus-offset</code>.</p>
+            <div class="cluster">
+              <button type="button" class="sc-button">Focus me</button>
+              <span class="sc-button sc-button-secondary sc-focus-preview">Focus ring preview</span>
+            </div>
+          </div>
+
+          <div class="sc-card stack">
+            <h3>Motion</h3>
+            <p class="sc-muted">Easing <code>--ease-standard</code>. Durations drop to 0ms when reduced motion is requested.</p>
+            <ul class="stack-sm" role="list" data-motion>
+              <li class="stack-sm"><code>--duration-fast</code><span class="sc-track"><span class="sc-dot" style="transition-duration: var(--duration-fast)"></span></span></li>
+              <li class="stack-sm"><code>--duration-normal</code><span class="sc-track"><span class="sc-dot" style="transition-duration: var(--duration-normal)"></span></span></li>
+              <li class="stack-sm"><code>--duration-slow</code><span class="sc-track"><span class="sc-dot" style="transition-duration: var(--duration-slow)"></span></span></li>
+            </ul>
+            <div class="cluster">
+              <button type="button" class="sc-button" data-motion-toggle aria-pressed="false">Play motion</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sc-card stack">
+          <h3>Sizing</h3>
+          <div class="cluster">
+            <button type="button" class="sc-button" style="block-size: var(--control-height)"><code>--control-height</code></button>
+            <label class="cluster-sm">
+              <span><code>--input-height</code></span>
+              <input class="sc-input" type="text" value="Text input" style="block-size: var(--input-height)">
+            </label>
+          </div>
+          <ul class="stack-sm" role="list">
+            <li class="stack-sm"><span class="sc-bar" style="inline-size: var(--grid-min)"></span><span><code>--grid-min</code> <code class="sc-value" data-token="--grid-min"></code></span></li>
+            <li class="stack-sm"><span class="sc-bar" style="inline-size: var(--sidebar-width)"></span><span><code>--sidebar-width</code> <code class="sc-value" data-token="--sidebar-width"></code></span></li>
+            <li class="stack-sm"><span class="sc-bar" style="inline-size: var(--content-width)"></span><span><code>--content-width</code> <code class="sc-value" data-token="--content-width"></code></span></li>
+            <li class="stack-sm"><span class="sc-bar" style="inline-size: var(--container-width)"></span><span><code>--container-width</code> <code class="sc-value" data-token="--container-width"></code> (bars are capped at the card width)</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="layouts" class="sc-band" aria-labelledby="layouts-title">
+      <div class="container stack-lg">
+        <div class="stack-sm">
+          <h2 id="layouts-title">Layouts</h2>
+          <p class="sc-muted">Eight intent-named primitives. No media queries, no breakpoint classes. Dashed outlines show each primitive's box.</p>
+        </div>
+        <div class="grid-lg" style="--grid-min: 22rem">
+
+          <article class="sc-card stack" aria-labelledby="layout-container">
+            <h3 id="layout-container"><code>.container</code></h3>
+            <p>A centered page-width wrapper with fluid side padding.</p>
+            <div class="sc-demo">
+              <div class="container sc-outline"><div class="sc-box">Page content</div></div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;main class="container"&gt;
+  &lt;h1&gt;Settings&lt;/h1&gt;
+&lt;/main&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="layout-stack">
+            <h3 id="layout-stack"><code>.stack</code></h3>
+            <p>Children placed one below the other with an even gap.</p>
+            <div class="sc-demo">
+              <div class="stack sc-outline">
+                <div class="sc-box">First</div>
+                <div class="sc-box">Second</div>
+                <div class="sc-box">Third</div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;form class="stack"&gt;
+  &lt;label&gt;Email &lt;input type="email"&gt;&lt;/label&gt;
+  &lt;button type="submit"&gt;Sign in&lt;/button&gt;
+&lt;/form&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="layout-cluster">
+            <h3 id="layout-cluster"><code>.cluster</code></h3>
+            <p>A row of small items that wraps onto more lines when it runs out of space.</p>
+            <div class="sc-demo">
+              <ul class="cluster-sm sc-outline" role="list">
+                <li class="sc-tag">design</li>
+                <li class="sc-tag">tokens</li>
+                <li class="sc-tag">layout</li>
+                <li class="sc-tag">ai</li>
+                <li class="sc-tag">css</li>
+              </ul>
+            </div>
+            <div class="sc-code"><pre><code>&lt;ul class="cluster" role="list"&gt;
+  &lt;li&gt;&lt;a href="/docs"&gt;Docs&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="/blog"&gt;Blog&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="layout-grid">
+            <h3 id="layout-grid"><code>.grid</code></h3>
+            <p>As many equal columns as fit, each at least <code>--grid-min</code> wide.</p>
+            <div class="sc-demo">
+              <ul class="grid-sm sc-outline" role="list" style="--grid-min: 6rem">
+                <li class="sc-box">1</li>
+                <li class="sc-box">2</li>
+                <li class="sc-box">3</li>
+                <li class="sc-box">4</li>
+              </ul>
+            </div>
+            <div class="sc-code"><pre><code>&lt;ul class="grid" role="list"&gt;
+  &lt;li&gt;…&lt;/li&gt;
+  &lt;li&gt;…&lt;/li&gt;
+  &lt;li&gt;…&lt;/li&gt;
+&lt;/ul&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="layout-sidebar">
+            <h3 id="layout-sidebar"><code>.sidebar</code></h3>
+            <p>A narrow first child next to a main area; they stack when space runs out.</p>
+            <div class="sc-demo">
+              <div class="sidebar-sm sc-outline" style="--sidebar-width: 6rem">
+                <nav class="sc-box" aria-label="Demo sidebar">Sidebar</nav>
+                <div class="sc-box">Main content</div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="sidebar"&gt;
+  &lt;nav class="stack"&gt;…&lt;/nav&gt;
+  &lt;main class="stack"&gt;…&lt;/main&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="layout-split">
+            <h3 id="layout-split"><code>.split</code></h3>
+            <p>Two groups pushed to opposite ends of a row.</p>
+            <div class="sc-demo">
+              <div class="split sc-outline">
+                <strong>Brand</strong>
+                <div class="cluster-sm"><span class="sc-tag">Docs</span><span class="sc-tag">Login</span></div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;header class="split"&gt;
+  &lt;a href="/"&gt;Brand&lt;/a&gt;
+  &lt;nav class="cluster"&gt;…&lt;/nav&gt;
+&lt;/header&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="layout-center">
+            <h3 id="layout-center"><code>.center</code></h3>
+            <p>A readable column, never wider than <code>--content-width</code>, centered horizontally.</p>
+            <div class="sc-demo">
+              <div class="center sc-outline" style="--content-width: 12rem">
+                <p class="sc-box">A readable, centered column of text.</p>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;article class="center stack"&gt;
+  &lt;h1&gt;Release notes&lt;/h1&gt;
+  &lt;p&gt;…&lt;/p&gt;
+&lt;/article&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="layout-cover">
+            <h3 id="layout-cover"><code>.cover</code></h3>
+            <p>At least one viewport tall, with its main child vertically centered.</p>
+            <div class="sc-demo">
+              <div class="cover sc-outline sc-cover-demo">
+                <div class="sc-box">Header</div>
+                <div class="cover-main sc-box">Centered main</div>
+                <div class="sc-box">Footer</div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;section class="cover"&gt;
+  &lt;header&gt;…&lt;/header&gt;
+  &lt;div class="cover-main"&gt;…&lt;/div&gt;
+  &lt;footer&gt;…&lt;/footer&gt;
+&lt;/section&gt;</code></pre></div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="responsive" class="sc-band sc-band-alt" aria-labelledby="responsive-title">
+      <div class="container stack-lg">
+        <div class="stack-sm">
+          <h2 id="responsive-title">Responsive demos</h2>
+          <p class="sc-muted">
+            Change the width of each frame with its slider, or drag its bottom-right corner.
+            The primitives respond to the width of their container, not the viewport.
+          </p>
+        </div>
+
+        <article class="sc-card stack" aria-labelledby="responsive-grid">
+          <h3 id="responsive-grid"><code>.grid</code>: columns reduce</h3>
+          <label class="sc-range">Frame width <input type="range" min="20" max="100" value="100" data-frame="frame-grid"></label>
+          <div class="sc-frame" id="frame-grid">
+            <ul class="grid-sm" role="list" style="--grid-min: 10rem">
+              <li class="sc-box">Card 1</li>
+              <li class="sc-box">Card 2</li>
+              <li class="sc-box">Card 3</li>
+              <li class="sc-box">Card 4</li>
+              <li class="sc-box">Card 5</li>
+              <li class="sc-box">Card 6</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="sc-card stack" aria-labelledby="responsive-sidebar">
+          <h3 id="responsive-sidebar"><code>.sidebar</code>: stacks when narrow</h3>
+          <label class="sc-range">Frame width <input type="range" min="20" max="100" value="100" data-frame="frame-sidebar"></label>
+          <div class="sc-frame" id="frame-sidebar">
+            <div class="sidebar">
+              <nav class="sc-box stack-sm" aria-label="Demo navigation">
+                <strong>Sidebar</strong>
+                <span>Settings</span>
+                <span>Billing</span>
+              </nav>
+              <div class="sc-box stack-sm">
+                <strong>Main area</strong>
+                <p>Takes the remaining space and must be at least half the width, otherwise it moves under the sidebar.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="sc-card stack" aria-labelledby="responsive-cluster">
+          <h3 id="responsive-cluster"><code>.cluster</code>: wraps</h3>
+          <label class="sc-range">Frame width <input type="range" min="20" max="100" value="100" data-frame="frame-cluster"></label>
+          <div class="sc-frame" id="frame-cluster">
+            <ul class="cluster-sm" role="list">
+              <li class="sc-tag">accessible</li>
+              <li class="sc-tag">semantic</li>
+              <li class="sc-tag">predictable</li>
+              <li class="sc-tag">token-based</li>
+              <li class="sc-tag">intrinsic</li>
+              <li class="sc-tag">no breakpoints</li>
+              <li class="sc-tag">AI-first</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="sc-card stack" aria-labelledby="responsive-split">
+          <h3 id="responsive-split"><code>.split</code>: adapts</h3>
+          <label class="sc-range">Frame width <input type="range" min="20" max="100" value="100" data-frame="frame-split"></label>
+          <div class="sc-frame" id="frame-split">
+            <div class="split">
+              <strong>Project dashboard</strong>
+              <div class="cluster-sm">
+                <span class="sc-button">New report</span>
+                <span class="sc-button sc-button-secondary">Export</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="ai-examples" class="sc-band" aria-labelledby="ai-title">
+      <div class="container stack-lg">
+        <div class="stack-sm">
+          <h2 id="ai-title">AI-friendly examples</h2>
+          <p class="sc-muted">A plain-English intent maps to one predictable class.</p>
+        </div>
+        <ul class="grid-lg" role="list" style="--grid-min: 22rem">
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
+            <p>"Show these tags in a row that wraps on small screens."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>&lt;ul class="cluster" role="list"&gt;
+  &lt;li&gt;Design&lt;/li&gt;
+  &lt;li&gt;AI&lt;/li&gt;
+  &lt;li&gt;CSS&lt;/li&gt;
+&lt;/ul&gt;</code></pre></div>
+          </li>
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
+            <p>"Show the products as responsive cards, as many per row as fit."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>&lt;ul class="grid" role="list"&gt;
+  &lt;li class="stack-sm"&gt;…&lt;/li&gt;
+  &lt;li class="stack-sm"&gt;…&lt;/li&gt;
+  &lt;li class="stack-sm"&gt;…&lt;/li&gt;
+&lt;/ul&gt;</code></pre></div>
+          </li>
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
+            <p>"Put the settings navigation next to the form, stacked on phones."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>&lt;div class="sidebar"&gt;
+  &lt;nav class="stack-sm"&gt;…&lt;/nav&gt;
+  &lt;form class="stack"&gt;…&lt;/form&gt;
+&lt;/div&gt;</code></pre></div>
+          </li>
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
+            <p>"A header with the logo on the left and actions on the right."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>&lt;header class="container split"&gt;
+  &lt;a href="/"&gt;Logo&lt;/a&gt;
+  &lt;div class="cluster-sm"&gt;…&lt;/div&gt;
+&lt;/header&gt;</code></pre></div>
+          </li>
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
+            <p>"A full-screen sign-in page with the form in the middle."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>&lt;main class="cover"&gt;
+  &lt;form class="cover-main center stack"&gt;…&lt;/form&gt;
+&lt;/main&gt;</code></pre></div>
+          </li>
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
+            <p>"Restyle the whole interface with our brand color and rounder corners."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>:root {
+  --color-primary: #0b6e4f;
+  --radius-md: 0.5rem;
+}</code></pre></div>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sc-footer">
+    <div class="container split">
+      <p>SynthCSS is MIT licensed.</p>
+      <ul class="cluster-sm" role="list">
+        <li><a href="https://github.com/nabledhq/synthcss">GitHub</a></li>
+        <li><a href="https://github.com/nabledhq/synthcss/blob/main/docs/tokens.md">Token reference</a></li>
+        <li><a href="https://github.com/nabledhq/synthcss/blob/main/docs/layout.md">Layout reference</a></li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>

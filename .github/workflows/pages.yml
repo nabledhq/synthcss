@@ -1,0 +1,79 @@
+# Publishes the static showcase (showcase/) to GitHub Pages.
+# One-time setup after merge: Settings → Pages → Source → "GitHub Actions".
+# The artifact mirrors the repository layout (showcase/ next to src/) so the
+# relative stylesheet link in showcase/index.html works locally and deployed.
+name: Deploy showcase to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "showcase/**"
+      - "src/**.css"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one deployment at a time; let an in-progress deployment finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run checks
+        run: npm test
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site/showcase _site/src
+          cp showcase/index.html showcase/showcase.css showcase/showcase.js _site/showcase/
+          cp src/*.css _site/src/
+          # The site root forwards to the showcase page.
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>SynthCSS</title>
+            <meta http-equiv="refresh" content="0; url=showcase/">
+            <link rel="canonical" href="showcase/">
+          </head>
+          <body>
+            <p><a href="showcase/">Open the SynthCSS showcase</a></p>
+          </body>
+          </html>
+          HTML
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}showcase/
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
