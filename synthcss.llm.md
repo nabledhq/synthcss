@@ -1,6 +1,6 @@
 # SynthCSS AI Contract
 
-Version: SynthCSS 0.2.0 · contract 1.0.0 · machine-readable twin: synthcss.ai.json
+Version: SynthCSS 0.2.0 · contract 1.1.0 · machine-readable twin: synthcss.ai.json
 
 The complete public vocabulary of SynthCSS. Use only the classes and tokens listed here; anything else does not exist.
 Load: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.2.0/dist/synthcss.min.css">`
@@ -8,6 +8,8 @@ Load: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcs
 ## Design Tokens
 
 CSS custom properties on `:root`. Use them through `var()`; restyle by overriding them on `:root`.
+
+Base styles apply `--font-sans`, `--color-text` and `--color-background` to the page and the `--text-*` scale to `h1`–`h4`. Override the tokens to restyle.
 
 - `--color-background` — page background
 - `--color-surface` — subtle background for panels, table heads, footers

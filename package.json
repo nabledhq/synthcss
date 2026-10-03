@@ -11,6 +11,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check:tokens": "node scripts/check-tokens.mjs",
+    "check:base": "node scripts/check-base.mjs",
+    "check:base:browser": "node scripts/check-base-browser.mjs",
     "check:layout": "node scripts/check-layout.mjs",
     "check:layout:browser": "node scripts/check-layout-browser.mjs",
     "check:components": "node scripts/check-components.mjs",
@@ -18,6 +20,6 @@
     "check:showcase": "node scripts/check-showcase.mjs",
     "check:showcase:browser": "node scripts/check-showcase-browser.mjs",
     "check:ai-contract": "node scripts/verify-ai-contract.mjs",
-    "test": "node scripts/check-tokens.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node scripts/verify-ai-contract.mjs && node --test scripts/build.test.mjs scripts/bump-version.test.mjs scripts/check-tokens.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs scripts/verify-ai-contract.test.mjs"
+    "test": "node scripts/check-tokens.mjs && node scripts/check-base.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node scripts/verify-ai-contract.mjs && node --test scripts/build.test.mjs scripts/bump-version.test.mjs scripts/check-tokens.test.mjs scripts/check-base.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs scripts/verify-ai-contract.test.mjs"
   }
 }

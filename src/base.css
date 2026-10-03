@@ -1,0 +1,42 @@
+/*
+ * SynthCSS base styles
+ *
+ * Applies the type and color tokens to the page and to h1–h4, so a page that
+ * only links the bundle renders in --font-sans with the token colors and the
+ * --text-* heading scale. Override the tokens on :root to restyle.
+ *
+ * - Every selector is wrapped in :where(), so it has zero specificity.
+ * - Everything sits in the synth.base cascade layer. Unlayered rules always
+ *   beat layered ones, so any author rule (body { font-family: serif }) and
+ *   every component rule (.card-header h2) wins over these defaults.
+ * - No resets: margins, box-sizing and lists keep the browser defaults.
+ *
+ * Part of the main bundle (synthcss.css), loaded after tokens.css. The modular
+ * files (tokens.css, layout.css, components.css) do not include it.
+ *
+ * Reference: docs/tokens.md#base-styles
+ */
+
+@layer synth.base {
+  :where(html) {
+    font-family: var(--font-sans);
+    font-size: 100%;
+    line-height: var(--leading-normal);
+    color: var(--color-text);
+    background: var(--color-background);
+  }
+
+  :where(h1, h2, h3, h4) {
+    line-height: var(--leading-tight);
+    font-weight: var(--weight-semibold);
+  }
+
+  :where(h1) { font-size: var(--text-3xl); }
+  :where(h2) { font-size: var(--text-2xl); }
+  :where(h3) { font-size: var(--text-xl); }
+  :where(h4) { font-size: var(--text-lg); }
+
+  :where(code, kbd, pre, samp) {
+    font-family: var(--font-mono);
+  }
+}

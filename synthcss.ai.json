@@ -1,6 +1,6 @@
 {
   "synthcssVersion": "0.2.0",
-  "contractVersion": "1.0.0",
+  "contractVersion": "1.1.0",
   "tokens": {
     "--color-background": "page background",
     "--color-surface": "subtle background for panels, table heads, footers",
@@ -59,6 +59,24 @@
     "--duration-normal": "standard transitions",
     "--duration-slow": "larger movements; spinner speed",
     "--ease-standard": "default easing curve"
+  },
+  "baseStyles": {
+    "note": "Base styles apply --font-sans, --color-text and --color-background to the page and the --text-* scale to h1–h4. Override the tokens to restyle.",
+    "rules": {
+      "html": {
+        "font-family": "var(--font-sans)",
+        "font-size": "100%",
+        "line-height": "var(--leading-normal)",
+        "color": "var(--color-text)",
+        "background": "var(--color-background)"
+      },
+      "h1, h2, h3, h4": { "line-height": "var(--leading-tight)", "font-weight": "var(--weight-semibold)" },
+      "h1": { "font-size": "var(--text-3xl)" },
+      "h2": { "font-size": "var(--text-2xl)" },
+      "h3": { "font-size": "var(--text-xl)" },
+      "h4": { "font-size": "var(--text-lg)" },
+      "code, kbd, pre, samp": { "font-family": "var(--font-mono)" }
+    }
   },
   "layouts": {
     "container": "centered page-width wrapper with side padding",

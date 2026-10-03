@@ -107,7 +107,7 @@ test("fails when versions do not match package.json", () => {
   assertError(errorsWith({ pkg }), `states SynthCSS ${version} but package.json is 99.0.0`);
   assertError(errorsWith({ pkg }), `links to synthcss@${version} but package.json is 99.0.0`);
   const contractVersion = withJson((c) => (c.contractVersion = "2.0.0"));
-  assertError(errorsWith(contractVersion), "states contract 1.0.0 but synthcss.ai.json has 2.0.0");
+  assertError(errorsWith(contractVersion), `states contract ${contract.contractVersion} but synthcss.ai.json has 2.0.0`);
 });
 
 test("fails when the JSON shape or Markdown sections are wrong", () => {
@@ -120,6 +120,23 @@ test("fails when the JSON shape or Markdown sections are wrong", () => {
   assertError(errorsWith({ md: nineRules }), "exactly 10 numbered rules, found 9");
   const noAvoid = files.md.replace("### Avoid", "### Don't");
   assertError(errorsWith({ md: noAvoid }), 'Composition Rules has no "### Avoid"');
+});
+
+test("fails when the base styles drift from src/base.css or the Markdown", () => {
+  const size = withJson((c) => (c.baseStyles.rules.h1["font-size"] = "var(--text-2xl)"));
+  assertError(errorsWith(size), 'baseStyles.rules["h1"] must be {"font-size":"var(--text-3xl)"}');
+  const extra = withJson((c) => (c.baseStyles.rules.h5 = { "font-size": "var(--text-base)" }));
+  assertError(errorsWith(extra), 'baseStyles.rules["h5"] is not a rule in src/base.css');
+  const baseCss = files.baseCss.replace("var(--text-lg)", "var(--text-base)");
+  assertError(errorsWith({ baseCss }), 'baseStyles.rules["h4"] must be {"font-size":"var(--text-base)"}');
+  assertError(errorsWith(withJson((c) => delete c.baseStyles.note)), "baseStyles must be { note, rules");
+  const md = files.md.replace(/^Base styles apply .*$/m, "");
+  assertError(errorsWith({ md }), "Design Tokens section must state the synthcss.ai.json baseStyles note");
+});
+
+test("reads `--text-*` as a token family, not a token", () => {
+  assert.deepEqual(errorsWith({ md: files.md.replace("## Layout Vocabulary", "The `--space-*` scale.\n\n## Layout Vocabulary") }), []);
+  assertError(errorsWith({ md: files.md.replace("## Layout Vocabulary", "Use `--space-7`.\n\n## Layout Vocabulary") }), "token --space-7");
 });
 
 test("fails when the showcase, Pages workflow or README stop publishing the contract", () => {

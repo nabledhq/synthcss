@@ -21,6 +21,7 @@ Class names are written **without** the leading dot. Token names keep their `--`
 | `synthcssVersion` | string | The SynthCSS version the contract describes. Must equal `version` in `package.json`. |
 | `contractVersion` | string (semver) | Version of the contract format. Bump the major for a breaking change to this schema. |
 | `tokens` | object | Token name → short purpose, for every custom property on `:root` in `src/tokens.css`. |
+| `baseStyles` | object | `{ note, rules }`: what the base styles in `src/base.css` apply. `note` is a one-sentence summary that the Markdown Design Tokens section repeats; `rules` maps each selector (without `:where()`) to its declarations, exactly as in `src/base.css`. |
 | `layouts` | object | Layout class → intent: the eight primitives, their `-sm` / `-lg` gap variants and `cover-main`. |
 | `components` | object | Component base class → `{ intent, parts, variants }`. `parts` and `variants` map class → purpose (empty `{}` when there are none). |
 | `intentMap` | array | `{ intent, use }` pairs: a plain-language need and the markup to use for it. |
@@ -33,6 +34,7 @@ Class names are written **without** the leading dot. Token names keep their `--`
   "synthcssVersion": "0.1.0",
   "contractVersion": "1.0.0",
   "tokens": { "--space-4": "1rem spacing step (default gap)" },
+  "baseStyles": { "note": "Base styles apply --font-sans, … Override the tokens to restyle.", "rules": { "h1": { "font-size": "var(--text-3xl)" } } },
   "layouts": { "stack": "vertical flow with tokenized spacing" },
   "components": {
     "badge": { "intent": "short status label", "parts": {}, "variants": { "badge-success": "positive status" } }
@@ -48,7 +50,8 @@ Class names are written **without** the leading dot. Token names keep their `--`
 ```
 
 In free text (intents, rules, notes) classes are written as `.name` and tokens as
-`--name`; the verifier reads those mentions too, so every one must exist.
+`--name`; the verifier reads those mentions too, so every one must exist. A token
+family written as `--text-*` is not read as a token.
 
 An invalid example's `note` says why the markup is wrong and then names the correct
 alternative after the word "Use". An invalid example may only contain a real SynthCSS
@@ -79,6 +82,8 @@ workflow updates `synthcssVersion` and the Markdown header with
 - a class in the CSS is missing from the JSON `layouts` / `components`, or a `:root`
   token is missing from `tokens`. Internal helper classes can be excluded through the
   `INTERNAL_CLASSES` allowlist in the script (empty today: every class is public);
+- `baseStyles.rules` differs from the rules in `src/base.css`, or the Markdown Design
+  Tokens section does not state `baseStyles.note`;
 - the classes in the Markdown Layout and Component Vocabulary, or the tokens in its
   Design Tokens section, differ from the JSON;
 - an invalid example uses a real class that its note does not name as the alternative;

@@ -172,6 +172,30 @@ If you change `--color-primary`, check that `--color-on-primary` still contrasts
 least 4.5:1 with it, and change `--color-primary-hover` to match. See
 [`examples/tokens.html`](../examples/tokens.html) for a working demo.
 
+## Base styles
+
+The main bundle (`synthcss.css`) also includes [`src/base.css`](../src/base.css), which
+applies the tokens to the page so plain markup picks them up:
+
+| Element | Properties |
+| --- | --- |
+| `html` | `font-family: var(--font-sans)`, `font-size: 100%`, `line-height: var(--leading-normal)`, `color: var(--color-text)`, `background: var(--color-background)` |
+| `h1`–`h4` | `line-height: var(--leading-tight)`, `font-weight: var(--weight-semibold)` |
+| `h1` / `h2` / `h3` / `h4` | `font-size`: `var(--text-3xl)` / `var(--text-2xl)` / `var(--text-xl)` / `var(--text-lg)` |
+| `code`, `kbd`, `pre`, `samp` | `font-family: var(--font-mono)` |
+
+Override the tokens to restyle, for example `:root { --font-sans: "Inter", sans-serif; }`.
+Every selector is wrapped in `:where()` (zero specificity) and the rules sit in the
+`synth.base` cascade layer. Unlayered rules always beat layered ones, so any rule of
+your own (`body { font-family: serif; }`, `h1 { font-size: 2.5rem; }`) and the
+component heading styles (such as `.card-header h2`) win without `!important`. There are
+no resets: margins, `box-sizing`, `h5`/`h6`, links and lists keep the browser defaults.
+
+The modular files (`tokens.css`, `layout.css`, `components.css`) do not include the
+base styles. Load `base.css` after `tokens.css` to opt in. `npm run check:base` checks
+`src/base.css` and its place in the bundle. `npm run check:base:browser` checks the
+computed styles of fixture pages in Chromium. It needs Playwright.
+
 ## For AI agents
 
 - Always write `var(--token)` instead of raw values. Do not hard-code hex colors, `px`
