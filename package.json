@@ -17,6 +17,7 @@
     "check:components:browser": "node scripts/check-components-browser.mjs",
     "check:showcase": "node scripts/check-showcase.mjs",
     "check:showcase:browser": "node scripts/check-showcase-browser.mjs",
-    "test": "node scripts/check-tokens.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node --test scripts/build.test.mjs scripts/check-tokens.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs"
+    "check:ai-contract": "node scripts/verify-ai-contract.mjs",
+    "test": "node scripts/check-tokens.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node scripts/verify-ai-contract.mjs && node --test scripts/build.test.mjs scripts/check-tokens.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs scripts/verify-ai-contract.test.mjs"
   }
 }

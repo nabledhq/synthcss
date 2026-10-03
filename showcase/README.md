@@ -36,7 +36,8 @@ python3 -m http.server 8000
 [`.github/workflows/pages.yml`](../.github/workflows/pages.yml) deploys the page with the
 official `actions/configure-pages`, `actions/upload-pages-artifact` and
 `actions/deploy-pages` actions. It runs on every push to `main` that changes
-`showcase/**`, a framework stylesheet (`src/**.css`) or the workflow itself, and can be
+`showcase/**`, a framework stylesheet (`src/**.css`), an AI contract file
+(`synthcss.llm.md`, `synthcss.ai.json`) or the workflow itself, and can be
 started by hand from the Actions tab (`workflow_dispatch`).
 
 The build job runs `npm test`, then assembles a temporary `_site/` folder that mirrors
@@ -45,6 +46,8 @@ the repository layout:
 ```text
 _site/
   index.html        generated redirect to showcase/
+  synthcss.llm.md   the AI contract, linked from the AI Contract section
+  synthcss.ai.json
   showcase/         index.html, showcase.css, showcase.js
   src/              tokens.css, layout.css, components.css, synthcss.css
 ```
@@ -100,13 +103,19 @@ every section and hero item exists, that every token is rendered with `var(--…
 every layout primitive has a demo, description and snippet, that grid, sidebar, cluster
 and split have width-adjustable frames, that every component has an article with a live
 demo of all its classes and a snippet, that the composed interface (`data-composed`)
-uses only SynthCSS classes and at least six components, that there are at least three intent examples,
+uses only SynthCSS classes and at least six components, that there are at least three intent examples
+and an AI Contract section,
 that snippets are short and use only real classes and tokens, that `showcase.css` only
 styles `sc-` classes with no hard-coded colors or token values, and that the workflow
 and this README cover the required steps.
 
 [`scripts/check-components.mjs`](../scripts/check-components.mjs) also checks that every
 class on the page and in its snippets exists in the built CSS.
+
+[`scripts/verify-ai-contract.mjs`](../scripts/verify-ai-contract.mjs) checks that the AI
+Contract section links to `../synthcss.llm.md`, offers `../synthcss.ai.json` as a download,
+prints a size within 10% of the real estimate, and that its example is one of the
+contract's valid examples, rendered live. See [docs/ai-contract.md](../docs/ai-contract.md).
 
 `npm run check:components:browser` tabs through the component demos in headless Chromium
 and checks focus rings, states and that tables scroll inside `.table-wrap` at 375px.

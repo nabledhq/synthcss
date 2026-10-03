@@ -1,0 +1,247 @@
+{
+  "synthcssVersion": "0.1.0",
+  "contractVersion": "1.0.0",
+  "tokens": {
+    "--color-background": "page background",
+    "--color-surface": "subtle background for panels, table heads, footers",
+    "--color-surface-elevated": "background of raised surfaces (cards, buttons)",
+    "--color-text": "main text",
+    "--color-text-secondary": "body text of cards and panels",
+    "--color-text-muted": "hints, metadata, placeholders",
+    "--color-border": "default border color",
+    "--color-primary": "brand accent; main actions",
+    "--color-primary-hover": "hover state of primary elements",
+    "--color-on-primary": "text on primary or danger fills",
+    "--color-success": "success status",
+    "--color-warning": "warning status",
+    "--color-danger": "errors and destructive actions",
+    "--color-info": "neutral informational status",
+    "--space-1": "0.25rem spacing step",
+    "--space-2": "0.5rem spacing step (-sm gaps)",
+    "--space-3": "0.75rem spacing step",
+    "--space-4": "1rem spacing step (default gap)",
+    "--space-5": "1.5rem spacing step",
+    "--space-6": "2rem spacing step (-lg gaps)",
+    "--font-sans": "UI font stack",
+    "--font-mono": "code font stack",
+    "--text-sm": "small text",
+    "--text-base": "body text size",
+    "--text-lg": "large text, card titles",
+    "--text-xl": "small headings",
+    "--text-2xl": "section headings",
+    "--text-3xl": "page titles",
+    "--weight-normal": "regular weight",
+    "--weight-medium": "labels and buttons",
+    "--weight-semibold": "headings",
+    "--weight-bold": "strong emphasis",
+    "--leading-tight": "line height for headings and controls",
+    "--leading-normal": "line height for body text",
+    "--leading-relaxed": "line height for long-form text",
+    "--radius-sm": "small corner radius",
+    "--radius-md": "default radius (controls, panels)",
+    "--radius-lg": "card radius",
+    "--radius-full": "pills and circles",
+    "--border-width": "default border width",
+    "--border-color": "default border color (follows --color-border)",
+    "--shadow-sm": "subtle elevation",
+    "--shadow-md": "card elevation",
+    "--shadow-lg": "overlay elevation",
+    "--control-height": "button height",
+    "--input-height": "text input height",
+    "--container-width": "max width of .container",
+    "--content-width": "readable text width (.center)",
+    "--sidebar-width": "sidebar basis in .sidebar",
+    "--grid-min": "minimum column width in .grid; override inline per grid",
+    "--focus-color": "focus ring color",
+    "--focus-width": "focus ring width",
+    "--focus-offset": "focus ring offset",
+    "--duration-fast": "hover and state transitions",
+    "--duration-normal": "standard transitions",
+    "--duration-slow": "larger movements; spinner speed",
+    "--ease-standard": "default easing curve"
+  },
+  "layouts": {
+    "container": "centered page-width wrapper with side padding",
+    "stack": "vertical flow with tokenized spacing",
+    "stack-sm": "stack with a tighter gap",
+    "stack-lg": "stack with a looser gap",
+    "cluster": "wrapping row of small items (tags, buttons, links)",
+    "cluster-sm": "cluster with a tighter gap",
+    "cluster-lg": "cluster with a looser gap",
+    "grid": "responsive equal columns, as many as fit (min --grid-min)",
+    "grid-sm": "grid with a tighter gap",
+    "grid-lg": "grid with a looser gap",
+    "sidebar": "1st child narrow side panel, 2nd child main area; stacks when narrow",
+    "sidebar-sm": "sidebar with a tighter gap",
+    "sidebar-lg": "sidebar with a looser gap",
+    "split": "two groups pushed to opposite ends of a row; wraps when tight",
+    "split-sm": "split with a tighter gap",
+    "split-lg": "split with a looser gap",
+    "center": "readable, horizontally centered column of text",
+    "cover": "full-viewport-height section, main child vertically centered",
+    "cover-main": "the child of .cover that is vertically centered"
+  },
+  "components": {
+    "button": {
+      "intent": "an action, on <button> or <a href>",
+      "parts": {},
+      "variants": {
+        "button-primary": "main action of a form or page",
+        "button-secondary": "alternative or cancel action",
+        "button-danger": "destructive action (delete, remove)",
+        "button-sm": "smaller button",
+        "button-lg": "larger button",
+        "button-icon": "square icon-only button; needs aria-label"
+      }
+    },
+    "field": {
+      "intent": "one labeled form control with help or error text",
+      "parts": {
+        "field-label": "the <label> of the control",
+        "field-help": "hint text under the control",
+        "field-error": "error message; pair with aria-invalid=\"true\""
+      },
+      "variants": {}
+    },
+    "card": {
+      "intent": "raised self-contained item (project, product, user)",
+      "parts": {
+        "card-header": "title area",
+        "card-body": "main content; grows to align footers",
+        "card-footer": "bottom bar on the surface color",
+        "card-media": "full-width image or video",
+        "card-actions": "wrapping row of buttons or links"
+      },
+      "variants": {}
+    },
+    "badge": {
+      "intent": "short status label",
+      "parts": {},
+      "variants": {
+        "badge-success": "positive status",
+        "badge-warning": "needs attention",
+        "badge-danger": "failed or blocked",
+        "badge-info": "neutral information"
+      }
+    },
+    "alert": {
+      "intent": "message box; role=\"status\" or role=\"alert\"",
+      "parts": {},
+      "variants": {
+        "alert-info": "neutral information",
+        "alert-success": "action succeeded",
+        "alert-warning": "needs attention",
+        "alert-danger": "error"
+      }
+    },
+    "panel": {
+      "intent": "flat bordered group of secondary content",
+      "parts": {
+        "panel-header": "title area with a bottom border",
+        "panel-body": "content area"
+      },
+      "variants": {}
+    },
+    "table": {
+      "intent": "tabular data on a native <table>",
+      "parts": {
+        "table-wrap": "bordered wrapper that scrolls wide tables; add tabindex=\"0\"",
+        "numeric": "right-aligned tabular-number cell"
+      },
+      "variants": {
+        "table-hover": "highlight the hovered row"
+      }
+    },
+    "empty-state": {
+      "intent": "nothing to show yet: icon, heading, text, action",
+      "parts": {},
+      "variants": {}
+    }
+  },
+  "intentMap": [
+    { "intent": "Page or section wrapper", "use": ".container" },
+    { "intent": "Vertical list of blocks", "use": ".stack" },
+    { "intent": "Row of tags, buttons or links", "use": ".cluster" },
+    { "intent": "Responsive cards or tiles", "use": ".grid (+ style=\"--grid-min: …\")" },
+    { "intent": "Side navigation next to content", "use": ".sidebar" },
+    { "intent": "Header or toolbar with two ends", "use": ".split" },
+    { "intent": "Readable text column", "use": ".center" },
+    { "intent": "Full-screen centered page", "use": ".cover + .cover-main" },
+    { "intent": "Tighter or looser spacing", "use": "-sm / -lg on stack, cluster, grid, sidebar, split" },
+    { "intent": "Main action", "use": ".button button-primary" },
+    { "intent": "Destructive action", "use": ".button button-danger" },
+    { "intent": "Labeled input with help or error", "use": ".field + .field-label + .field-help / .field-error" },
+    { "intent": "Self-contained item", "use": ".card + parts" },
+    { "intent": "Status label", "use": ".badge + .badge-success / -warning / -danger / -info" },
+    { "intent": "Message or notification", "use": ".alert + .alert-info / -success / -warning / -danger" },
+    { "intent": "Secondary grouped content", "use": ".panel + .panel-header / .panel-body" },
+    { "intent": "Tabular data", "use": ".table-wrap > .table; .table-hover, .numeric" },
+    { "intent": "No data yet", "use": ".empty-state" }
+  ],
+  "compositionRules": {
+    "recommended": [
+      "Wrap each page in .container and give it a .stack or .stack-lg.",
+      "Nest primitives: .split for headers, .cluster for button rows, .grid of .card for collections.",
+      "Combine a component part with a layout primitive on one element, e.g. class=\"card-footer split\".",
+      "Put components on native elements: <button>, <a href>, <table>, <label> + <input>.",
+      "Wrap every .table in .table-wrap."
+    ],
+    "avoid": [
+      "Margins between siblings; spacing comes from gap variants.",
+      "Wrapper <div>s that add no layout intent.",
+      "Restyling a component with extra CSS; override tokens on :root instead.",
+      "Classes for state (is-active, disabled); use attributes.",
+      "Visual reordering (order, *-reverse); DOM order is visual order."
+    ]
+  },
+  "generationRules": [
+    "Use only the classes and tokens in this contract; never invent class names.",
+    "Build structure from layout primitives and nest them; never write custom flex or grid CSS.",
+    "Set spacing with the -sm / -lg gap variants, never with margins or utility classes.",
+    "Never use inline styles except a token override such as style=\"--grid-min: 12rem\".",
+    "In any custom CSS, reference tokens with var(); never hard-code colors, px/rem sizes, shadows or durations.",
+    "Put components on semantic native elements and keep one component per element.",
+    "Express state with attributes: disabled, aria-disabled=\"true\", aria-busy=\"true\", aria-invalid=\"true\".",
+    "Pick variants by meaning, not look: button-danger for destructive actions, badge-success for success.",
+    "Write no media queries or breakpoint classes; primitives adapt to the space they get.",
+    "Keep it accessible: aria-label on .button-icon, role=\"status\" or role=\"alert\" on .alert, a <label for> on every control."
+  ],
+  "examples": {
+    "valid": [
+      {
+        "html": "<main class=\"container stack-lg\">\n  <header class=\"split\">\n    <h1>Projects</h1>\n    <button type=\"button\" class=\"button button-primary\">New project</button>\n  </header>\n  <ul class=\"grid\" role=\"list\">\n    <li class=\"card\">\n      <div class=\"card-header\"><h2>Atlas</h2></div>\n      <div class=\"card-body\">Design system migration.</div>\n      <div class=\"card-footer split-sm\"><span class=\"badge badge-success\">Active</span></div>\n    </li>\n  </ul>\n</main>",
+        "note": "Page: container + stack, split header, grid of cards with a status badge."
+      },
+      {
+        "html": "<form class=\"card\">\n  <div class=\"field\">\n    <label class=\"field-label\" for=\"email\">Email</label>\n    <input id=\"email\" type=\"email\" aria-invalid=\"true\" aria-describedby=\"email-error\">\n    <p class=\"field-error\" id=\"email-error\">Enter a full email address.</p>\n  </div>\n  <div class=\"cluster-sm\">\n    <button type=\"submit\" class=\"button button-primary\">Save</button>\n    <button type=\"button\" class=\"button\">Cancel</button>\n  </div>\n</form>",
+        "note": "Form: field with an error from aria-invalid, actions in a cluster."
+      },
+      {
+        "html": "<section class=\"stack\">\n  <header class=\"split\">\n    <h3>Team</h3>\n    <button type=\"button\" class=\"button button-primary\">Invite</button>\n  </header>\n  <div class=\"table-wrap\" tabindex=\"0\">\n    <table class=\"table\">\n      <thead><tr><th>Name</th><th>Role</th><th>Status</th></tr></thead>\n      <tbody>\n        <tr><td>Ana</td><td>Admin</td><td><span class=\"badge badge-success\">Active</span></td></tr>\n        <tr><td>Ben</td><td>Editor</td><td><span class=\"badge badge-warning\">Invited</span></td></tr>\n      </tbody>\n    </table>\n  </div>\n</section>",
+        "note": "Data view: split header with an action, scrollable table with status badges."
+      }
+    ],
+    "invalid": [
+      {
+        "html": "<div class=\"flex-row-gap-large-center\">…</div>",
+        "note": "Invented class. Use .cluster-lg."
+      },
+      {
+        "html": "<div style=\"display:flex; gap:16px\">…</div>",
+        "note": "Inline flex and gap. Use .cluster."
+      },
+      {
+        "html": "<button class=\"btn btn-primary\">Save</button>",
+        "note": "Another framework's names. Use .button and .button-primary."
+      },
+      {
+        "html": "<span class=\"badge badge-red\">Failed</span>",
+        "note": "Color-named variant. Use .badge and .badge-danger."
+      },
+      {
+        "html": "<p class=\"mt-4\">Saved.</p>",
+        "note": "Spacing utility. Use .stack on the parent."
+      }
+    ]
+  }
+}
