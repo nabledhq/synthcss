@@ -54,6 +54,36 @@ function measure(name) {
   return out;
 }
 
+// .sidebar-end: main area first, narrow column last.
+function sidebarEndMeasure(name) {
+  const frame = document.querySelector(`[data-fixture="${name}"]`);
+  const rect = (el) => el.getBoundingClientRect();
+  const pair = (el) => {
+    const box = rect(el);
+    const [main, side] = [...el.children].map(rect);
+    const gap = parseFloat(getComputedStyle(el).columnGap);
+    // flex-basis sizes the content box (box-sizing: content-box).
+    const s = getComputedStyle(el.lastElementChild);
+    const edges = ["paddingLeft", "paddingRight", "borderLeftWidth", "borderRightWidth"].reduce((sum, k) => sum + parseFloat(s[k]), 0);
+    return {
+      stacked: side.top >= main.bottom,
+      mainFirst: main.left < side.left || side.top >= main.bottom,
+      sideWidth: side.width - edges,
+      sideAtEnd: Math.abs(box.right - side.right) < 1,
+      mainFills: Math.abs(main.width + gap + side.width - box.width) < 1,
+      fullWidth: Math.abs(main.width - box.width) < 1 && Math.abs(side.width - box.width) < 1,
+    };
+  };
+  const only = frame.querySelector('[data-check="sidebar-end-only"]');
+  return {
+    overflow: frame.scrollWidth > frame.clientWidth,
+    rem: parseFloat(getComputedStyle(document.documentElement).fontSize),
+    pairs: [...frame.querySelectorAll('[data-check="sidebar-end"]')].map(pair),
+    custom: pair(frame.querySelector('[data-check="sidebar-end-wide"]')),
+    onlyFull: Math.abs(rect(only.firstElementChild).width - rect(only).width) < 1,
+  };
+}
+
 function nestedMeasure(name) {
   const frame = document.querySelector(`[data-fixture="${name}"]`);
   const ps = [...frame.querySelectorAll(".grid-sm > .stack-sm > *")];
@@ -107,6 +137,25 @@ try {
         }
         if (p === "cover") expect(m.coverCentered, `${at}: .cover main child is not vertically centered`);
       }
+      const e = await page.evaluate(sidebarEndMeasure, `sidebar-end-${size}`);
+      expect(!e.overflow, `${at}: .sidebar-end overflows horizontally`);
+      for (const [i, pair] of [...e.pairs, e.custom].entries()) {
+        const what = `${at}: .sidebar-end layout ${i + 1}`;
+        expect(pair.stacked === narrow, `${what} ${narrow ? "should" : "should not"} stack`);
+        expect(pair.mainFirst, `${what} changed visual order`);
+        if (narrow) expect(pair.fullWidth, `${what}: stacked children are not full width`);
+        else {
+          expect(pair.sideAtEnd, `${what}: narrow column is not at the end of the row`);
+          expect(pair.mainFills, `${what}: main column does not fill the rest of the row`);
+        }
+      }
+      if (!narrow) {
+        for (const [i, pair] of e.pairs.entries()) {
+          expect(Math.abs(pair.sideWidth - 16 * e.rem) < 1, `${at}: .sidebar-end layout ${i + 1} narrow column is ${pair.sideWidth}px, expected --sidebar-width`);
+        }
+        expect(Math.abs(e.custom.sideWidth - 20 * e.rem) < 1, `${at}: inline --sidebar-width: 20rem gave a ${e.custom.sideWidth}px narrow column`);
+      }
+      expect(e.onlyFull, `${at}: .sidebar-end narrowed an only child`);
       const n = await page.evaluate(nestedMeasure, `nested-${size}`);
       expect(!n.overflow, `${at}: nested example overflows horizontally`);
       expect(n.childMargins, `${at}: nested children have block margins`);

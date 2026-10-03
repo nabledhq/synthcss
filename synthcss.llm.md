@@ -86,6 +86,7 @@ Work on any element. No breakpoints: they adapt to the space they get.
 - `.sidebar` — 1st child narrow side panel, 2nd child main area; stacks when narrow
 - `.sidebar-sm` — sidebar with a tighter gap
 - `.sidebar-lg` — sidebar with a looser gap
+- `.sidebar-end` — with a sidebar class: last child is the narrow column (right), 1st child the main area
 - `.split` — two groups pushed to opposite ends of a row; wraps when tight
 - `.split-sm` — split with a tighter gap
 - `.split-lg` — split with a looser gap
@@ -142,6 +143,7 @@ Naming: component, component-variant, component-part. State comes from attribute
 | Row of tags, buttons or links | `.cluster` |
 | Responsive cards or tiles | `.grid` (+ `style="--grid-min: …"`) |
 | Side navigation next to content | `.sidebar` |
+| Main content with a narrow side column on the right | `.sidebar` (or -sm/-lg) + `.sidebar-end` |
 | Header or toolbar with two ends | `.split` |
 | Readable text column | `.center` |
 | Full-screen centered page | `.cover` + `.cover-main` |
@@ -241,6 +243,21 @@ Data view: split header with an action, scrollable table with status badges.
     </table>
   </div>
 </section>
+```
+
+Dashboard: main content first, narrow column on the right with a per-instance width.
+
+```html
+<div class="sidebar-lg sidebar-end" style="--sidebar-width: 20rem">
+  <main class="stack">
+    <h1>Dashboard</h1>
+    <div class="grid"><div class="card">…</div><div class="card">…</div></div>
+  </main>
+  <aside class="panel">
+    <div class="panel-header"><h2>Activity</h2></div>
+    <div class="panel-body">Recent events.</div>
+  </aside>
+</div>
 ```
 
 ## Invalid / Discouraged Examples

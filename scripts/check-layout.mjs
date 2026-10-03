@@ -11,7 +11,15 @@ import { parseBlocks, parseDeclarations, parseTokens } from "./check-tokens.mjs"
 export const PRIMITIVES = ["container", "stack", "cluster", "grid", "sidebar", "split", "center", "cover"];
 export const GAP_PRIMITIVES = ["stack", "cluster", "grid", "sidebar", "split"];
 export const VARIANTS = GAP_PRIMITIVES.flatMap((p) => [`${p}-sm`, `${p}-lg`]);
-export const HELPER_CLASSES = ["cover-main"];
+export const HELPER_CLASSES = ["cover-main", "sidebar-end"];
+// .sidebar-end swaps which sidebar child is the narrow column. Each selector must
+// beat the base sidebar rule for the same child and set (or reset) every property
+// the base rules set on it.
+export const SIDEBAR_END_RULES = [
+  { child: ":first-child", decls: { "flex-basis": "0", "flex-grow": "999", "min-inline-size": "50%" } },
+  { child: ":last-child:not(:first-child)", decls: { "flex-basis": "var(--sidebar-width)", "flex-grow": "1", "min-inline-size": "auto" } },
+];
+const SIDEBAR_END_SELECTOR = ".sidebar-end:is(.sidebar, .sidebar-sm, .sidebar-lg) > ";
 export const DOC_SECTIONS = [
   "Purpose",
   "HTML example",
@@ -91,6 +99,19 @@ export function checkLayoutCss(layoutCss, tokensCss) {
     }
     const n = (v) => Number(/--space-(\d+)/.exec(gapOf(v) ?? "")?.[1]);
     if (!(n(`${p}-sm`) < n(p) && n(p) < n(`${p}-lg`))) errors.push(`.${p}-sm < .${p} < .${p}-lg gap order is wrong`);
+  }
+
+  for (const { child, decls } of SIDEBAR_END_RULES) {
+    const rule = rules.find((r) => r.selector === SIDEBAR_END_SELECTOR + child);
+    if (!rule) {
+      errors.push(`layout.css has no "${SIDEBAR_END_SELECTOR}${child}" rule`);
+      continue;
+    }
+    for (const [prop, value] of Object.entries(decls)) {
+      if (!rule.decls.some((d) => d.prop === prop && d.value === value)) {
+        errors.push(`${rule.selector} must set ${prop}: ${value}`);
+      }
+    }
   }
 
   for (const { selector, decls } of rules) {

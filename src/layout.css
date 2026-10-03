@@ -115,6 +115,23 @@
   min-inline-size: 50%;
 }
 
+/* .sidebar-end: the narrow column is the last child, on the right, and the
+   first child is the main area. DOM order stays the visual order; when they
+   wrap, the main area comes first. The selectors are one class more specific
+   than the rules above and reset every property those set. An only child is
+   the main area, so it is never narrowed. */
+.sidebar-end:is(.sidebar, .sidebar-sm, .sidebar-lg) > :first-child {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-inline-size: 50%;
+}
+
+.sidebar-end:is(.sidebar, .sidebar-sm, .sidebar-lg) > :last-child:not(:first-child) {
+  flex-basis: var(--sidebar-width);
+  flex-grow: 1;
+  min-inline-size: auto;
+}
+
 /* Split: items pushed to opposite ends of a row; wraps when tight. */
 .split,
 .split-sm,

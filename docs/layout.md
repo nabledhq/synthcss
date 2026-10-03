@@ -38,7 +38,7 @@ Tokens used by the layout primitives:
 | --- | --- | --- |
 | `--container-width` | `72rem` | `.container` maximum width |
 | `--content-width` | `42rem` | `.center` maximum inline size |
-| `--sidebar-width` | `16rem` | `.sidebar` first child's preferred width |
+| `--sidebar-width` | `16rem` | `.sidebar` narrow column's preferred width (first child, or last with `.sidebar-end`) |
 | `--grid-min` | `16rem` | `.grid` minimum column width |
 | `--space-2`, `--space-4`, `--space-6` | `0.5rem`, `1rem`, `2rem` | `-sm`, default and `-lg` gaps; `.container` padding (`--space-4` to `--space-6`) |
 
@@ -60,6 +60,7 @@ Paste this table into a model's context.
 | Row of small items that wraps (tags, buttons, links) | `.cluster` |
 | Responsive cards or tiles, as many columns as fit | `.grid` |
 | Narrow side panel next to main content, stacks when narrow | `.sidebar` (sidebar is the 1st child, main the 2nd) |
+| Main content with a narrow side column on the right | `.sidebar` + `.sidebar-end` (main is the 1st child, narrow column the 2nd) |
 | Two groups pushed to opposite ends (header bar, toolbar) | `.split` |
 | Readable, horizontally centered column of text | `.center` |
 | Full-viewport-height section with vertically centered content | `.cover` (+ `.cover-main` on the centered child) |
@@ -242,6 +243,20 @@ child) that takes the rest of the space. When there is not enough room, they sta
 
 `.sidebar-sm` (`--space-2`), `.sidebar` (`--space-4`), `.sidebar-lg` (`--space-6`).
 
+Add `.sidebar-end` to any of them to put the narrow column on the right: the **last**
+child becomes the narrow column and the **first** child the main area. DOM order is
+still the visual order, so write the main area first:
+
+```html
+<div class="sidebar-lg sidebar-end" style="--sidebar-width: 20rem">
+  <main class="stack">…</main>
+  <aside class="stack">…</aside>
+</div>
+```
+
+`.sidebar-end` does nothing without `.sidebar`, `.sidebar-sm` or `.sidebar-lg`. With
+a single child, that child is the main area and keeps the full width.
+
 ### Responsive behavior
 
 The first child has a basis of `--sidebar-width`. The second child grows to fill the
@@ -251,17 +266,28 @@ happens from the layout's own width, so a `.sidebar` inside a narrow column stac
 even on a wide screen. There are no media queries. The sidebar always comes first, in
 the DOM and on screen.
 
+With `.sidebar-end` the roles swap: the last child has the `--sidebar-width` basis and
+the first child grows and must stay at least 50% wide. When they wrap, the main area
+is on top and the narrow column under it.
+
+Override `--sidebar-width` on the layout (`style="--sidebar-width: 20rem"`) to change
+the narrow column's width for one instance.
+
 ### Recommended uses
 
 - Settings pages and docs with a navigation list next to the content.
 - An image or avatar next to text (media object).
 - A filter panel next to search results.
+- A dashboard with the main content and a narrow activity or details column on the
+  right (`.sidebar-end`).
 
 ### Common misuses
 
 - Putting more than two children in it. Wrap extra content in one of the two children.
-- Putting the sidebar second in the DOM to show it on the right. Order is never
-  changed; the first child is always the sidebar.
+- Putting the sidebar second in the DOM to show it on the right without
+  `.sidebar-end`. Order is never changed; without the modifier the first child is
+  always the sidebar.
+- Using `order` or `*-reverse` to move the sidebar to the right. Use `.sidebar-end`.
 - Setting a fixed `width` on the main area. It sizes itself.
 
 ## `.split`
@@ -408,7 +434,8 @@ nested primitives do not leak gaps or margins into each other:
 - `npm test` runs [`scripts/check-layout.mjs`](../scripts/check-layout.mjs). It needs only
   Node.js and checks that every primitive and every `-sm`/`-lg` variant is defined, that
   no other classes, media queries or order-changing properties exist, that spacing and
-  sizes use `var(--token)` values defined in `tokens.css`, that `src/synthcss.css`
+  sizes use `var(--token)` values defined in `tokens.css`, that the `.sidebar-end` rules
+  override and reset the base sidebar rules, that `src/synthcss.css`
   bundles the file, that this page covers every primitive with all six sections and the
   vocabulary table, and that the fixture uses every class.
 - [`examples/layout.html`](../examples/layout.html) shows every primitive and variant in
@@ -417,7 +444,8 @@ nested primitives do not leak gaps or margins into each other:
   emulation in the browser developer tools). Frames can be resized by dragging their
   bottom-right corner.
 - `npm run check:layout:browser` loads the fixture in headless Chromium at 375px and
-  1280px and checks that the grid drops columns, the sidebar stacks, the cluster and
-  split wrap and nothing overflows horizontally. It needs Playwright, which is not a
+  1280px and checks that the grid drops columns, the sidebar stacks, `.sidebar-end`
+  puts a `--sidebar-width` column on the right (and the main area first when it
+  stacks), the cluster and split wrap and nothing overflows horizontally. It needs Playwright, which is not a
   dependency of this repository: run `npm install --no-save playwright` and
   `npx playwright install chromium` first.

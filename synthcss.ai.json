@@ -92,6 +92,7 @@
     "sidebar": "1st child narrow side panel, 2nd child main area; stacks when narrow",
     "sidebar-sm": "sidebar with a tighter gap",
     "sidebar-lg": "sidebar with a looser gap",
+    "sidebar-end": "with a sidebar class: last child is the narrow column (right), 1st child the main area",
     "split": "two groups pushed to opposite ends of a row; wraps when tight",
     "split-sm": "split with a tighter gap",
     "split-lg": "split with a looser gap",
@@ -182,6 +183,7 @@
     { "intent": "Row of tags, buttons or links", "use": ".cluster" },
     { "intent": "Responsive cards or tiles", "use": ".grid (+ style=\"--grid-min: …\")" },
     { "intent": "Side navigation next to content", "use": ".sidebar" },
+    { "intent": "Main content with a narrow side column on the right", "use": ".sidebar (or -sm/-lg) + .sidebar-end" },
     { "intent": "Header or toolbar with two ends", "use": ".split" },
     { "intent": "Readable text column", "use": ".center" },
     { "intent": "Full-screen centered page", "use": ".cover + .cover-main" },
@@ -237,6 +239,10 @@
       {
         "html": "<section class=\"stack\">\n  <header class=\"split\">\n    <h3>Team</h3>\n    <button type=\"button\" class=\"button button-primary\">Invite</button>\n  </header>\n  <div class=\"table-wrap\" tabindex=\"0\">\n    <table class=\"table\">\n      <thead><tr><th>Name</th><th>Role</th><th>Status</th></tr></thead>\n      <tbody>\n        <tr><td>Ana</td><td>Admin</td><td><span class=\"badge badge-success\">Active</span></td></tr>\n        <tr><td>Ben</td><td>Editor</td><td><span class=\"badge badge-warning\">Invited</span></td></tr>\n      </tbody>\n    </table>\n  </div>\n</section>",
         "note": "Data view: split header with an action, scrollable table with status badges."
+      },
+      {
+        "html": "<div class=\"sidebar-lg sidebar-end\" style=\"--sidebar-width: 20rem\">\n  <main class=\"stack\">\n    <h1>Dashboard</h1>\n    <div class=\"grid\"><div class=\"card\">…</div><div class=\"card\">…</div></div>\n  </main>\n  <aside class=\"panel\">\n    <div class=\"panel-header\"><h2>Activity</h2></div>\n    <div class=\"panel-body\">Recent events.</div>\n  </aside>\n</div>",
+        "note": "Dashboard: main content first, narrow column on the right with a per-instance width."
       }
     ],
     "invalid": [
