@@ -19,6 +19,8 @@ export const COMPONENTS = {
   panel: ["panel", "panel-header", "panel-body"],
   table: ["table", "table-wrap", "table-hover", "numeric"],
   "empty-state": ["empty-state"],
+  nav: ["nav", "nav-link"],
+  tabs: ["tabs", "tabs-item"],
 };
 export const COMPONENT_NAMES = Object.keys(COMPONENTS);
 export const COMPONENT_CLASSES = Object.values(COMPONENTS).flat();
@@ -42,6 +44,15 @@ const COLOR_VARIANTS = [
   ["alert-danger", "alert"],
   ["card", "card"],
   ["panel", "panel"],
+];
+
+// Attribute-driven states: [label, selectors merged in order]. The text color
+// is checked against the last opaque background (transparent items show the
+// track behind them).
+const STATE_COLORS = [
+  ['.nav-link[aria-current="page"]', [".nav-link", '.nav-link[aria-current="page"]']],
+  [".tabs-item", [".tabs", ".tabs-item"]],
+  ['.tabs-item[aria-selected="true"]', [".tabs", ".tabs-item", '.tabs-item[aria-selected="true"]']],
 ];
 
 export const DOC_SECTIONS = ["Purpose", "Example", "Variants", "Composition", "Accessibility", "Recommended use"];
@@ -200,6 +211,8 @@ export function checkComponentsCss(componentsCss, tokensCss) {
     ["field controls (textarea)", /\.field\b.*\btextarea\b.*:focus-visible/],
     ["field controls (select)", /\.field\b.*\bselect\b.*:focus-visible/],
     ["table-wrap", /\.table-wrap:focus-visible/],
+    ["nav-link", /^\.nav-link:focus-visible$/],
+    ["tabs-item", /^\.tabs-item:focus-visible$/],
   ];
   for (const [what, re] of focusTargets) {
     if (!has((r) => sel(r, re) && focusRing(r))) {
@@ -237,15 +250,54 @@ export function checkComponentsCss(componentsCss, tokensCss) {
     errors.push(".numeric cells must be right-aligned with tabular-nums");
   }
 
-  // Contrast of text on each variant's background.
-  const plainDecls = (cls) => rules.filter((r) => r.selectors.includes(`.${cls}`)).flatMap((r) => r.decls);
+  // Nav and tabs: list reset, attribute-driven state, wrapping track.
+  const declsOf = (selector) => rules.filter((r) => r.selectors.includes(selector)).flatMap((r) => r.decls);
+  const navDecls = declsOf(".nav");
+  if (!navDecls.some((d) => d.prop === "list-style" && /^none\b/.test(d.value))) errors.push(".nav must remove list bullets (list-style: none)");
+  for (const prop of ["margin", "padding"]) {
+    if (!navDecls.some((d) => d.prop === prop && d.value === "0")) errors.push(`.nav must reset the list ${prop} to 0`);
+  }
+  if (navDecls.some((d) => d.prop === "display")) errors.push(".nav must not set display; layout comes from .stack-* or .cluster-*");
+  const stateDecls = (selector) => declsOf(selector).filter((d) => /^(background(-color)?|color)$/.test(d.prop));
+  if (!stateDecls('.nav-link[aria-current="page"]').length) {
+    errors.push('.nav-link[aria-current="page"] must change the background or text color');
+  }
+  if (!has((r) => sel(r, /^\.nav-link:hover$/) && decl(r, "background", /^var\(--color-surface\)$/))) {
+    errors.push(".nav-link:hover must use background: var(--color-surface)");
+  }
+  const selected = declsOf('.tabs-item[aria-selected="true"]');
+  if (!selected.some((d) => /^background(-color)?$/.test(d.prop) && d.value === "var(--color-surface-elevated)")) {
+    errors.push('.tabs-item[aria-selected="true"] must use background: var(--color-surface-elevated)');
+  }
+  if (!selected.some((d) => (d.prop === "box-shadow" && d.value !== "none") || /^border(-[\w-]+)?-color$|^border$/.test(d.prop))) {
+    errors.push('.tabs-item[aria-selected="true"] must look raised (a shadow or border token)');
+  }
+  if (!declsOf(".tabs-item").some((d) => /^background(-color)?$/.test(d.prop) && d.value === "transparent")) {
+    errors.push(".tabs-item must have a transparent background by default");
+  }
+  if (!declsOf(".tabs").some((d) => d.prop === "flex-wrap" && d.value === "wrap")) {
+    errors.push(".tabs must set flex-wrap: wrap so it never overflows narrow containers");
+  }
+  if (rules.some((r) => r.selectors.some((s) => /\[aria-pressed\b/.test(s)))) {
+    errors.push('components.css must not style aria-pressed; tabs use aria-selected="true"');
+  }
+
+  // Contrast of text on each variant's and state's background.
+  const plainDecls = (cls) => declsOf(`.${cls}`);
   const last = (decls, props) => decls.filter((d) => props.includes(d.prop)).at(-1)?.value;
-  for (const [variant, base] of COLOR_VARIANTS) {
-    const decls = variant === base ? plainDecls(base) : [...plainDecls(base), ...plainDecls(variant)];
+  const pairs = [
+    ...COLOR_VARIANTS.map(([variant, base]) => [
+      `.${variant}`,
+      variant === base ? plainDecls(base) : [...plainDecls(base), ...plainDecls(variant)],
+    ]),
+    ...STATE_COLORS.map(([label, selectors]) => [label, selectors.flatMap(declsOf)]),
+  ];
+  for (const [label, allDecls] of pairs) {
+    const decls = allDecls.filter((d) => d.value !== "transparent");
     const fg = last(decls, ["color"]);
     const bg = last(decls, ["background", "background-color"]);
     if (!fg || !bg) {
-      errors.push(`.${variant} must set both color and background`);
+      errors.push(`${label} must set both color and background`);
       continue;
     }
     try {
@@ -253,9 +305,9 @@ export function checkComponentsCss(componentsCss, tokensCss) {
       const b = colorOf(bg, tokens);
       if (!a || !b) throw new Error("could not resolve colors");
       const ratio = contrastRatio(a, b);
-      if (ratio < 4.5) errors.push(`contrast too low in .${variant}: ${ratio.toFixed(2)}:1 (min 4.5:1)`);
+      if (ratio < 4.5) errors.push(`contrast too low in ${label}: ${ratio.toFixed(2)}:1 (min 4.5:1)`);
     } catch (err) {
-      errors.push(`contrast of .${variant}: ${err.message}`);
+      errors.push(`contrast of ${label}: ${err.message}`);
     }
   }
   return errors;

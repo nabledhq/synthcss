@@ -97,6 +97,7 @@ Work on any element. No breakpoints: they adapt to the space they get.
 ## Component Vocabulary
 
 Naming: component, component-variant, component-part. State comes from attributes, never classes.
+One state attribute each: current nav link `aria-current="page"`; selected tab `role="tab"` + `aria-selected="true"` (others `"false"`). Never `aria-pressed` or state classes (active, is-active, selected).
 
 - `.button` — an action, on `<button>` or `<a href>`
   - variant `.button-primary` — main action of a form or page
@@ -133,6 +134,10 @@ Naming: component, component-variant, component-part. State comes from attribute
   - part `.numeric` — right-aligned tabular-number cell
   - variant `.table-hover` — highlight the hovered row
 - `.empty-state` — nothing to show yet: icon, heading, text, action
+- `.nav` — list reset for navigation links on `<ul>`; add `.stack-sm` (vertical) or `.cluster-sm` (horizontal)
+  - part `.nav-link` — an `<a href>` in `.nav`, optional leading `<svg>`; current page: `aria-current="page"`
+- `.tabs` — tab list or segmented filter; `role="tablist"` + `aria-label`; wraps when narrow. CSS only: arrow keys and panel switching are your script
+  - part `.tabs-item` — `<button role="tab">`; selected: `aria-selected="true"`, others `aria-selected="false"`
 
 ## Intent Mapping
 
@@ -157,6 +162,8 @@ Naming: component, component-variant, component-part. State comes from attribute
 | Secondary grouped content | `.panel` + `.panel-header` / `.panel-body` |
 | Tabular data | `.table-wrap` > `.table`; `.table-hover`, `.numeric` |
 | No data yet | `.empty-state` |
+| Navigation links | `.nav` + `.nav-link` |
+| Tabs or segmented filter | `.tabs` + `.tabs-item` |
 
 ## Composition Rules
 
@@ -175,6 +182,7 @@ Naming: component, component-variant, component-part. State comes from attribute
 - Restyling a component with extra CSS; override tokens on `:root` instead.
 - Classes for state (is-active, disabled); use attributes.
 - Visual reordering (order, *-reverse); DOM order is visual order.
+- `aria-pressed` or classes for the current link or selected tab; use `aria-current="page"` on `.nav-link`, `aria-selected="true"` on `.tabs-item`.
 
 ## AI Generation Rules
 
@@ -184,21 +192,33 @@ Naming: component, component-variant, component-part. State comes from attribute
 4. Never use inline styles except a token override such as `style="--grid-min: 12rem"`.
 5. In any custom CSS, reference tokens with `var()`; never hard-code colors, px/rem sizes, shadows or durations.
 6. Put components on semantic native elements and keep one component per element.
-7. Express state with attributes: `disabled`, `aria-disabled="true"`, `aria-busy="true"`, `aria-invalid="true"`.
+7. Express state with attributes: `disabled`, `aria-disabled="true"`, `aria-busy="true"`, `aria-invalid="true"`, `aria-current="page"` (nav), `aria-selected="true"` (tabs).
 8. Pick variants by meaning, not look: `button-danger` for destructive actions, `badge-success` for success.
 9. Write no media queries or breakpoint classes; primitives adapt to the space they get.
 10. Keep it accessible: `aria-label` on `.button-icon`, `role="status"` or `role="alert"` on `.alert`, a `<label for>` on every control.
 
 ## Valid Examples
 
-Page: container + stack, split header, grid of cards with a status badge.
+Page: container + stack, split header with nav, tabs filter beside the main action, grid of cards with a status badge.
 
 ```html
 <main class="container stack-lg">
   <header class="split">
     <h1>Projects</h1>
-    <button type="button" class="button button-primary">New project</button>
+    <nav aria-label="Main">
+      <ul class="nav cluster-sm" role="list">
+        <li><a class="nav-link" href="/projects" aria-current="page">Projects</a></li>
+        <li><a class="nav-link" href="/team">Team</a></li>
+      </ul>
+    </nav>
   </header>
+  <div class="split">
+    <div class="tabs" role="tablist" aria-label="Filter projects">
+      <button type="button" class="tabs-item" role="tab" aria-selected="true">Active</button>
+      <button type="button" class="tabs-item" role="tab" aria-selected="false">Archived</button>
+    </div>
+    <button type="button" class="button button-primary">New project</button>
+  </div>
   <ul class="grid" role="list">
     <li class="card">
       <div class="card-header"><h2>Atlas</h2></div>
@@ -269,3 +289,5 @@ Never generate these. Each line: wrong markup — why — what to use instead.
 - `<button class="btn btn-primary">Save</button>` — Another framework's names. Use .button and .button-primary.
 - `<span class="badge badge-red">Failed</span>` — Color-named variant. Use .badge and .badge-danger.
 - `<p class="mt-4">Saved.</p>` — Spacing utility. Use .stack on the parent.
+- `<a class="nav-link active" href="/team">Team</a>` — State class. Use .nav-link with aria-current="page".
+- `<button class="tabs-item" aria-pressed="true">Week</button>` — aria-pressed for a tab. Use .tabs-item with role="tab" and aria-selected="true".

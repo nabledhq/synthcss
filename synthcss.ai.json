@@ -175,6 +175,20 @@
       "intent": "nothing to show yet: icon, heading, text, action",
       "parts": {},
       "variants": {}
+    },
+    "nav": {
+      "intent": "list reset for navigation links on <ul>; add .stack-sm (vertical) or .cluster-sm (horizontal)",
+      "parts": {
+        "nav-link": "an <a href> in .nav, optional leading <svg>; current page: aria-current=\"page\""
+      },
+      "variants": {}
+    },
+    "tabs": {
+      "intent": "tab list or segmented filter; role=\"tablist\" + aria-label; wraps when narrow. CSS only: arrow keys and panel switching are your script",
+      "parts": {
+        "tabs-item": "<button role=\"tab\">; selected: aria-selected=\"true\", others aria-selected=\"false\""
+      },
+      "variants": {}
     }
   },
   "intentMap": [
@@ -196,7 +210,9 @@
     { "intent": "Message or notification", "use": ".alert + .alert-info / -success / -warning / -danger" },
     { "intent": "Secondary grouped content", "use": ".panel + .panel-header / .panel-body" },
     { "intent": "Tabular data", "use": ".table-wrap > .table; .table-hover, .numeric" },
-    { "intent": "No data yet", "use": ".empty-state" }
+    { "intent": "No data yet", "use": ".empty-state" },
+    { "intent": "Navigation links", "use": ".nav + .nav-link" },
+    { "intent": "Tabs or segmented filter", "use": ".tabs + .tabs-item" }
   ],
   "compositionRules": {
     "recommended": [
@@ -211,7 +227,8 @@
       "Wrapper <div>s that add no layout intent.",
       "Restyling a component with extra CSS; override tokens on :root instead.",
       "Classes for state (is-active, disabled); use attributes.",
-      "Visual reordering (order, *-reverse); DOM order is visual order."
+      "Visual reordering (order, *-reverse); DOM order is visual order.",
+      "aria-pressed or classes for the current link or selected tab; use aria-current=\"page\" on .nav-link, aria-selected=\"true\" on .tabs-item."
     ]
   },
   "generationRules": [
@@ -221,7 +238,7 @@
     "Never use inline styles except a token override such as style=\"--grid-min: 12rem\".",
     "In any custom CSS, reference tokens with var(); never hard-code colors, px/rem sizes, shadows or durations.",
     "Put components on semantic native elements and keep one component per element.",
-    "Express state with attributes: disabled, aria-disabled=\"true\", aria-busy=\"true\", aria-invalid=\"true\".",
+    "Express state with attributes: disabled, aria-disabled=\"true\", aria-busy=\"true\", aria-invalid=\"true\", aria-current=\"page\" (nav), aria-selected=\"true\" (tabs).",
     "Pick variants by meaning, not look: button-danger for destructive actions, badge-success for success.",
     "Write no media queries or breakpoint classes; primitives adapt to the space they get.",
     "Keep it accessible: aria-label on .button-icon, role=\"status\" or role=\"alert\" on .alert, a <label for> on every control."
@@ -229,8 +246,8 @@
   "examples": {
     "valid": [
       {
-        "html": "<main class=\"container stack-lg\">\n  <header class=\"split\">\n    <h1>Projects</h1>\n    <button type=\"button\" class=\"button button-primary\">New project</button>\n  </header>\n  <ul class=\"grid\" role=\"list\">\n    <li class=\"card\">\n      <div class=\"card-header\"><h2>Atlas</h2></div>\n      <div class=\"card-body\">Design system migration.</div>\n      <div class=\"card-footer split-sm\"><span class=\"badge badge-success\">Active</span></div>\n    </li>\n  </ul>\n</main>",
-        "note": "Page: container + stack, split header, grid of cards with a status badge."
+        "html": "<main class=\"container stack-lg\">\n  <header class=\"split\">\n    <h1>Projects</h1>\n    <nav aria-label=\"Main\">\n      <ul class=\"nav cluster-sm\" role=\"list\">\n        <li><a class=\"nav-link\" href=\"/projects\" aria-current=\"page\">Projects</a></li>\n        <li><a class=\"nav-link\" href=\"/team\">Team</a></li>\n      </ul>\n    </nav>\n  </header>\n  <div class=\"split\">\n    <div class=\"tabs\" role=\"tablist\" aria-label=\"Filter projects\">\n      <button type=\"button\" class=\"tabs-item\" role=\"tab\" aria-selected=\"true\">Active</button>\n      <button type=\"button\" class=\"tabs-item\" role=\"tab\" aria-selected=\"false\">Archived</button>\n    </div>\n    <button type=\"button\" class=\"button button-primary\">New project</button>\n  </div>\n  <ul class=\"grid\" role=\"list\">\n    <li class=\"card\">\n      <div class=\"card-header\"><h2>Atlas</h2></div>\n      <div class=\"card-body\">Design system migration.</div>\n      <div class=\"card-footer split-sm\"><span class=\"badge badge-success\">Active</span></div>\n    </li>\n  </ul>\n</main>",
+        "note": "Page: container + stack, split header with nav, tabs filter beside the main action, grid of cards with a status badge."
       },
       {
         "html": "<form class=\"card\">\n  <div class=\"field\">\n    <label class=\"field-label\" for=\"email\">Email</label>\n    <input id=\"email\" type=\"email\" aria-invalid=\"true\" aria-describedby=\"email-error\">\n    <p class=\"field-error\" id=\"email-error\">Enter a full email address.</p>\n  </div>\n  <div class=\"cluster-sm\">\n    <button type=\"submit\" class=\"button button-primary\">Save</button>\n    <button type=\"button\" class=\"button\">Cancel</button>\n  </div>\n</form>",
@@ -265,6 +282,14 @@
       {
         "html": "<p class=\"mt-4\">Saved.</p>",
         "note": "Spacing utility. Use .stack on the parent."
+      },
+      {
+        "html": "<a class=\"nav-link active\" href=\"/team\">Team</a>",
+        "note": "State class. Use .nav-link with aria-current=\"page\"."
+      },
+      {
+        "html": "<button class=\"tabs-item\" aria-pressed=\"true\">Week</button>",
+        "note": "aria-pressed for a tab. Use .tabs-item with role=\"tab\" and aria-selected=\"true\"."
       }
     ]
   }

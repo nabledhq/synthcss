@@ -452,9 +452,10 @@
         <div class="stack-sm">
           <h2 id="components-title">Components</h2>
           <p class="sc-muted">
-            Eight semantic components built only from tokens. State comes from native
-            attributes such as <code>disabled</code>, <code>aria-busy</code> and
-            <code>aria-invalid</code>. Press <kbd>Tab</kbd> to see the focus rings.
+            Ten semantic components built only from tokens. State comes from native
+            attributes such as <code>disabled</code>, <code>aria-busy</code>,
+            <code>aria-invalid</code>, <code>aria-current</code> and
+            <code>aria-selected</code>. Press <kbd>Tab</kbd> to see the focus rings.
           </p>
         </div>
         <div class="grid-lg" style="--grid-min: 22rem">
@@ -711,6 +712,62 @@
 &lt;/div&gt;</code></pre></div>
           </article>
 
+          <article class="sc-card stack" aria-labelledby="component-nav">
+            <h3 id="component-nav"><code>.nav</code></h3>
+            <p>Navigation links. <code>.nav</code> resets the list; <code>.stack-sm</code> or <code>.cluster-sm</code> sets the direction. The current page is <code>aria-current="page"</code>.</p>
+            <div class="sc-demo">
+              <div class="stack">
+                <nav aria-label="Demo main navigation">
+                  <ul class="nav cluster-sm" role="list">
+                    <li><a class="nav-link" href="#component-nav" aria-current="page">Projects</a></li>
+                    <li><a class="nav-link" href="#component-nav">Team</a></li>
+                    <li><a class="nav-link" href="#component-nav">Settings</a></li>
+                  </ul>
+                </nav>
+                <nav aria-label="Demo settings navigation">
+                  <ul class="nav stack-sm" role="list">
+                    <li><a class="nav-link" href="#component-nav"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="2" fill="none"/></svg> General</a></li>
+                    <li><a class="nav-link" href="#component-nav" aria-current="page"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 14c0-3 3-5 6-5s6 2 6 5M8 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" stroke="currentColor" stroke-width="2" fill="none"/></svg> Members</a></li>
+                    <li><a class="nav-link" href="#component-nav"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 4h12v8H2zM2 7h12" stroke="currentColor" stroke-width="2" fill="none"/></svg> Billing</a></li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;nav aria-label="Main"&gt;
+  &lt;ul class="nav cluster-sm" role="list"&gt;
+    &lt;li&gt;&lt;a class="nav-link" href="/projects" aria-current="page"&gt;Projects&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a class="nav-link" href="/team"&gt;Team&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-tabs">
+            <h3 id="component-tabs"><code>.tabs</code></h3>
+            <p>A tab list or segmented filter. The selected item is <code>aria-selected="true"</code> with <code>role="tab"</code>; switching panels is up to your script.</p>
+            <div class="sc-demo">
+              <div class="stack">
+                <div class="tabs" role="tablist" aria-label="Demo member filter">
+                  <button type="button" class="tabs-item" role="tab" aria-selected="true">All</button>
+                  <button type="button" class="tabs-item" role="tab" aria-selected="false">Admins</button>
+                  <button type="button" class="tabs-item" role="tab" aria-selected="false">Invited</button>
+                </div>
+                <div class="cluster-sm">
+                  <div class="tabs" role="tablist" aria-label="Demo period">
+                    <button type="button" class="tabs-item" role="tab" aria-selected="false">Day</button>
+                    <button type="button" class="tabs-item" role="tab" aria-selected="true">Week</button>
+                    <button type="button" class="tabs-item" role="tab" aria-selected="false">Month</button>
+                  </div>
+                  <button type="button" class="button button-sm">Export</button>
+                </div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="tabs" role="tablist" aria-label="Members"&gt;
+  &lt;button type="button" class="tabs-item" role="tab" aria-selected="true"&gt;All&lt;/button&gt;
+  &lt;button type="button" class="tabs-item" role="tab" aria-selected="false"&gt;Admins&lt;/button&gt;
+  &lt;button type="button" class="tabs-item" role="tab" aria-selected="false"&gt;Invited&lt;/button&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
         </div>
       </div>
     </section>
@@ -729,10 +786,10 @@
         <div class="sc-frame" id="frame-composed">
           <div class="sidebar" data-composed>
             <nav class="panel" aria-label="Project settings">
-              <ul class="stack-sm" role="list">
-                <li><a href="#composed">General</a></li>
-                <li><a href="#composed">Members</a></li>
-                <li><a href="#composed">Billing</a></li>
+              <ul class="nav stack-sm" role="list">
+                <li><a class="nav-link" href="#composed" aria-current="page">General</a></li>
+                <li><a class="nav-link" href="#composed">Members</a></li>
+                <li><a class="nav-link" href="#composed">Billing</a></li>
               </ul>
             </nav>
             <div class="stack-lg">
@@ -809,6 +866,11 @@
                   <h4 id="composed-members">Members</h4>
                   <button type="button" class="button button-sm">Invite</button>
                 </header>
+                <div class="tabs" role="tablist" aria-label="Filter members">
+                  <button type="button" class="tabs-item" role="tab" aria-selected="true">All</button>
+                  <button type="button" class="tabs-item" role="tab" aria-selected="false">Owners</button>
+                  <button type="button" class="tabs-item" role="tab" aria-selected="false">Developers</button>
+                </div>
                 <div class="table-wrap" role="region" aria-labelledby="composed-members" tabindex="0">
                   <table class="table table-hover">
                     <thead>
@@ -942,7 +1004,7 @@
           <a class="sc-button" href="../synthcss.llm.md">View synthcss.llm.md</a>
           <a class="sc-button sc-button-secondary" href="../synthcss.ai.json" download>Download synthcss.ai.json</a>
           <a href="https://github.com/nabledhq/synthcss/blob/main/synthcss.llm.md">Read it on GitHub</a>
-          <span class="badge badge-info">≈ 2,830 tokens</span>
+          <span class="badge badge-info">≈ 3,490 tokens</span>
         </div>
         <p class="sc-muted">
           Size estimated as characters ÷ 4 (about 11,300 characters), small enough for one
