@@ -1,21 +1,32 @@
-# Publishes a release when package.json's version changes on main.
+# Releases SynthCSS to the jsDelivr CDN. Runs on every push to main:
+# - A merge that changes what the CDN serves (src/, synthcss.llm.md, synthcss.ai.json)
+#   gets an automatic minor bump: scripts/bump-version.mjs updates every version
+#   reference and the workflow commits "Release vX.Y.Z" to main. Label the pull request
+#   release:patch, release:major or release:skip to change that.
+# - A merge that already changed package.json's version is released as it is.
+# - Anything else (docs, showcase, CI) is not released.
 # The tag points at a release commit on top of main that adds the built dist/
 # (dist/ is not committed on main). jsDelivr serves any tag straight from GitHub:
 #   https://cdn.jsdelivr.net/gh/nabledhq/synthcss@<version>/dist/synthcss.min.css
-# To release, bump the version in a PR (npm version minor --no-git-tag-version) and merge it.
 # See docs/releasing.md.
 name: Release
 
 on:
   push:
     branches: [main]
-    paths:
-      - "package.json"
   workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump (none releases the current version if it has no tag yet)"
+        type: choice
+        options: [minor, patch, major, none]
+        default: minor
 
 permissions:
   contents: write
+  pull-requests: read
 
+# One release at a time, in merge order.
 concurrency:
   group: release
   cancel-in-progress: false
@@ -23,17 +34,69 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Commits pushed by this workflow do not trigger workflows; this is a second guard.
+    if: github.actor != 'github-actions[bot]'
     steps:
       - name: Check out
         uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      - name: Decide what to release
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          INPUT_BUMP: ${{ inputs.bump }}
+        run: |
+          version_at() { git show "$1:package.json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).version))'; }
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            bump="$INPUT_BUMP"
+            echo "Started by hand: bump=$bump"
+          elif [ "$(version_at "$BEFORE")" != "$(version_at "$GITHUB_SHA")" ]; then
+            bump=none
+            echo "The version was bumped in this merge; releasing it as it is."
+          elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qE '^(src/|synthcss\.llm\.md$|synthcss\.ai\.json$)'; then
+            labels=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" --jq '.[0].labels[].name' 2>/dev/null || true)
+            case "$labels" in
+              *release:skip*) bump=skip ;;
+              *release:major*) bump=major ;;
+              *release:patch*) bump=patch ;;
+              *) bump=minor ;;
+            esac
+            echo "CDN files changed: bump=$bump"
+          else
+            bump=skip
+            echo "No CDN files changed; nothing to release."
+          fi
+          echo "bump=$bump" >> "$GITHUB_OUTPUT"
+
+      - name: Bump the version on main
+        if: steps.plan.outputs.bump != 'skip' && steps.plan.outputs.bump != 'none'
+        env:
+          BUMP: ${{ steps.plan.outputs.bump }}
+        run: |
+          version=$(node scripts/bump-version.mjs "$BUMP")
+          npm test
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Release v$version"
+          # Another merge may have landed meanwhile: rebase onto it and retry.
+          for attempt in 1 2 3; do
+            git push origin HEAD:main && exit 0
+            git pull --rebase origin main
+          done
+          exit 1
+
       - name: Read version
         id: version
+        if: steps.plan.outputs.bump != 'skip'
         run: |
           version=$(node -p "require('./package.json').version")
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -44,11 +107,11 @@ jobs:
           fi
 
       - name: Run checks
-        if: steps.version.outputs.exists != 'true'
+        if: steps.plan.outputs.bump != 'skip' && steps.version.outputs.exists != 'true'
         run: npm test
 
       - name: Build and tag the release commit
-        if: steps.version.outputs.exists != 'true'
+        if: steps.plan.outputs.bump != 'skip' && steps.version.outputs.exists != 'true'
         env:
           TAG: ${{ steps.version.outputs.tag }}
         run: |
@@ -56,29 +119,30 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add --force dist
-          git commit -m "Release $TAG"
+          git commit -m "Build $TAG"
           git tag -a "$TAG" -m "SynthCSS $TAG"
           git push origin "refs/tags/$TAG"
 
       - name: Create GitHub release
-        if: steps.version.outputs.exists != 'true'
+        if: steps.plan.outputs.bump != 'skip' && steps.version.outputs.exists != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
           TAG: ${{ steps.version.outputs.tag }}
         run: |
-          cdn="https://cdn.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${VERSION}/dist"
+          cdn="https://cdn.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${VERSION}"
           cat > notes.md <<EOF
           ## CDN
 
           \`\`\`html
-          <link rel="stylesheet" href="${cdn}/synthcss.min.css">
+          <link rel="stylesheet" href="${cdn}/dist/synthcss.min.css">
           \`\`\`
 
-          - Unminified bundle: ${cdn}/synthcss.css
-          - Tokens only: ${cdn}/tokens.min.css
-          - Layout only (load tokens first): ${cdn}/layout.min.css
-          - Components only (load tokens first): ${cdn}/components.min.css
+          - Unminified bundle: ${cdn}/dist/synthcss.css
+          - Tokens only: ${cdn}/dist/tokens.min.css
+          - Layout only (load tokens first): ${cdn}/dist/layout.min.css
+          - Components only (load tokens first): ${cdn}/dist/components.min.css
+          - AI contract: ${cdn}/synthcss.llm.md and ${cdn}/synthcss.ai.json
           EOF
           gh release create "$TAG" dist/*.css \
             --verify-tag \
@@ -87,7 +151,7 @@ jobs:
             --generate-notes
 
       - name: Refresh jsDelivr version aliases
-        if: steps.version.outputs.exists != 'true'
+        if: steps.plan.outputs.bump != 'skip' && steps.version.outputs.exists != 'true'
         continue-on-error: true
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -99,5 +163,8 @@ jobs:
               for ext in css min.css; do
                 curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${alias}/dist/${file}.${ext}" >/dev/null
               done
+            done
+            for file in synthcss.llm.md synthcss.ai.json; do
+              curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${alias}/${file}" >/dev/null
             done
           done

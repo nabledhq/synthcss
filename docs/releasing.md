@@ -1,8 +1,9 @@
 # Releasing SynthCSS
 
 SynthCSS uses [semantic versioning](https://semver.org). The version in `package.json`
-is the single source of truth. A merge to `main` that changes it publishes a release:
-no manual tagging and no npm account.
+is the single source of truth. Releases are automatic: every merge to `main` that
+changes what the CDN serves is released as a new version, with no manual tagging and no
+npm account.
 
 ## What a release is
 
@@ -16,7 +17,7 @@ no manual tagging and no npm account.
   `src/` never need a rebuild.
 - **A git tag `vX.Y.Z`**, created by
   [`.github/workflows/release.yml`](../.github/workflows/release.yml). It points at a
-  "Release vX.Y.Z" commit on top of the merge commit that adds the built `dist/`. That
+  "Build vX.Y.Z" commit on top of `main` that adds the built `dist/`. That
   commit is only reachable through the tag, never merged into `main`. The workflow also
   creates a GitHub release that attaches the `dist/` files and lists the CDN links.
 - **The CDN.** jsDelivr serves any tag of a public GitHub repository, with no setup:
@@ -41,23 +42,37 @@ While SynthCSS is 0.x:
 
 From 1.0.0, breaking changes need a major bump.
 
-## Making a release
+## How a merge is released
 
-1. On a branch, bump the version in `package.json`, by hand or with:
+The **Release** workflow runs on every push to `main` and decides from the merge:
 
-   ```sh
-   npm version minor --no-git-tag-version   # or: patch, major, or an exact 0.2.0
-   ```
+| The merge… | Result |
+| --- | --- |
+| changes `src/`, `synthcss.llm.md` or `synthcss.ai.json` | Minor bump and release. |
+| … and the pull request is labelled `release:patch` | Patch bump and release. |
+| … and the pull request is labelled `release:major` | Major bump and release. |
+| … and the pull request is labelled `release:skip` | No release; the change ships with the next one. |
+| already changes `version` in `package.json` | Released as that version, with no extra bump. |
+| changes nothing the CDN serves (docs, showcase, scripts, CI) | No release. |
 
-   In the same change, set `synthcssVersion` in `synthcss.ai.json` and the version in
-   the header (and CDN link) of `synthcss.llm.md` to the new version. `npm test` fails
-   until they match (see [ai-contract.md](ai-contract.md)).
+To bump, the workflow runs `node scripts/bump-version.mjs <minor|patch|major>`. It
+updates every file that states the version (`package.json`, `synthcssVersion` in
+`synthcss.ai.json`, the header and CDN link of `synthcss.llm.md`, and the README's CDN
+snippet). The workflow runs `npm test`, commits "Release vX.Y.Z" to `main` and pushes it.
+It then builds `dist/`, pushes the `vX.Y.Z` tag and creates the GitHub release. If the
+tag already exists it does nothing.
 
-2. Open a pull request and merge it into `main`.
-3. On merge, the **Release** workflow runs `npm test`, builds `dist/`, pushes the
-   `vX.Y.Z` tag and creates the GitHub release. If the tag already exists it does
-   nothing, so merging other changes to `package.json` is safe. It can also be started
-   by hand from the Actions tab.
+Pull requests should not change the version themselves. The workflow bumps it after
+the merge, so feature branches never conflict on the version lines. Pull `main` after a
+release, because the workflow adds a commit to it.
+
+## Releasing by hand
+
+- **From the Actions tab:** run the **Release** workflow and pick `minor`, `patch` or
+  `major`. `none` releases the current version if it has no tag yet.
+- **In a pull request:** run `node scripts/bump-version.mjs patch` (or `minor`, `major`,
+  or an exact `0.4.0`), commit the result and merge. The workflow releases that version
+  without bumping again.
 
 To preview the release files locally, run `npm run build` and open `dist/`.
 
