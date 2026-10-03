@@ -1,5 +1,5 @@
 {
-  "synthcssVersion": "0.1.0",
+  "synthcssVersion": "0.2.0",
   "contractVersion": "1.0.0",
   "tokens": {
     "--color-background": "page background",

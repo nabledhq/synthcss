@@ -99,11 +99,13 @@ test("fails when the Markdown and JSON examples drift apart", () => {
 });
 
 test("fails when versions do not match package.json", () => {
+  // Read the current version so the test keeps passing after a release bump.
+  const { version } = JSON.parse(files.pkg);
   const json = withJson((c) => (c.synthcssVersion = "0.0.9"));
-  assertError(errorsWith(json), 'synthcssVersion is "0.0.9" but package.json is "0.1.0"');
-  const pkg = files.pkg.replace('"version": "0.1.0"', '"version": "0.2.0"');
-  assertError(errorsWith({ pkg }), "states SynthCSS 0.1.0 but package.json is 0.2.0");
-  assertError(errorsWith({ pkg }), "links to synthcss@0.1.0 but package.json is 0.2.0");
+  assertError(errorsWith(json), `synthcssVersion is "0.0.9" but package.json is "${version}"`);
+  const pkg = files.pkg.replace(`"version": "${version}"`, '"version": "99.0.0"');
+  assertError(errorsWith({ pkg }), `states SynthCSS ${version} but package.json is 99.0.0`);
+  assertError(errorsWith({ pkg }), `links to synthcss@${version} but package.json is 99.0.0`);
   const contractVersion = withJson((c) => (c.contractVersion = "2.0.0"));
   assertError(errorsWith(contractVersion), "states contract 1.0.0 but synthcss.ai.json has 2.0.0");
 });
