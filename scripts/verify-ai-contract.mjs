@@ -41,6 +41,10 @@ export const MD_SECTIONS = [
 ];
 const INVALID_SECTION = "Invalid / Discouraged Examples";
 export const GENERATION_RULES = 10;
+// Parts whose state comes from one ARIA attribute. The contract must name that
+// attribute in the part's entry (JSON and Markdown), and the Markdown must rule
+// out aria-pressed, so models do not pick a different attribute per run.
+export const STATE_ATTRIBUTES = { "nav-link": 'aria-current="page"', "tabs-item": 'aria-selected="true"' };
 export const VALID_EXAMPLES = [2, 4];
 // The showcase may round the size it prints; it must stay within this fraction.
 export const SHOWCASE_SIZE_TOLERANCE = 0.1;
@@ -314,6 +318,16 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
   }
   for (const token of diff(jsonTokens, mdTokens)) errors.push(`token ${token} is in ${JSON_FILE} but not in the ${LLM_FILE} Design Tokens`);
   for (const token of diff(mdTokens, jsonTokens)) errors.push(`token ${token} is in the ${LLM_FILE} Design Tokens but not in ${JSON_FILE}`);
+
+  for (const [part, attr] of Object.entries(STATE_ATTRIBUTES)) {
+    const owner = Object.values(contract.components).find((comp) => part in comp.parts);
+    if (owner && !owner.parts[part].includes(attr)) errors.push(`${JSON_FILE}: the .${part} entry must name its state attribute ${attr}`);
+    const line = section("Component Vocabulary").split("\n").find((l) => l.includes(`\`.${part}\``));
+    if (line && !line.includes(attr)) errors.push(`${LLM_FILE}: the .${part} entry must name its state attribute ${attr}`);
+  }
+  if (!/never\b[^\n]*`aria-pressed`/i.test(section("Component Vocabulary"))) {
+    errors.push(`${LLM_FILE}: the Component Vocabulary must say never to use \`aria-pressed\``);
+  }
 
   const rows = section("Intent Mapping").split("\n").filter((l) => /^\s*\|/.test(l)).slice(2);
   if (rows.length !== contract.intentMap.length) {

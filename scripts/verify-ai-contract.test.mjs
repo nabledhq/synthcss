@@ -56,6 +56,28 @@ test("fails when a class is deleted from the contract", () => {
   assertError(errorsWith({ md }), "class .split-lg is in synthcss.ai.json but not in the synthcss.llm.md vocabulary");
 });
 
+test("lists nav and tabs with their intent rows and one state attribute each", () => {
+  assert.ok(contract.components.nav.parts["nav-link"]);
+  assert.ok(contract.components.tabs.parts["tabs-item"]);
+  assert.ok(contract.intentMap.some((e) => e.intent === "Navigation links" && e.use === ".nav + .nav-link"));
+  assert.ok(contract.intentMap.some((e) => e.intent === "Tabs or segmented filter" && e.use === ".tabs + .tabs-item"));
+  assert.match(files.md, /^\| Navigation links \| `\.nav` \+ `\.nav-link` \|$/m);
+  assert.match(files.md, /^\| Tabs or segmented filter \| `\.tabs` \+ `\.tabs-item` \|$/m);
+  const tabs = withJson((c) => delete c.components.tabs);
+  assertError(errorsWith(tabs), "class .tabs-item is in the SynthCSS CSS but missing from synthcss.ai.json");
+  const md = files.md.replace("| Navigation links | `.nav` + `.nav-link` |\n", "");
+  assertError(errorsWith({ md }), "the Intent Mapping table has");
+});
+
+test("fails when the contract drops or changes a state attribute, or allows aria-pressed", () => {
+  const json = withJson((c) => (c.components.tabs.parts["tabs-item"] = "<button role=\"tab\">; selected: aria-pressed=\"true\""));
+  assertError(errorsWith(json), 'synthcss.ai.json: the .tabs-item entry must name its state attribute aria-selected="true"');
+  const md = files.md.replace(/^(  - part `\.nav-link` — .*?); current page: `aria-current="page"`$/m, "$1");
+  assertError(errorsWith({ md }), 'synthcss.llm.md: the .nav-link entry must name its state attribute aria-current="page"');
+  const pressed = files.md.replace("Never `aria-pressed` or state classes", "Avoid state classes");
+  assertError(errorsWith({ md: pressed }), "never to use `aria-pressed`");
+});
+
 test("fails when a class is added to the CSS but not to the contract", () => {
   const builtCss = files.builtCss + "\n.button-ghost { color: var(--color-text); }\n";
   assertError(errorsWith({ builtCss }), "class .button-ghost is in the SynthCSS CSS but missing from synthcss.ai.json");

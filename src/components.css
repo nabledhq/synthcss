@@ -1,15 +1,17 @@
 /*
  * SynthCSS components
  *
- * Eight semantic components on top of the design tokens and layout
- * primitives: button, field, card, badge, alert, panel, table, empty-state.
+ * Ten semantic components on top of the design tokens and layout
+ * primitives: button, field, card, badge, alert, panel, table, empty-state,
+ * nav and tabs.
  *
  * Rules:
  * - Every color, space, radius, font size, weight and shadow is a token from
  *   tokens.css. No color literals; tints are color-mix() of two tokens.
  * - Naming is .component, .component-variant, .component-part.
  * - State comes from native attributes, not classes: :disabled,
- *   [aria-disabled="true"], [aria-busy="true"], [aria-invalid="true"].
+ *   [aria-disabled="true"], [aria-busy="true"], [aria-invalid="true"],
+ *   [aria-current="page"] (nav) and [aria-selected="true"] (tabs).
  * - Components never set `display` on parts meant to be combined with a
  *   layout primitive (for example `class="card-footer split"`).
  * - Child margin resets use :where() so any author rule wins.
@@ -708,4 +710,126 @@
   inline-size: calc(var(--space-6) * 2);
   block-size: auto;
   color: var(--color-text-muted);
+}
+
+/* -------------------------------------------------------------------------
+   Nav: a list of navigation links. .nav only resets the list; add .stack-*
+   for a vertical list or .cluster-* for a horizontal one. The current page
+   is marked with aria-current="page", never with a class.
+   ------------------------------------------------------------------------- */
+.nav {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-md);
+  color: inherit;
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.nav-link > :where(svg, img) {
+  flex-shrink: 0;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.nav-link:hover {
+  background: var(--color-surface);
+}
+
+.nav-link[aria-current="page"] {
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-background));
+  color: var(--color-primary);
+}
+
+.nav-link:focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+/* -------------------------------------------------------------------------
+   Tabs: a segmented control or tab list on a surface track. The selected
+   item is marked with aria-selected="true" (with role="tab"), never with
+   aria-pressed or a class. CSS only: arrow-key focus and panel switching are
+   up to the page's own script. The track wraps instead of overflowing.
+   ------------------------------------------------------------------------- */
+.tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  box-sizing: border-box;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  padding: var(--space-1);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.tabs-item {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  margin: 0;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.tabs-item > :where(svg, img) {
+  flex-shrink: 0;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.tabs-item:hover {
+  color: var(--color-text);
+}
+
+.tabs-item[aria-selected="true"] {
+  border-color: var(--border-color);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+}
+
+.tabs-item:focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
 }

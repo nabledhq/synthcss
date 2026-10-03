@@ -73,6 +73,52 @@ test("fails when disabled or loading selectors are missing", () => {
   assertError(errorsWith(noSpinner), "loading indicator");
 });
 
+test("fails when nav or tabs lose their focus ring", () => {
+  const nav = withCss((css) => css.replace(".nav-link:focus-visible {", ".nav-link:focus {"));
+  assertError(errorsWith(nav), "nav-link needs a :focus-visible rule");
+  const tabs = withCss((css) => css.replace(".tabs-item:focus-visible {", ".tabs-item:focus {"));
+  assertError(errorsWith(tabs), "tabs-item needs a :focus-visible rule");
+});
+
+test("fails when .nav does not reset the list or sets a layout", () => {
+  const bullets = withCss((css) => css.replace(/(\.nav \{[^}]*)list-style: none;/, "$1"));
+  assertError(errorsWith(bullets), ".nav must remove list bullets");
+  const padding = withCss((css) => css.replace(/(\.nav \{[^}]*)padding: 0;/, "$1"));
+  assertError(errorsWith(padding), ".nav must reset the list padding to 0");
+  const display = withCss((css) => css.replace(".nav {\n", ".nav {\n  display: flex;\n"));
+  assertError(errorsWith(display), ".nav must not set display");
+});
+
+test("fails when nav and tabs state does not come from aria-current and aria-selected", () => {
+  const current = withCss((css) => css.replaceAll('.nav-link[aria-current="page"]', '.nav-link[data-current]'));
+  assertError(errorsWith(current), '.nav-link[aria-current="page"] must change the background or text color');
+  const hover = withCss((css) => css.replace(/(\.nav-link:hover \{\n  background: )var\(--color-surface\)/, "$1var(--color-surface-elevated)"));
+  assertError(errorsWith(hover), ".nav-link:hover must use background: var(--color-surface)");
+  const pressed = withCss((css) => css.replaceAll('.tabs-item[aria-selected="true"]', '.tabs-item[aria-pressed="true"]'));
+  assertError(errorsWith(pressed), '.tabs-item[aria-selected="true"] must use background: var(--color-surface-elevated)');
+  assertError(errorsWith(pressed), "must not style aria-pressed");
+  const flat = withCss((css) =>
+    css.replace(/(\.tabs-item\[aria-selected="true"\] \{\n)  border-color: var\(--border-color\);\n([^}]*)  box-shadow: var\(--shadow-sm\);\n/, "$1$2"),
+  );
+  assertError(errorsWith(flat), "must look raised");
+  const opaque = withCss((css) => css.replace(/(\.tabs-item \{[^}]*background: )transparent;/, "$1var(--color-surface);"));
+  assertError(errorsWith(opaque), ".tabs-item must have a transparent background by default");
+  const state = withCss((css) => css + '\n.tabs-item-selected { background: var(--color-surface-elevated); color: var(--color-text); }\n');
+  assertError(errorsWith(state), "unexpected class .tabs-item-selected");
+});
+
+test("fails when .tabs can overflow instead of wrapping", () => {
+  const nowrap = withCss((css) => css.replace(/(\.tabs \{[^}]*)flex-wrap: wrap;/, "$1flex-wrap: nowrap;"));
+  assertError(errorsWith(nowrap), ".tabs must set flex-wrap: wrap");
+});
+
+test("fails when the current nav link or a tab has too little contrast", () => {
+  const nav = withCss((css) => css.replace("var(--color-primary) 10%, var(--color-background)", "var(--color-primary) 70%, var(--color-background)"));
+  assertError(errorsWith(nav), 'contrast too low in .nav-link[aria-current="page"]');
+  const tab = withCss((css) => css.replace(/(\.tabs-item \{[^}]*color: )var\(--color-text-secondary\)/, "$1var(--color-border)"));
+  assertError(errorsWith(tab), "contrast too low in .tabs-item");
+});
+
 test("fails when the field error state relies on color alone", () => {
   const colorOnly = withCss((css) =>
     css.replace(/(\)\[aria-invalid="true"\] \{\n  border-color: var\(--color-danger\);\n)[^}]*\}/, "$1}"),

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Optional browser check of the components on showcase/index.html at 375px and
-// 1280px viewport width: tokens applied, states, focus rings and table scrolling.
+// 1280px viewport width: tokens applied, states, focus rings and table scrolling,
+// plus .tabs at 320px.
 // Needs Playwright, which is not a dependency of this repository:
 //   npm install --no-save playwright && npx playwright install chromium
 // Usage: node scripts/check-components-browser.mjs
@@ -70,6 +71,37 @@ try {
         overflowX: getComputedStyle(w).overflowX,
         scrolls: w.scrollWidth > w.clientWidth,
       }));
+      // Nav and tabs: attribute-driven states and layout inside .stack / .cluster.
+      const look = (el) => {
+        const s = getComputedStyle(el);
+        return [s.backgroundColor, s.color, s.boxShadow, s.borderTopColor].join("|");
+      };
+      function navAndTabs() {
+        const links = [...document.querySelectorAll("#component-nav ~ .sc-demo .nav-link")];
+        const current = links.find((a) => a.getAttribute("aria-current") === "page");
+        const plain = links.find((a) => !a.hasAttribute("aria-current"));
+        const items = [...document.querySelectorAll("#component-tabs ~ .sc-demo .tabs-item")];
+        const selected = items.find((b) => b.getAttribute("aria-selected") === "true");
+        const unselected = items.filter((b) => b.getAttribute("aria-selected") === "false");
+        const lists = [...document.querySelectorAll("#component-nav ~ .sc-demo .nav")];
+        const vertical = lists.find((l) => l.classList.contains("stack-sm"));
+        const horizontal = lists.find((l) => l.classList.contains("cluster-sm"));
+        const top = (el) => el.getBoundingClientRect().top;
+        const rows = (list) => new Set([...list.children].map((li) => Math.round(top(li)))).size;
+        const ls = getComputedStyle(lists[0]);
+        return {
+          navCurrentColor: getComputedStyle(current).color === token("--color-primary"),
+          navCurrentDistinct: look(current) !== look(plain),
+          navUnderline: getComputedStyle(plain).textDecorationLine,
+          navReset: ls.listStyleType === "none" && ls.paddingInlineStart === "0px" && ls.marginTop === "0px",
+          navVertical: rows(vertical) === vertical.children.length,
+          navHorizontal: rows(horizontal) === 1,
+          tabSelectedBg: getComputedStyle(selected).backgroundColor === token("--color-surface-elevated"),
+          tabSelectedDistinct: unselected.every((b) => look(b) !== look(selected)),
+          tabUnselectedSame: unselected.every((b) => look(b) === look(unselected[0])),
+          tabTrackBg: getComputedStyle(selected.parentElement).backgroundColor === token("--color-surface"),
+        };
+      }
       const result = {
         overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
         primaryBg: css("#components .button-primary", "background-color") === token("--color-primary"),
@@ -86,6 +118,7 @@ try {
         numericAlign: css("#components .table .numeric", "text-align"),
         emptyAlign: css("#components .empty-state", "text-align"),
         wraps,
+        ...navAndTabs(),
       };
       probe.remove();
       return result;
@@ -106,6 +139,13 @@ try {
     expect(m.emptyAlign === "center", `${width}px: .empty-state is not centered`);
     expect(m.wraps.length > 0 && m.wraps.every((w) => w.overflowX === "auto"), `${width}px: .table-wrap does not scroll horizontally`);
     if (width === 375) expect(m.wraps.some((w) => w.scrolls), "375px: no table scrolls inside .table-wrap at phone width");
+    expect(m.navCurrentColor, `${width}px: .nav-link[aria-current="page"] text is not --color-primary`);
+    expect(m.navCurrentDistinct, `${width}px: .nav-link[aria-current="page"] looks like the other links`);
+    expect(m.navUnderline === "none", `${width}px: .nav-link is underlined`);
+    expect(m.navReset, `${width}px: .nav does not reset bullets, padding and margin`);
+    expect(m.navVertical && m.navHorizontal, `${width}px: .nav does not follow .stack-sm (vertical) and .cluster-sm (horizontal)`);
+    expect(m.tabSelectedBg && m.tabTrackBg, `${width}px: .tabs track or selected .tabs-item does not use its surface tokens`);
+    expect(m.tabSelectedDistinct && m.tabUnselectedSame, `${width}px: aria-selected="true" is not distinct, or aria-selected="false" items differ`);
 
     for (const [what, sel] of [
       ["button", "#components .button"],
@@ -113,12 +153,43 @@ try {
       ["select", "#components .field select"],
       ["checkbox", "#components .field input[type=checkbox]"],
       ["table-wrap", "#components .table-wrap"],
+      ["nav-link", "#components .nav-link"],
+      ["tabs-item", "#components .tabs-item"],
     ]) {
       const ring = await tabTo(page, sel);
       expect(ring && ring.style === "solid" && ring.width > 0, `${width}px: ${what} has no visible :focus-visible ring`);
     }
     await page.close();
   }
+
+  // At 320px every .tabs on the page stays inside its container (it wraps).
+  const narrow = await browser.newPage({ viewport: { width: 320, height: 800 } });
+  await narrow.goto(pageUrl, { waitUntil: "load" });
+  const tabs = await narrow.evaluate(() =>
+    [...document.querySelectorAll(".tabs")].map((t) => {
+      const box = t.getBoundingClientRect();
+      const parent = t.parentElement.getBoundingClientRect();
+      return { overflows: t.scrollWidth > t.clientWidth || box.right > parent.right + 0.5, label: t.getAttribute("aria-label") };
+    }),
+  );
+  expect(tabs.length > 0, "320px: no .tabs found on the showcase");
+  for (const t of tabs) expect(!t.overflows, `320px: .tabs "${t.label}" overflows its container`);
+  // A long tab list at 320px must wrap onto more rows rather than overflow. (The
+  // showcase hero is measured separately; here only the tabs' own box counts.)
+  const wide = await narrow.evaluate(() => {
+    const t = document.querySelector("#components .tabs").cloneNode(true);
+    for (let i = 0; i < 6; i++) t.append(t.firstElementChild.cloneNode(true));
+    document.body.prepend(t);
+    const right = Math.max(t.getBoundingClientRect().right, ...[...t.children].map((b) => b.getBoundingClientRect().right));
+    const r = {
+      overflow: t.scrollWidth > t.clientWidth || right > document.body.getBoundingClientRect().right + 0.5,
+      rows: new Set([...t.children].map((b) => Math.round(b.getBoundingClientRect().top))).size,
+    };
+    t.remove();
+    return r;
+  });
+  expect(!wide.overflow && wide.rows > 1, `320px: a long .tabs does not wrap (rows: ${wide.rows}, overflows: ${wide.overflow})`);
+  await narrow.close();
 } finally {
   await browser.close();
 }
@@ -128,4 +199,4 @@ if (errors.length) {
   console.error(`\ncheck-components-browser: ${errors.length} problem(s) found.`);
   process.exit(1);
 }
-console.log("check-components-browser: components render with tokens, states, focus rings and scrolling tables at 375px and 1280px.");
+console.log("check-components-browser: components render with tokens, states, focus rings and scrolling tables at 375px and 1280px; .tabs wraps at 320px.");

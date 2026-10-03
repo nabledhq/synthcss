@@ -1,9 +1,10 @@
 # Components
 
-SynthCSS ships eight semantic components in [`src/components.css`](../src/components.css):
-`.button`, `.field`, `.card`, `.badge`, `.alert`, `.panel`, `.table` and `.empty-state`.
-Each one names a UI intent, so a model can map a request ("a delete button", "an
-error message", "a table of invoices") to one predictable class.
+SynthCSS ships ten semantic components in [`src/components.css`](../src/components.css):
+`.button`, `.field`, `.card`, `.badge`, `.alert`, `.panel`, `.table`, `.empty-state`,
+`.nav` and `.tabs`. Each one names a UI intent, so a model can map a request ("a delete
+button", "an error message", "a table of invoices", "a segmented filter") to one
+predictable class.
 
 They are part of the main bundle, together with the [design tokens](tokens.md) and the
 [layout primitives](layout.md):
@@ -22,12 +23,14 @@ How the components behave:
   (`.button-danger`) and `.component-part` for a part (`.card-header`). The one
   exception is the `.numeric` table cell.
 - **State from native attributes, not classes.** Use `disabled`,
-  `aria-disabled="true"`, `aria-busy="true"` and `aria-invalid="true"`. There is no
-  `.is-disabled`, `.button-loading` or `.field-invalid`.
+  `aria-disabled="true"`, `aria-busy="true"`, `aria-invalid="true"`,
+  `aria-current="page"` (current nav link) and `aria-selected="true"` (selected tab).
+  There is no `.is-disabled`, `.button-loading`, `.field-invalid`, `.is-active` or
+  `.tabs-item-selected`, and SynthCSS does not use `aria-pressed`.
 - **Native elements.** Put `.button` on `<button>` or `<a>`, `.table` on `<table>`, and
   native `input`, `select` and `textarea` inside `.field`. Native focus and keyboard
   behavior are kept.
-- **Focus.** Buttons, field controls and a focusable `.table-wrap` show a
+- **Focus.** Buttons, field controls, nav links, tabs and a focusable `.table-wrap` show a
   `:focus-visible` ring made of `--focus-width`, `--focus-color` and `--focus-offset`.
 - **Disabled.** Disabled buttons and controls are faded and show a `not-allowed`
   cursor. The variant color stays recognizable, so a disabled danger button still looks
@@ -54,14 +57,15 @@ Paste this table into a model's context together with the
 | Icon-only action | `.button button-icon` + `aria-label="…"` |
 | Smaller or larger button | add `.button-sm` / `.button-lg` |
 | Unavailable or in-progress action | `disabled` or `aria-disabled="true"`; `aria-busy="true"` |
-| Labeled input with help or error text | `.field` > `.field-label` + native control + `.field-help` / `.field-error` |
-| Invalid input | `aria-invalid="true"` on the control + `.field-error` text |
+| Labeled input with help or error text | `.field` > `.field-label` + native control + `.field-help` / `.field-error`; `aria-invalid="true"` on an invalid control |
 | Self-contained item (project, product, user) | `.card` with `.card-header`, `.card-body`, `.card-footer`, `.card-media`, `.card-actions` |
 | Short status label | `.badge` + `.badge-success` / `-warning` / `-danger` / `-info` |
 | Message or notification | `.alert` + `.alert-info` / `-success` / `-warning` / `-danger`, `role="status"` or `role="alert"` |
 | Flat group of secondary content | `.panel` with `.panel-header`, `.panel-body` |
 | Tabular data | `<table class="table">` inside `.table-wrap`; `.table-hover`, `.numeric` cells |
 | Nothing to show yet | `.empty-state` with heading, text and an optional action |
+| Navigation links | `<ul class="nav stack-sm">` or `nav cluster-sm` > `<a class="nav-link">`; `aria-current="page"` on the current one |
+| Tabs or segmented filter | `.tabs` + `role="tablist"` > `<button class="tabs-item" role="tab">`; `aria-selected="true"` / `"false"` |
 
 Rules: state comes from attributes, never from classes; put components on native
 elements; arrange them with `.stack`, `.cluster`, `.split` and `.grid`.
@@ -638,6 +642,159 @@ what to do next.
 - Using it for errors; use an `.alert`.
 - Leaving a list or table blank instead of showing an empty state.
 
+## `.nav`
+
+### Purpose
+
+A list of navigation links: main navigation, a settings menu, a section's sub-pages.
+`.nav` goes on the `<ul>` and only resets the list (no bullets, margin or padding), so
+the direction comes from a layout primitive: `.stack-*` for a vertical list,
+`.cluster-*` for a horizontal one. Each link is an `<a class="nav-link">`. The current
+page is marked with `aria-current="page"`, the single state attribute for navigation.
+
+### Example
+
+```html
+<nav aria-label="Settings">
+  <ul class="nav stack-sm" role="list">
+    <li><a class="nav-link" href="/settings/general" aria-current="page">General</a></li>
+    <li><a class="nav-link" href="/settings/members">Members</a></li>
+    <li><a class="nav-link" href="/settings/billing">Billing</a></li>
+  </ul>
+</nav>
+```
+
+### Variants
+
+| Class or attribute | Use |
+| --- | --- |
+| `.nav` | On the `<ul>` or `<ol>`: removes bullets, margin and padding. Sets no layout. |
+| `.nav-link` | On each `<a href>`: an inline-flex row with `--space-2` between an optional leading `<svg>` and the label, `--space-2` / `--space-3` padding, `--radius-md` corners, no underline, inherited text color. Hover shows `--color-surface`. |
+| `aria-current="page"` | On the link to the current page: a `--color-primary` tint and `--color-primary` text. |
+
+There are no state classes: never add `.is-active`, `.active` or `.nav-link-current`;
+put `aria-current="page"` on the link instead.
+
+An icon before the label is sized to `1em`:
+
+```html
+<a class="nav-link" href="/projects">
+  <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">…</svg>
+  Projects
+</a>
+```
+
+### Composition
+
+Vertical in a `.sidebar` with `.stack-sm`, or horizontal in a header with `.cluster-sm`
+inside `.split`:
+
+```html
+<header class="split">
+  <a href="/">Acme</a>
+  <nav aria-label="Main">
+    <ul class="nav cluster-sm" role="list">
+      <li><a class="nav-link" href="/projects" aria-current="page">Projects</a></li>
+      <li><a class="nav-link" href="/team">Team</a></li>
+      <li><a class="nav-link" href="/settings">Settings</a></li>
+    </ul>
+  </nav>
+</header>
+```
+
+### Accessibility
+
+- Wrap the list in `<nav>` with an `aria-label` when the page has more than one
+  navigation region.
+- Use `aria-current="page"` on exactly one link. Screen readers announce it as
+  "current page", and SynthCSS styles it from the same attribute, so the visual and
+  announced state never disagree.
+- Add `role="list"` to keep list semantics in Safari/VoiceOver after the bullets are
+  removed.
+- Links show a `:focus-visible` ring from `--focus-width`, `--focus-color` and
+  `--focus-offset`.
+
+### Recommended use
+
+Main and secondary navigation between pages, settings menus, documentation sidebars.
+
+### Misuse
+
+- Buttons that act on the current page; use `.button`.
+- Switching views inside one page; use `.tabs`.
+- State classes for the current link; use `aria-current="page"`.
+
+## `.tabs`
+
+### Purpose
+
+A tab list or segmented control: an inline group of options on a `--color-surface`
+track, where one option is selected. Each option is a `<button class="tabs-item"
+role="tab">`; the selected one has `aria-selected="true"` and the others
+`aria-selected="false"`. That is the single state attribute for tabs.
+
+The component is CSS only. Moving focus with the arrow keys, updating `aria-selected`
+and showing the matching panel are up to your own script.
+
+### Example
+
+```html
+<div class="tabs" role="tablist" aria-label="Members">
+  <button type="button" class="tabs-item" role="tab" aria-selected="true">All</button>
+  <button type="button" class="tabs-item" role="tab" aria-selected="false">Admins</button>
+  <button type="button" class="tabs-item" role="tab" aria-selected="false">Invited</button>
+</div>
+```
+
+### Variants
+
+| Class or attribute | Use |
+| --- | --- |
+| `.tabs` | The track: inline-flex, `--color-surface` background, a border, `--space-1` inner padding and gap, `--radius-md` corners. It wraps onto more lines instead of overflowing a narrow container. |
+| `.tabs-item` | One option: a button reset with `--space-1` / `--space-3` padding, `--text-sm`, a transparent background and `--color-text-secondary` text. |
+| `aria-selected="true"` | The selected option: `--color-surface-elevated` background, `--border-color` border and `--shadow-sm`, in `--color-text`. `aria-selected="false"` keeps the default look. |
+
+Do not use `aria-pressed` or classes such as `.is-selected` for the selected option.
+
+### Composition
+
+Put a filter next to a heading with `.split`, or above content in a `.stack`. Inside
+`.cluster` it sits in the row with other controls:
+
+```html
+<section class="stack">
+  <header class="split">
+    <h2>Members</h2>
+    <div class="tabs" role="tablist" aria-label="Filter members">
+      <button type="button" class="tabs-item" role="tab" aria-selected="true">Active</button>
+      <button type="button" class="tabs-item" role="tab" aria-selected="false">Invited</button>
+    </div>
+  </header>
+  <div class="table-wrap" role="region" aria-label="Members" tabindex="0">…</div>
+</section>
+```
+
+### Accessibility
+
+- Give the `.tabs` element `role="tablist"` and an `aria-label`, and each item
+  `role="tab"` with `aria-selected="true"` or `"false"`.
+- When the tabs switch panels, link each tab to its panel with `aria-controls` and give
+  the panel `role="tabpanel"` and `aria-labelledby`. Panels are not styled by SynthCSS.
+- Keyboard: the recommended pattern is a roving `tabindex` (only the selected tab is
+  in the tab order) with arrow keys moving between tabs. That script is the author's.
+- Items show a `:focus-visible` ring from the `--focus-*` tokens.
+
+### Recommended use
+
+Switching between views of the same content (All / Active / Archived), segmented
+filters, and tabbed sections on one page.
+
+### Misuse
+
+- Navigating to other pages; use `.nav` with `aria-current="page"`.
+- Toggle buttons with `aria-pressed`; SynthCSS tabs use `aria-selected`.
+- A single on/off option; use a checkbox in a `.field`.
+
 ## Verification
 
 - `npm test` runs [`scripts/check-components.mjs`](../scripts/check-components.mjs). It
@@ -645,15 +802,21 @@ what to do next.
   (`src/synthcss.css` with its imports inlined) and no other class is added; that every
   declaration uses tokens defined in `tokens.css`, with no hex, `rgb()`, `hsl()` or named
   color literals and no hard-coded lengths; that text on every button, badge, alert,
-  card and panel background meets 4.5:1 contrast; that buttons, field controls and
-  `.table-wrap` have `:focus-visible` rings; that buttons and fields have disabled
+  card and panel background, and on the current nav link and default and selected tabs,
+  meets 4.5:1 contrast; that buttons, field controls, nav links, tabs and `.table-wrap`
+  have `:focus-visible` rings; that `.nav` resets the list without setting a layout,
+  the current nav link (`aria-current="page"`) and selected tab
+  (`aria-selected="true"`) are styled from those attributes, `aria-pressed` is not used
+  and `.tabs` wraps; that buttons and fields have disabled
   styles, buttons a loading style, and the field error state changes the border width
   and adds a marker; that `.table-wrap` scrolls horizontally; that this page covers
   every component and has the reference table; and that every class in an `html` example
   in `README.md` and `docs/`, and on the showcase page, exists in the CSS.
 - `npm run check:components:browser` loads the showcase in headless Chromium at 375px
   and 1280px and checks that the components render with their tokens, that tables
-  scroll inside `.table-wrap` without the page overflowing, and that focus rings show.
+  scroll inside `.table-wrap` without the page overflowing, that the current nav link
+  and the selected tab look different from the others, that `.tabs` does not overflow
+  at 320px, and that focus rings show.
   It needs Playwright: run `npm install --no-save playwright` and
   `npx playwright install chromium` first.
 - The [showcase](../showcase/index.html) shows every component and a composed settings
