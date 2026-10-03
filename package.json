@@ -1,6 +1,6 @@
 {
   "name": "synthcss",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "A lightweight, opinionated CSS framework built for AI agents and code generators.",
   "license": "MIT",
@@ -9,6 +9,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "build": "node scripts/build.mjs",
     "check:tokens": "node scripts/check-tokens.mjs",
     "check:layout": "node scripts/check-layout.mjs",
     "check:layout:browser": "node scripts/check-layout-browser.mjs",
@@ -16,6 +17,6 @@
     "check:components:browser": "node scripts/check-components-browser.mjs",
     "check:showcase": "node scripts/check-showcase.mjs",
     "check:showcase:browser": "node scripts/check-showcase-browser.mjs",
-    "test": "node scripts/check-tokens.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node --test scripts/check-tokens.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs"
+    "test": "node scripts/check-tokens.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node --test scripts/build.test.mjs scripts/check-tokens.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs"
   }
 }

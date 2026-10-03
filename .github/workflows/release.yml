@@ -1,0 +1,103 @@
+# Publishes a release when package.json's version changes on main.
+# The tag points at a release commit on top of main that adds the built dist/
+# (dist/ is not committed on main). jsDelivr serves any tag straight from GitHub:
+#   https://cdn.jsdelivr.net/gh/nabledhq/synthcss@<version>/dist/synthcss.min.css
+# To release, bump the version in a PR (npm version minor --no-git-tag-version) and merge it.
+# See docs/releasing.md.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Read version
+        id: version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "v$version is already released; nothing to do."
+          fi
+
+      - name: Run checks
+        if: steps.version.outputs.exists != 'true'
+        run: npm test
+
+      - name: Build and tag the release commit
+        if: steps.version.outputs.exists != 'true'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          npm run build
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --force dist
+          git commit -m "Release $TAG"
+          git tag -a "$TAG" -m "SynthCSS $TAG"
+          git push origin "refs/tags/$TAG"
+
+      - name: Create GitHub release
+        if: steps.version.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          cdn="https://cdn.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${VERSION}/dist"
+          cat > notes.md <<EOF
+          ## CDN
+
+          \`\`\`html
+          <link rel="stylesheet" href="${cdn}/synthcss.min.css">
+          \`\`\`
+
+          - Unminified bundle: ${cdn}/synthcss.css
+          - Tokens only: ${cdn}/tokens.min.css
+          - Layout only (load tokens first): ${cdn}/layout.min.css
+          - Components only (load tokens first): ${cdn}/components.min.css
+          EOF
+          gh release create "$TAG" dist/*.css \
+            --verify-tag \
+            --title "$TAG" \
+            --notes-file notes.md \
+            --generate-notes
+
+      - name: Refresh jsDelivr version aliases
+        if: steps.version.outputs.exists != 'true'
+        continue-on-error: true
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          major=${VERSION%%.*}
+          minor=${VERSION%.*}
+          for alias in "$major" "$minor"; do
+            for file in synthcss tokens layout components; do
+              for ext in css min.css; do
+                curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${alias}/dist/${file}.${ext}" >/dev/null
+              done
+            done
+          done
