@@ -8,15 +8,18 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { parseBlocks, parseDeclarations, parseTokens } from "./check-tokens.mjs";
 import { PRIMITIVES, VARIANTS, HELPER_CLASSES } from "./check-layout.mjs";
+import { COMPONENTS, COMPONENT_CLASSES } from "./check-components.mjs";
 
-export const SECTIONS = ["hero", "why", "tokens", "layouts", "responsive", "ai-examples"];
+export const SECTIONS = ["hero", "why", "tokens", "layouts", "responsive", "components", "composed", "ai-examples"];
+// The composed interface must use at least this many different components.
+export const MIN_COMPOSED_COMPONENTS = 6;
 export const RESPONSIVE = ["grid", "sidebar", "cluster", "split"];
 export const TAGLINE = "CSS designed to be written by machines and used by humans.";
 export const REPO_URL = "https://github.com/nabledhq/synthcss";
 export const PAGES_ACTIONS = ["actions/configure-pages@", "actions/upload-pages-artifact@", "actions/deploy-pages@"];
 export const MAX_SNIPPET_LINES = 15;
 
-const FRAMEWORK_CLASSES = new Set([...PRIMITIVES, ...VARIANTS, ...HELPER_CLASSES]);
+const FRAMEWORK_CLASSES = new Set([...PRIMITIVES, ...VARIANTS, ...HELPER_CLASSES, ...COMPONENT_CLASSES]);
 const THIRD_PARTY = /\b(bootstrap|tailwind|bulma|foundation|materialize|material-ui|@mui|daisyui|pico\.css)\b/i;
 const COLOR_LITERAL = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/i;
 
@@ -24,12 +27,12 @@ const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "");
 const unescapeHtml = (s) =>
   s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
 
-// Returns the HTML of <section id="..."> up to the next top-level section/footer.
+// Returns the HTML of <section id="..."> up to the next top-level section or the page footer.
 function sectionHtml(html, id) {
   const start = html.search(new RegExp(`<section\\b[^>]*\\bid="${id}"`));
   if (start === -1) return null;
   const rest = html.slice(start + 1);
-  const end = rest.search(/<section\b[^>]*\bid="|<\/main>|<footer\b/);
+  const end = rest.search(/<section\b[^>]*\bid="|<\/main>|<footer class="sc-footer"/);
   return end === -1 ? rest : rest.slice(0, end);
 }
 
@@ -124,6 +127,45 @@ export function checkHtml(html, tokens, showcaseClasses) {
     const inner = frame.split(/<\/article>/)[0];
     if (!classesIn(inner).some((c) => c === p || c.startsWith(`${p}-`))) {
       errors.push(`responsive: .${p} frame does not use .${p}`);
+    }
+  }
+
+  // One article per component, each with a description, a live demo and a snippet.
+  const components = sectionHtml(html, "components") ?? "";
+  const componentArticles = components.split(/<article\b/).slice(1);
+  for (const [name, classes] of Object.entries(COMPONENTS)) {
+    const article = componentArticles.find((a) => a.includes(`id="component-${name}"`));
+    if (!article) {
+      errors.push(`components: missing example for .${name}`);
+      continue;
+    }
+    if (!article.includes(`<code>.${name}</code>`)) errors.push(`components: .${name} example must show its class name`);
+    const demo = article.split('class="sc-code"')[0].split('class="sc-demo"')[1] ?? "";
+    const demoClasses = classesIn(demo);
+    if (!demoClasses.includes(name)) errors.push(`components: .${name} example has no live demo using .${name}`);
+    for (const cls of classes) {
+      if (!demoClasses.includes(cls)) errors.push(`components: .${name} live demo does not show .${cls}`);
+    }
+    const snippet = snippetsIn(article)[0];
+    if (!snippet || !new RegExp(`class="([^"]*\\s)?${name}(\\s[^"]*)?"`).test(snippet)) {
+      errors.push(`components: .${name} example needs an HTML snippet that uses .${name}`);
+    }
+  }
+
+  // A composed interface built only from framework classes.
+  const composed = sectionHtml(html, "composed") ?? "";
+  const app = composed.split("data-composed")[1];
+  if (!app) {
+    errors.push("composed: missing the data-composed interface");
+  } else {
+    const appClasses = classesIn(app);
+    for (const cls of new Set(appClasses)) {
+      if (!FRAMEWORK_CLASSES.has(cls)) errors.push(`composed: uses .${cls}; the composed interface may only use SynthCSS classes`);
+    }
+    if (/\bstyle="(?![^"]*--grid-min)/.test(app)) errors.push("composed: inline styles other than --grid-min are not allowed");
+    const usedComponents = Object.keys(COMPONENTS).filter((n) => appClasses.includes(n));
+    if (usedComponents.length < MIN_COMPOSED_COMPONENTS) {
+      errors.push(`composed: uses ${usedComponents.length} components, needs at least ${MIN_COMPOSED_COMPONENTS}`);
     }
   }
 

@@ -423,10 +423,18 @@
   margin-block-end: calc(var(--space-5) * -1);
 }
 
-.card-media > :where(img, video, picture, svg),
-.card-media:where(img, video) {
+.card-media > :where(img, video, picture, svg) {
   display: block;
   inline-size: 100%;
+  block-size: auto;
+  object-fit: cover;
+}
+
+/* Directly on <img> or <video>: widen by the padding the margins bleed over. */
+.card-media:where(img, video) {
+  box-sizing: border-box;
+  inline-size: calc(100% + var(--space-5) * 2);
+  max-inline-size: none;
   block-size: auto;
   object-fit: cover;
 }

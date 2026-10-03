@@ -893,6 +893,26 @@
           </li>
           <li class="sc-card stack">
             <p class="sc-label">Intent</p>
+            <p>"Add a delete button and a status label to the project header."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>&lt;header class="split"&gt;
+  &lt;h1&gt;Atlas &lt;span class="badge badge-success"&gt;Active&lt;/span&gt;&lt;/h1&gt;
+  &lt;button type="button" class="button button-danger"&gt;Delete&lt;/button&gt;
+&lt;/header&gt;</code></pre></div>
+          </li>
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
+            <p>"Show an error under the email input."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>&lt;div class="field"&gt;
+  &lt;label class="field-label" for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" type="email" aria-invalid="true"
+    aria-describedby="email-error"&gt;
+  &lt;p class="field-error" id="email-error"&gt;Enter a full email.&lt;/p&gt;
+&lt;/div&gt;</code></pre></div>
+          </li>
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
             <p>"Restyle the whole interface with our brand color and rounder corners."</p>
             <p class="sc-label">SynthCSS</p>
             <div class="sc-code"><pre><code>:root {
