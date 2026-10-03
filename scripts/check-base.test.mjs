@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkBase, parseBase, readRepoFiles } from "./check-base.mjs";
+import { checkBase, isPageOrHeadingSelector, parseBase, readRepoFiles } from "./check-base.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const files = readRepoFiles(repo);
@@ -57,4 +57,22 @@ test("fails when the bundle misses base.css or loads it in the wrong place", () 
 test("fails when a modular file pulls in base styles", () => {
   const modular = { ...files.modular, "layout.css": '@import url("base.css");\n' + files.modular["layout.css"] };
   assertError(errorsWith({ modular }), "layout.css must not import base.css");
+});
+
+test("fails when a modular file styles the page or bare headings", () => {
+  for (const [file, rule, selector] of [
+    ["tokens.css", ":where(html) { font-family: var(--font-sans); }", ":where(html)"],
+    ["layout.css", "body { color: var(--color-text); }", "body"],
+    ["components.css", ":where(h1) { font-size: var(--text-3xl); }", ":where(h1)"],
+    ["components.css", "@media (min-width: 40rem) { h1, h2 { font-size: var(--text-2xl); } }", "h2"],
+  ]) {
+    const modular = { ...files.modular, [file]: files.modular[file] + "\n" + rule + "\n" };
+    assertError(errorsWith({ modular }), `${file}: "${selector}" styles the page or headings`);
+  }
+});
+
+test("allows component-scoped heading rules", () => {
+  assert.ok(!isPageOrHeadingSelector(".card-header :where(h1, h2, h3, h4, h5, h6)"));
+  assert.ok(!isPageOrHeadingSelector(":root"));
+  assert.ok(isPageOrHeadingSelector(":where(h1, h2)"));
 });

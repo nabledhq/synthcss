@@ -194,8 +194,10 @@ no resets: margins, `box-sizing`, `h5`/`h6`, links and lists keep the browser de
 
 The modular files (`tokens.css`, `layout.css`, `components.css`) do not include the
 base styles. Load `base.css` after `tokens.css` to opt in. `npm run check:base` checks
-`src/base.css` and its place in the bundle. `npm run check:base:browser` checks the
-computed styles of fixture pages in Chromium. It needs Playwright.
+`src/base.css` and its place in the bundle, and that no modular file styles `html`,
+`body` or bare `h1`–`h6`. `npm run check:base:browser` checks the computed styles of
+fixture pages in Chromium, including a page with only the stylesheet link, a
+`--font-sans` override and plain markup. It needs Playwright.
 
 ## For AI agents
 

@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { build, inlineImports, OUTPUTS } from "./build.mjs";
 
 const fakeSrc = {
@@ -26,4 +27,19 @@ test("stamps every output with the version and file name", () => {
 test("fails on a circular @import", () => {
   const loop = { "a.css": '@import url("b.css");', "b.css": '@import url("a.css");' };
   assert.throws(() => inlineImports(loop["a.css"], (f) => loop[f]), /circular @import/);
+});
+
+test("the built bundle contains the synth.base layer; the modular files do not", () => {
+  const src = new URL("../src/", import.meta.url);
+  const outputs = build("0.0.0", (file) => readFileSync(new URL(file, src), "utf8"));
+  const bundle = outputs["synthcss.css"];
+  assert.ok(bundle.includes("@layer synth.base {"), "synthcss.css has no @layer synth.base");
+  for (const rule of [":where(html) {", "font-family: var(--font-sans);", ":where(h1) { font-size: var(--text-3xl); }"]) {
+    assert.ok(bundle.includes(rule), `synthcss.css is missing ${rule}`);
+  }
+  assert.ok(bundle.indexOf("@layer synth.base") > bundle.indexOf(":root {"), "base styles must follow the tokens");
+  for (const file of ["tokens.css", "layout.css", "components.css"]) {
+    assert.ok(!outputs[file].includes("synth.base"), `${file} includes the base layer`);
+    assert.ok(!outputs[file].includes(":where(html)"), `${file} styles html`);
+  }
 });

@@ -26,6 +26,10 @@ const src = (file) => pathToFileURL(resolve(repo, "src", file)).href;
 const BUNDLE = [src("synthcss.css")];
 const MODULAR = ["tokens.css", "layout.css", "components.css"].map(src);
 
+const PLAIN_MARKUP = `
+  <h1>Heading 1</h1><h2>Heading 2</h2><h3>Heading 3</h3><h4>Heading 4</h4>
+  <p>Plain paragraph with <code>code</code>.</p>`;
+
 const MARKUP = `
   <h1>Heading 1</h1><h2>Heading 2</h2><h3>Heading 3</h3><h4>Heading 4</h4>
   <p>Plain paragraph with <code>code</code>.</p>
@@ -36,12 +40,13 @@ const MARKUP = `
 
 const FIXTURES = {
   bundle: { sheets: BUNDLE, css: "" },
-  inter: { sheets: BUNDLE, css: ':root { --font-sans: "Inter", sans-serif; }' },
+  // Only the stylesheet link, the --font-sans override and plain markup.
+  inter: { sheets: BUNDLE, css: ':root { --font-sans: "Inter", sans-serif; }', markup: PLAIN_MARKUP },
   author: { sheets: BUNDLE, css: "body { font-family: serif; } h1 { font-size: 10px; }" },
   modular: { sheets: MODULAR, css: "" },
 };
 
-const page = ({ sheets, css }) => `<!doctype html>
+const page = ({ sheets, css, markup = MARKUP }) => `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -49,7 +54,7 @@ const page = ({ sheets, css }) => `<!doctype html>
 ${sheets.map((href) => `  <link rel="stylesheet" href="${href}">`).join("\n")}
   <style>${css}</style>
 </head>
-<body>${MARKUP}
+<body>${markup}
 </body>
 </html>
 `;
@@ -87,7 +92,7 @@ function measure() {
     code: { fontFamily: cs($("code")).fontFamily },
     headings: Object.fromEntries(["h1", "h2", "h3", "h4"].map((h) => [h, heading(`body > ${h}`)])),
     components: Object.fromEntries(
-      [".card-header h2", ".alert h3", ".panel-header h2", ".empty-state h2"].map((sel) => [sel, heading(sel)]),
+      [".card-header h2", ".alert h3", ".panel-header h2", ".empty-state h2"].filter((sel) => $(sel)).map((sel) => [sel, heading(sel)]),
     ),
   };
   probe.remove();
@@ -129,10 +134,11 @@ try {
     expect(got.fontWeight === bundle.tokens.weight, `bundle: ${h} font-weight is ${got.fontWeight}, expected --weight-semibold`);
   }
 
-  // Overriding --font-sans on :root restyles the page.
-  for (const el of ["body", "p"]) {
-    expect(fonts(inter[el].fontFamily) === "Inter,sans-serif", `inter: ${el} font-family is ${inter[el].fontFamily}, expected the --font-sans override`);
+  // Overriding --font-sans on :root restyles the page; h1 still follows --text-3xl.
+  for (const [el, got] of [["html", inter.html], ["body", inter.body], ["p", inter.p]]) {
+    expect(fonts(got.fontFamily) === "Inter,sans-serif", `inter: ${el} font-family is ${got.fontFamily}, expected the --font-sans override`);
   }
+  expect(inter.headings.h1.fontSize === inter.tokens.sizes["--text-3xl"], `inter: h1 font-size is ${inter.headings.h1.fontSize}, expected --text-3xl`);
 
   // Author rules beat the base layer.
   expect(fonts(author.body.fontFamily) === "serif", `author: body { font-family: serif } lost, got ${author.body.fontFamily}`);
