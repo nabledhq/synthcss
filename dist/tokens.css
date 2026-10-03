@@ -1,0 +1,104 @@
+/*! SynthCSS v0.6.0 | tokens.css | MIT License | https://github.com/nabledhq/synthcss */
+/*
+ * SynthCSS design tokens
+ *
+ * The single source of truth for every visual decision in SynthCSS.
+ * Components and layout primitives consume these through var(--token).
+ * Override any token on :root in your own stylesheet to restyle the UI.
+ *
+ * Reference: docs/tokens.md
+ */
+
+:root {
+  /* Color: neutral light theme */
+  --color-background: #ffffff;
+  --color-surface: #f6f7f9;
+  --color-surface-elevated: #ffffff;
+  --color-text: #1b1f24;
+  --color-text-secondary: #3d4651;
+  --color-text-muted: #5c6672;
+  --color-border: #d5dae0;
+  --color-primary: #3b5778;
+  --color-primary-hover: #2f4762;
+  --color-on-primary: #ffffff;
+  --color-success: #2f7a4f;
+  --color-warning: #9a5b0c;
+  --color-danger: #b3362e;
+  --color-info: #2f6694;
+  --color-accent: #6847b0;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  /* Typography: families */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  /* Typography: sizes */
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  /* Typography: weights */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Typography: line heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 9999px;
+
+  /* Borders */
+  --border-width: 1px;
+  --border-color: var(--color-border);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-md: 0 2px 6px rgb(16 24 40 / 0.07), 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-lg: 0 8px 24px rgb(16 24 40 / 0.08), 0 2px 6px rgb(16 24 40 / 0.04);
+
+  /* Sizing */
+  --control-height: 2.5rem;
+  --input-height: 2.5rem;
+  --container-width: 72rem;
+  --content-width: 42rem;
+  --sidebar-width: 16rem;
+  --grid-min: 16rem;
+
+  /* Focus */
+  --focus-color: var(--color-primary);
+  --focus-width: 2px;
+  --focus-offset: 2px;
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
+}
