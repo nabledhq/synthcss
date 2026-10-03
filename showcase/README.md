@@ -1,7 +1,8 @@
 # SynthCSS showcase
 
 A single static page that shows what SynthCSS is, why it is AI-first, and live demos
-of its design tokens and layout primitives. It is built with SynthCSS itself and
+of its design tokens, layout primitives and components, plus a composed interface built
+only from SynthCSS classes. It is built with SynthCSS itself and
 published to GitHub Pages.
 
 | File | Purpose |
@@ -45,7 +46,7 @@ the repository layout:
 _site/
   index.html        generated redirect to showcase/
   showcase/         index.html, showcase.css, showcase.js
-  src/              tokens.css, layout.css, synthcss.css
+  src/              tokens.css, layout.css, components.css, synthcss.css
 ```
 
 Because `showcase/` sits next to `src/`, the same relative link works locally and on
@@ -91,10 +92,18 @@ a new primitive or component, append a section:
 only). It checks that the page loads the framework bundle and no other stylesheet, that
 every section and hero item exists, that every token is rendered with `var(--…)`, that
 every layout primitive has a demo, description and snippet, that grid, sidebar, cluster
-and split have width-adjustable frames, that there are at least three intent examples,
+and split have width-adjustable frames, that every component has an article with a live
+demo of all its classes and a snippet, that the composed interface (`data-composed`)
+uses only SynthCSS classes and at least six components, that there are at least three intent examples,
 that snippets are short and use only real classes and tokens, that `showcase.css` only
 styles `sc-` classes with no hard-coded colors or token values, and that the workflow
 and this README cover the required steps.
+
+[`scripts/check-components.mjs`](../scripts/check-components.mjs) also checks that every
+class on the page and in its snippets exists in the built CSS.
+
+`npm run check:components:browser` tabs through the component demos in headless Chromium
+and checks focus rings, states and that tables scroll inside `.table-wrap` at 375px.
 
 `npm run check:showcase:browser` loads the page in headless Chromium at 375px and 1280px
 and checks for console errors, horizontal page overflow, applied styles, copy buttons

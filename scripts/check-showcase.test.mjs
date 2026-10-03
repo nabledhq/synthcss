@@ -69,3 +69,16 @@ test("fails when the docs miss the manual Pages step", () => {
   const showcaseReadme = files.showcaseReadme.replaceAll("Settings → Pages", "settings");
   assertError(errorsWith({ showcaseReadme }), "Settings → Pages");
 });
+
+test("fails when a component is missing from the showcase", () => {
+  const html = files.html.replace('id="component-empty-state"', 'id="component-x"');
+  assertError(errorsWith({ html }), "missing example for .empty-state");
+  const noVariant = files.html.replace('<li class="badge badge-info">Beta</li>', "");
+  assertError(errorsWith({ html: noVariant }), ".badge live demo does not show .badge-info");
+});
+
+test("fails when the composed interface is missing or uses non-SynthCSS classes", () => {
+  assertError(errorsWith({ html: files.html.replace("data-composed", "data-x") }), "missing the data-composed interface");
+  const custom = files.html.replace('<div class="alert alert-warning" role="status">\n                <h4>Your trial', '<div class="sc-box" role="status">\n                <h4>Your trial');
+  assertError(errorsWith({ html: custom }), "composed: uses .sc-box");
+});

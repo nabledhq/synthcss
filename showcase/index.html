@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SynthCSS: CSS designed to be written by machines and used by humans</title>
-  <meta name="description" content="SynthCSS is a small, semantic CSS framework for AI-generated interfaces: design tokens and intent-named layout primitives.">
+  <meta name="description" content="SynthCSS is a small, semantic CSS framework for AI-generated interfaces: design tokens, intent-named layout primitives and semantic components.">
   <!-- The real framework bundle. The relative path works from a checkout and
        on GitHub Pages, where the workflow publishes src/ next to showcase/. -->
   <link rel="stylesheet" href="../src/synthcss.css">
@@ -28,6 +28,8 @@
             <li><a href="#tokens">Tokens</a></li>
             <li><a href="#layouts">Layouts</a></li>
             <li><a href="#responsive">Responsive</a></li>
+            <li><a href="#components">Components</a></li>
+            <li><a href="#composed">Composed</a></li>
             <li><a href="#ai-examples">AI examples</a></li>
           </ul>
         </nav>
@@ -38,7 +40,8 @@
         <p class="sc-tagline">CSS designed to be written by machines and used by humans.</p>
         <p class="sc-lead">
           A lightweight, opinionated CSS framework: a small set of design tokens and
-          intent-named layout primitives that respond to the space they are given.
+          intent-named layout primitives that respond to the space they are given, plus
+          eight semantic components for common app UI.
         </p>
         <p class="sc-callout">
           <strong>Built for AI-generated interfaces.</strong>
@@ -443,6 +446,398 @@
       </div>
     </section>
 
+    <section id="components" class="sc-band sc-band-alt" aria-labelledby="components-title">
+      <div class="container stack-lg">
+        <div class="stack-sm">
+          <h2 id="components-title">Components</h2>
+          <p class="sc-muted">
+            Eight semantic components built only from tokens. State comes from native
+            attributes such as <code>disabled</code>, <code>aria-busy</code> and
+            <code>aria-invalid</code>. Press <kbd>Tab</kbd> to see the focus rings.
+          </p>
+        </div>
+        <div class="grid-lg" style="--grid-min: 22rem">
+
+          <article class="sc-card stack" aria-labelledby="component-button">
+            <h3 id="component-button"><code>.button</code></h3>
+            <p>A native <code>&lt;button&gt;</code> or link styled as an action, with primary, secondary and danger variants, two sizes and disabled, loading and icon-only states.</p>
+            <div class="sc-demo">
+              <div class="stack">
+                <div class="cluster-sm">
+                  <button type="button" class="button">Default</button>
+                  <button type="button" class="button button-primary">Primary</button>
+                  <button type="button" class="button button-secondary">Secondary</button>
+                  <button type="button" class="button button-danger">Delete</button>
+                </div>
+                <div class="cluster-sm">
+                  <button type="button" class="button button-primary button-sm">Small</button>
+                  <button type="button" class="button button-primary">Default</button>
+                  <button type="button" class="button button-primary button-lg">Large</button>
+                </div>
+                <div class="cluster-sm">
+                  <button type="button" class="button button-primary" disabled>Disabled</button>
+                  <button type="button" class="button button-secondary" aria-disabled="true">aria-disabled</button>
+                  <button type="button" class="button button-primary" aria-busy="true">Saving…</button>
+                </div>
+                <div class="cluster-sm">
+                  <button type="button" class="button button-primary"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/></svg> New project</button>
+                  <button type="button" class="button button-icon" aria-label="Delete"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 4h10M6 4V2h4v2M4.5 4l.5 10h6l.5-10" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
+                  <button type="button" class="button button-icon button-danger" aria-label="Delete"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 4h10M6 4V2h4v2M4.5 4l.5 10h6l.5-10" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
+                  <a class="button button-secondary" href="#components">Link button</a>
+                </div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="cluster-sm"&gt;
+  &lt;button type="submit" class="button button-primary"&gt;Save&lt;/button&gt;
+  &lt;button type="button" class="button button-secondary"&gt;Cancel&lt;/button&gt;
+  &lt;button type="button" class="button button-danger button-sm"&gt;Delete&lt;/button&gt;
+  &lt;button type="button" class="button" disabled&gt;Disabled&lt;/button&gt;
+  &lt;button type="submit" class="button button-primary" aria-busy="true"&gt;Saving…&lt;/button&gt;
+  &lt;button type="button" class="button button-icon" aria-label="Delete"&gt;
+    &lt;svg aria-hidden="true"&gt;…&lt;/svg&gt;
+  &lt;/button&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-field">
+            <h3 id="component-field"><code>.field</code></h3>
+            <p>A label, a native control, help text and an error message. Controls are only styled inside <code>.field</code>.</p>
+            <div class="sc-demo">
+              <form class="stack" action="#">
+                <div class="field">
+                  <label class="field-label" for="demo-name">Project name</label>
+                  <input id="demo-name" type="text" value="Atlas" aria-describedby="demo-name-help">
+                  <p class="field-help" id="demo-name-help">Shown on the dashboard.</p>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="demo-email">Billing email</label>
+                  <input id="demo-email" type="email" value="billing@" aria-invalid="true" aria-describedby="demo-email-error">
+                  <p class="field-error" id="demo-email-error">Enter a full email address.</p>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="demo-region">Region</label>
+                  <select id="demo-region"><option>Europe</option><option>North America</option></select>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="demo-seats">Seats</label>
+                  <input id="demo-seats" type="number" value="5" min="1">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="demo-key">API key</label>
+                  <input id="demo-key" type="password" value="secret-value" disabled>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="demo-notes">Notes</label>
+                  <textarea id="demo-notes">Internal project.</textarea>
+                </div>
+                <fieldset class="field">
+                  <legend class="field-label">Visibility</legend>
+                  <label><input type="radio" name="demo-vis" checked> Private</label>
+                  <label><input type="radio" name="demo-vis"> Public</label>
+                </fieldset>
+                <div class="field">
+                  <label><input type="checkbox" checked> Email me about deployments</label>
+                </div>
+              </form>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="field"&gt;
+  &lt;label class="field-label" for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" type="email" aria-describedby="email-help"&gt;
+  &lt;p class="field-help" id="email-help"&gt;We never share it.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="field"&gt;
+  &lt;label class="field-label" for="name"&gt;Name&lt;/label&gt;
+  &lt;input id="name" type="text" aria-invalid="true" aria-describedby="name-error"&gt;
+  &lt;p class="field-error" id="name-error"&gt;Enter your name.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="field"&gt;
+  &lt;label&gt;&lt;input type="checkbox"&gt; Remember me&lt;/label&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-card">
+            <h3 id="component-card"><code>.card</code></h3>
+            <p>A raised, self-contained block with optional media, header, body, footer and actions parts.</p>
+            <div class="sc-demo">
+              <div class="card">
+                <div class="card-media"><svg viewBox="0 0 320 96" role="img" aria-label="Abstract cover"><rect width="320" height="96" fill="currentColor" opacity="0.15"/><circle cx="64" cy="48" r="28" fill="currentColor" opacity="0.35"/></svg></div>
+                <header class="card-header">
+                  <h4>Atlas</h4>
+                  <p>Updated 2 hours ago</p>
+                </header>
+                <div class="card-body">
+                  <p>Customer-facing analytics dashboard.</p>
+                </div>
+                <div class="card-actions">
+                  <button type="button" class="button button-primary button-sm">Open</button>
+                  <button type="button" class="button button-sm">Share</button>
+                </div>
+                <footer class="card-footer">3 members</footer>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;article class="card"&gt;
+  &lt;header class="card-header"&gt;
+    &lt;h3&gt;Atlas&lt;/h3&gt;
+    &lt;p&gt;Updated 2 hours ago&lt;/p&gt;
+  &lt;/header&gt;
+  &lt;div class="card-body"&gt;&lt;p&gt;Analytics dashboard.&lt;/p&gt;&lt;/div&gt;
+  &lt;div class="card-actions"&gt;
+    &lt;a class="button button-primary" href="/atlas"&gt;Open&lt;/a&gt;
+    &lt;button type="button" class="button"&gt;Share&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;footer class="card-footer"&gt;3 members&lt;/footer&gt;
+&lt;/article&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-badge">
+            <h3 id="component-badge"><code>.badge</code></h3>
+            <p>A short status label. The text carries the meaning; the color reinforces it.</p>
+            <div class="sc-demo">
+              <ul class="cluster-sm" role="list">
+                <li class="badge">Draft</li>
+                <li class="badge badge-success">Active</li>
+                <li class="badge badge-warning">Trial ends soon</li>
+                <li class="badge badge-danger">Failed</li>
+                <li class="badge badge-info">Beta</li>
+              </ul>
+            </div>
+            <div class="sc-code"><pre><code>&lt;span class="badge"&gt;Draft&lt;/span&gt;
+&lt;span class="badge badge-success"&gt;Active&lt;/span&gt;
+&lt;span class="badge badge-warning"&gt;Trial ends soon&lt;/span&gt;
+&lt;span class="badge badge-danger"&gt;Failed&lt;/span&gt;
+&lt;span class="badge badge-info"&gt;Beta&lt;/span&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-alert">
+            <h3 id="component-alert"><code>.alert</code></h3>
+            <p>A message box for status and errors. Headings, paragraphs and buttons inside are spaced automatically.</p>
+            <div class="sc-demo">
+              <div class="stack-sm">
+                <div class="alert alert-info" role="status"><p>A new version is available.</p></div>
+                <div class="alert alert-success" role="status"><p>Settings saved.</p></div>
+                <div class="alert alert-warning" role="status">
+                  <h4>Trial ends in 3 days</h4>
+                  <p>Add a payment method to keep your projects running.</p>
+                  <button type="button" class="button button-sm">Add payment method</button>
+                </div>
+                <div class="alert alert-danger" role="alert">
+                  <h4>Deployment failed</h4>
+                  <p>The build step exited with code 1.</p>
+                </div>
+                <div class="alert"><p>A neutral note without a variant.</p></div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="alert alert-success" role="status"&gt;
+  &lt;p&gt;Settings saved.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="alert alert-danger" role="alert"&gt;
+  &lt;h2&gt;Deployment failed&lt;/h2&gt;
+  &lt;p&gt;The build step exited with code 1.&lt;/p&gt;
+  &lt;button type="button" class="button button-sm"&gt;View logs&lt;/button&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-panel">
+            <h3 id="component-panel"><code>.panel</code></h3>
+            <p>A flat, bordered group for secondary content. Lighter than a card: no shadow.</p>
+            <div class="sc-demo">
+              <section class="panel" aria-labelledby="demo-panel-title">
+                <header class="panel-header split-sm">
+                  <h4 id="demo-panel-title">Usage this month</h4>
+                  <span class="badge badge-info">Pro plan</span>
+                </header>
+                <div class="panel-body">
+                  <p>1,204 of 5,000 build minutes used.</p>
+                </div>
+              </section>
+            </div>
+            <div class="sc-code"><pre><code>&lt;section class="panel"&gt;
+  &lt;header class="panel-header"&gt;
+    &lt;h2&gt;Usage this month&lt;/h2&gt;
+  &lt;/header&gt;
+  &lt;div class="panel-body"&gt;
+    &lt;p&gt;1,204 of 5,000 build minutes used.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-table">
+            <h3 id="component-table"><code>.table</code></h3>
+            <p>A native table with header and body rows, borders, optional row hover and right-aligned <code>.numeric</code> cells. <code>.table-wrap</code> scrolls it sideways when narrow.</p>
+            <div class="sc-demo">
+              <div class="table-wrap" role="region" aria-label="Invoices" tabindex="0">
+                <table class="table table-hover">
+                  <thead>
+                    <tr><th scope="col">Invoice</th><th scope="col">Customer</th><th scope="col">Status</th><th scope="col" class="numeric">Amount</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>INV-1042</td><td>Northwind Traders</td><td><span class="badge badge-success">Paid</span></td><td class="numeric">1,250.00</td></tr>
+                    <tr><td>INV-1043</td><td>Contoso Ltd</td><td><span class="badge badge-warning">Due</span></td><td class="numeric">89.90</td></tr>
+                    <tr><td>INV-1044</td><td>Fabrikam Inc</td><td><span class="badge badge-danger">Overdue</span></td><td class="numeric">12,400.00</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="table-wrap" role="region" aria-label="Invoices" tabindex="0"&gt;
+  &lt;table class="table table-hover"&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;&lt;th scope="col"&gt;Invoice&lt;/th&gt;&lt;th scope="col" class="numeric"&gt;Amount&lt;/th&gt;&lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;&lt;td&gt;INV-1042&lt;/td&gt;&lt;td class="numeric"&gt;1,250.00&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td&gt;INV-1043&lt;/td&gt;&lt;td class="numeric"&gt;89.90&lt;/td&gt;&lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-empty-state">
+            <h3 id="component-empty-state"><code>.empty-state</code></h3>
+            <p>A centered message for a list or page with nothing in it yet, with an optional icon and action.</p>
+            <div class="sc-demo">
+              <div class="empty-state">
+                <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M4 12h14l4 4h22v24H4z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                <h4>No projects yet</h4>
+                <p>Create a project to start tracking deployments.</p>
+                <button type="button" class="button button-primary"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/></svg> New project</button>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="empty-state"&gt;
+  &lt;svg aria-hidden="true"&gt;…&lt;/svg&gt;
+  &lt;h2&gt;No projects yet&lt;/h2&gt;
+  &lt;p&gt;Create a project to start tracking deployments.&lt;/p&gt;
+  &lt;a class="button button-primary" href="/projects/new"&gt;New project&lt;/a&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="composed" class="sc-band" aria-labelledby="composed-title">
+      <div class="container stack-lg">
+        <div class="stack-sm">
+          <h2 id="composed-title">Composed interface</h2>
+          <p class="sc-muted">
+            A project settings screen built only from SynthCSS layout primitives and
+            components, with no custom CSS. Drag the frame's corner or use the slider to
+            see it adapt.
+          </p>
+        </div>
+        <label class="sc-range">Frame width <input type="range" min="20" max="100" value="100" data-frame="frame-composed"></label>
+        <div class="sc-frame" id="frame-composed">
+          <div class="sidebar" data-composed>
+            <nav class="panel" aria-label="Project settings">
+              <ul class="stack-sm" role="list">
+                <li><a href="#composed">General</a></li>
+                <li><a href="#composed">Members</a></li>
+                <li><a href="#composed">Billing</a></li>
+              </ul>
+            </nav>
+            <div class="stack-lg">
+              <header class="split">
+                <div class="cluster-sm">
+                  <h3>Atlas</h3>
+                  <span class="badge badge-success">Active</span>
+                </div>
+                <div class="cluster-sm">
+                  <button type="button" class="button button-secondary">Preview</button>
+                  <button type="button" class="button button-primary"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/></svg> Deploy</button>
+                </div>
+              </header>
+
+              <div class="alert alert-warning" role="status">
+                <h4>Your trial ends in 3 days</h4>
+                <p>Add a payment method to keep Atlas online.</p>
+              </div>
+
+              <form class="card" action="#" aria-labelledby="composed-general">
+                <header class="card-header">
+                  <h4 id="composed-general">General</h4>
+                  <p>Basic project details.</p>
+                </header>
+                <div class="card-body grid" style="--grid-min: 14rem">
+                  <div class="field">
+                    <label class="field-label" for="c-name">Project name</label>
+                    <input id="c-name" type="text" value="Atlas">
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="c-email">Alert email</label>
+                    <input id="c-email" type="email" value="ops@" aria-invalid="true" aria-describedby="c-email-error">
+                    <p class="field-error" id="c-email-error">Enter a full email address.</p>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="c-region">Region</label>
+                    <select id="c-region"><option>Europe</option><option>North America</option></select>
+                    <p class="field-help">Changing the region redeploys the project.</p>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="c-retention">Log retention (days)</label>
+                    <input id="c-retention" type="number" value="30" min="1">
+                  </div>
+                </div>
+                <footer class="card-footer split-sm">
+                  <span>Last saved 2 hours ago</span>
+                  <div class="card-actions">
+                    <button type="button" class="button">Discard</button>
+                    <button type="button" class="button button-primary">Save changes</button>
+                  </div>
+                </footer>
+              </form>
+
+              <section class="stack" aria-labelledby="composed-envs">
+                <h4 id="composed-envs">Environments</h4>
+                <ul class="grid" role="list" style="--grid-min: 12rem">
+                  <li class="card">
+                    <div class="card-header split-sm"><h5>Production</h5><span class="badge badge-success">Healthy</span></div>
+                    <p class="card-body">Deployed 2 hours ago</p>
+                  </li>
+                  <li class="card">
+                    <div class="card-header split-sm"><h5>Staging</h5><span class="badge badge-warning">Degraded</span></div>
+                    <p class="card-body">Deployed yesterday</p>
+                  </li>
+                  <li class="card">
+                    <div class="card-header split-sm"><h5>Preview</h5><span class="badge badge-danger">Failed</span></div>
+                    <p class="card-body">Build failed 5 minutes ago</p>
+                  </li>
+                </ul>
+              </section>
+
+              <section class="panel" aria-labelledby="composed-members">
+                <header class="panel-header split-sm">
+                  <h4 id="composed-members">Members</h4>
+                  <button type="button" class="button button-sm">Invite</button>
+                </header>
+                <div class="table-wrap" role="region" aria-labelledby="composed-members" tabindex="0">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col" class="numeric">Deploys</th><th scope="col">Actions</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><th scope="row">Ada Lovelace</th><td><span class="badge badge-info">Owner</span></td><td class="numeric">128</td><td><button type="button" class="button button-sm" disabled>Remove</button></td></tr>
+                      <tr><th scope="row">Alan Turing</th><td><span class="badge">Developer</span></td><td class="numeric">42</td><td><button type="button" class="button button-danger button-sm">Remove</button></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="panel" aria-labelledby="composed-hooks">
+                <header class="panel-header">
+                  <h4 id="composed-hooks">Webhooks</h4>
+                </header>
+                <div class="empty-state">
+                  <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M4 12h14l4 4h22v24H4z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                  <h5>No webhooks yet</h5>
+                  <p>Send deployment events to your own services.</p>
+                  <button type="button" class="button button-secondary">Add webhook</button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="ai-examples" class="sc-band" aria-labelledby="ai-title">
       <div class="container stack-lg">
         <div class="stack-sm">
@@ -498,6 +893,26 @@
           </li>
           <li class="sc-card stack">
             <p class="sc-label">Intent</p>
+            <p>"Add a delete button and a status label to the project header."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>&lt;header class="split"&gt;
+  &lt;h1&gt;Atlas &lt;span class="badge badge-success"&gt;Active&lt;/span&gt;&lt;/h1&gt;
+  &lt;button type="button" class="button button-danger"&gt;Delete&lt;/button&gt;
+&lt;/header&gt;</code></pre></div>
+          </li>
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
+            <p>"Show an error under the email input."</p>
+            <p class="sc-label">SynthCSS</p>
+            <div class="sc-code"><pre><code>&lt;div class="field"&gt;
+  &lt;label class="field-label" for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" type="email" aria-invalid="true"
+    aria-describedby="email-error"&gt;
+  &lt;p class="field-error" id="email-error"&gt;Enter a full email.&lt;/p&gt;
+&lt;/div&gt;</code></pre></div>
+          </li>
+          <li class="sc-card stack">
+            <p class="sc-label">Intent</p>
             <p>"Restyle the whole interface with our brand color and rounder corners."</p>
             <p class="sc-label">SynthCSS</p>
             <div class="sc-code"><pre><code>:root {
@@ -518,6 +933,7 @@
         <li><a href="https://nabled.ai/p/synthcss">nabled.ai project</a></li>
         <li><a href="https://github.com/nabledhq/synthcss/blob/main/docs/tokens.md">Token reference</a></li>
         <li><a href="https://github.com/nabledhq/synthcss/blob/main/docs/layout.md">Layout reference</a></li>
+        <li><a href="https://github.com/nabledhq/synthcss/blob/main/docs/components.md">Component reference</a></li>
       </ul>
     </div>
   </footer>

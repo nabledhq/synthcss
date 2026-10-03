@@ -5,7 +5,10 @@
  *   <link rel="stylesheet" href="synthcss/src/synthcss.css">
  *
  * Tokens must load first: every other file reads them through var(--token).
+ * Components load last so they can be combined with layout primitives on the
+ * same element (for example class="card-footer split").
  */
 
 @import url("tokens.css");
 @import url("layout.css");
+@import url("components.css");
