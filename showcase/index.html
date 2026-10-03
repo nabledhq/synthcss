@@ -453,8 +453,8 @@
         <div class="stack-sm">
           <h2 id="components-title">Components</h2>
           <p class="sc-muted">
-            Eleven semantic components built only from tokens. State comes from native
-            attributes such as <code>disabled</code>, <code>aria-busy</code>,
+            Thirteen semantic components built only from tokens. State comes from native
+            attributes such as <code>disabled</code>, <code>checked</code>, <code>aria-busy</code>,
             <code>aria-invalid</code>, <code>aria-current</code> and
             <code>aria-selected</code>. Press <kbd>Tab</kbd> to see the focus rings.
           </p>
@@ -555,6 +555,54 @@
 &lt;/div&gt;
 &lt;div class="field"&gt;
   &lt;label&gt;&lt;input type="checkbox"&gt; Remember me&lt;/label&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-switch">
+            <h3 id="component-switch"><code>.switch</code></h3>
+            <p>An on/off toggle: a native <code>&lt;input type="checkbox" role="switch"&gt;</code> inside its label, drawn as a track with a thumb. State comes from <code>checked</code> and <code>disabled</code>.</p>
+            <div class="sc-demo">
+              <fieldset class="field">
+                <legend class="field-label">Workspace</legend>
+                <div class="stack-sm">
+                  <label class="switch"><input type="checkbox" role="switch" checked aria-describedby="demo-approval-help"> Require admin approval</label>
+                  <label class="switch"><input type="checkbox" role="switch"> Email digests</label>
+                  <label class="switch"><input type="checkbox" role="switch" checked disabled> Audit log</label>
+                  <label class="switch"><input type="checkbox" role="switch" disabled> Single sign-on</label>
+                </div>
+                <p class="field-help" id="demo-approval-help">New members wait until an admin approves them.</p>
+              </fieldset>
+            </div>
+            <div class="sc-code"><pre><code>&lt;label class="switch"&gt;&lt;input type="checkbox" role="switch" checked&gt; Require admin approval&lt;/label&gt;
+&lt;label class="switch"&gt;&lt;input type="checkbox" role="switch" disabled&gt; Single sign-on&lt;/label&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="component-input-group">
+            <h3 id="component-input-group"><code>.input-group</code></h3>
+            <p>An input joined with buttons and/or selects in one row: shared borders, rounded outer corners, one height. The input grows; buttons and selects keep their size.</p>
+            <div class="sc-demo">
+              <div class="stack">
+                <div class="field">
+                  <label class="field-label" for="demo-invite">Invite link</label>
+                  <div class="input-group">
+                    <input id="demo-invite" type="url" readonly value="https://example.com/invite/4f2a">
+                    <button type="button" class="button">Copy</button>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="demo-amount">Budget</label>
+                  <div class="input-group">
+                    <input id="demo-amount" type="number" value="1200" aria-invalid="true" aria-describedby="demo-amount-error">
+                    <select aria-label="Currency"><option>EUR</option><option>USD</option></select>
+                    <button type="button" class="button button-primary">Save</button>
+                  </div>
+                  <p class="field-error" id="demo-amount-error">The budget is above your plan limit.</p>
+                </div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="input-group"&gt;
+  &lt;input type="url" readonly value="https://example.com/invite/4f2a" aria-label="Invite link"&gt;
+  &lt;button type="button" class="button"&gt;Copy&lt;/button&gt;
 &lt;/div&gt;</code></pre></div>
           </article>
 
@@ -1039,10 +1087,10 @@
           <a class="sc-button" href="../synthcss.llm.md">View synthcss.llm.md</a>
           <a class="sc-button sc-button-secondary" href="../synthcss.ai.json" download>Download synthcss.ai.json</a>
           <a href="https://github.com/nabledhq/synthcss/blob/main/synthcss.llm.md">Read it on GitHub</a>
-          <span class="badge badge-info">≈ 3,930 tokens</span>
+          <span class="badge badge-info">≈ 4,150 tokens</span>
         </div>
         <p class="sc-muted">
-          Size estimated as characters ÷ 4 (about 15,700 characters), small enough for one
+          Size estimated as characters ÷ 4 (about 16,600 characters), small enough for one
           context window with room to spare.
         </p>
         <article class="sc-card sidebar-lg">

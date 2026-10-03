@@ -46,7 +46,7 @@ See [docs/layout.md](docs/layout.md) for each primitive and a compact "AI Layout
 
 ## Components
 
-Eleven semantic components in [`src/components.css`](src/components.css), included in the main bundle: `.button`, `.field`, `.card`, `.badge`, `.alert`, `.panel`, `.table`, `.empty-state`, `.nav`, `.tabs` and `.avatar`, with a small set of variants (`.button-primary`, `.badge-success`, `.alert-danger`, `.avatar-round`, …) and parts (`.card-header`, `.field-error`, `.alert-icon`, `.nav-link`, `.tabs-item`, …). They use only tokens, take their state from native attributes (`disabled`, `aria-busy="true"`, `aria-invalid="true"`, `aria-current="page"` on the current `.nav-link`, `aria-selected="true"` on the selected `.tabs-item`) and need no JavaScript:
+Thirteen semantic components in [`src/components.css`](src/components.css), included in the main bundle: `.button`, `.field`, `.switch`, `.input-group`, `.card`, `.badge`, `.alert`, `.panel`, `.table`, `.empty-state`, `.nav`, `.tabs` and `.avatar`, with a small set of variants (`.button-primary`, `.badge-success`, `.alert-danger`, `.avatar-round`, …) and parts (`.card-header`, `.field-error`, `.alert-icon`, `.nav-link`, `.tabs-item`, …). They use only tokens, take their state from native attributes (`disabled`, `aria-busy="true"`, `aria-invalid="true"`, `aria-current="page"` on the current `.nav-link`, `aria-selected="true"` on the selected `.tabs-item`) and need no JavaScript:
 
 ```html
 <form class="card">

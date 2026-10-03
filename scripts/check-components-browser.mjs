@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Optional browser check of the components on showcase/index.html at 375px and
 // 1280px viewport width: tokens applied, states, focus rings, table scrolling,
-// avatar sizes and .alert-icon placement, plus .tabs at 320px.
+// avatar sizes, .alert-icon placement, switch states and input-group joins,
+// plus .tabs at 320px.
 // Needs Playwright, which is not a dependency of this repository:
 //   npm install --no-save playwright && npx playwright install chromium
 // Usage: node scripts/check-components-browser.mjs
@@ -141,6 +142,49 @@ try {
           alertPlainColumn: getComputedStyle(plainAlert).display === "flex" && getComputedStyle(plainAlert).flexDirection === "column",
         };
       }
+      // Switch: track color and thumb side from :checked, faded when :disabled.
+      // Input group: one height, overlapping borders, outer corners only.
+      function switchesAndGroups() {
+        const box = (el) => el.getBoundingClientRect();
+        const near = (a, b) => Math.abs(a - b) < 1;
+        const inputs = [...document.querySelectorAll("#component-switch ~ .sc-demo .switch > input")];
+        const on = inputs.find((i) => i.checked && !i.disabled);
+        const off = inputs.find((i) => !i.checked && !i.disabled);
+        const disabled = inputs.find((i) => i.disabled);
+        const thumbStart = (i) => parseFloat(getComputedStyle(i, "::before").insetInlineStart);
+        const groups = [...document.querySelectorAll("#component-input-group ~ .sc-demo .input-group")];
+        const radius = (el, corner) => parseFloat(getComputedStyle(el)[`border${corner}Radius`]);
+        const joined = (g) => {
+          const kids = [...g.children];
+          const first = kids[0];
+          const last = kids.at(-1);
+          return (
+            kids.every((k) => near(box(k).height, box(g).height)) &&
+            // Each child overlaps the previous one by its negative start margin.
+            kids.slice(1).every((k, i) => {
+              const overlap = -parseFloat(getComputedStyle(k).marginInlineStart);
+              return overlap > 0 && near(box(k).left, box(kids[i]).right - overlap);
+            }) &&
+            radius(first, "TopLeft") > 0 && radius(last, "TopRight") > 0 &&
+            radius(first, "TopRight") === 0 && radius(last, "TopLeft") === 0 &&
+            kids.slice(1, -1).every((k) => radius(k, "TopLeft") === 0 && radius(k, "BottomRight") === 0)
+          );
+        };
+        const input = groups[0]?.querySelector("input");
+        return {
+          switchFound: Boolean(on && off && disabled && on.getAttribute("role") === "switch"),
+          switchNative: inputs.every((i) => i.type === "checkbox" && getComputedStyle(i).appearance === "none"),
+          switchOnColor: on && getComputedStyle(on).backgroundColor === token("--color-primary"),
+          switchOffDistinct: on && off && getComputedStyle(off).backgroundColor !== getComputedStyle(on).backgroundColor,
+          switchThumbMoves: on && off && thumbStart(on) > thumbStart(off),
+          switchDisabled: disabled && parseFloat(getComputedStyle(disabled).opacity) < 1 && getComputedStyle(disabled).cursor === "not-allowed",
+          switchDisabledLabel: disabled && getComputedStyle(disabled.parentElement).color === token("--color-text-muted"),
+          groupsFound: groups.length > 0 && groups.some((g) => g.querySelector("select") && g.querySelector(".button")),
+          groupsJoined: groups.every(joined),
+          groupFillsField: groups.every((g) => near(box(g).width, box(g.parentElement).width)),
+          groupInputGrows: input && box(input).width > box(input.nextElementSibling).width,
+        };
+      }
       const result = {
         overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
         primaryBg: css("#components .button-primary", "background-color") === token("--color-primary"),
@@ -159,6 +203,7 @@ try {
         wraps,
         ...navAndTabs(),
         ...avatarsAndAlerts(),
+        ...switchesAndGroups(),
       };
       probe.remove();
       return result;
@@ -195,6 +240,15 @@ try {
     expect(m.alertIconBeside, `${width}px: .alert-icon is not to the left of the content, top-aligned`);
     expect(m.alertPlainColumn, `${width}px: an .alert without an icon is no longer a column flexbox`);
 
+    expect(m.switchFound, `${width}px: the .switch demo needs on, off and disabled switches with role="switch"`);
+    expect(m.switchNative, `${width}px: .switch inputs are not native checkboxes with appearance: none`);
+    expect(m.switchOnColor && m.switchOffDistinct, `${width}px: a checked .switch track is not --color-primary, or looks like an unchecked one`);
+    expect(m.switchThumbMoves, `${width}px: the .switch thumb does not move to the end side when checked`);
+    expect(m.switchDisabled && m.switchDisabledLabel, `${width}px: a disabled .switch is not faded with a not-allowed cursor and a muted label`);
+    expect(m.groupsFound, `${width}px: the .input-group demo needs a group with a select and a .button`);
+    expect(m.groupsJoined, `${width}px: .input-group children differ in height, double their borders or round inner corners`);
+    expect(m.groupFillsField && m.groupInputGrows, `${width}px: .input-group does not fill its .field, or its input does not grow`);
+
     for (const [what, sel] of [
       ["button", "#components .button"],
       ["text input", "#components .field input[type=text]"],
@@ -203,10 +257,28 @@ try {
       ["table-wrap", "#components .table-wrap"],
       ["nav-link", "#components .nav-link"],
       ["tabs-item", "#components .tabs-item"],
+      ["switch", "#components .switch > input"],
+      ["input-group input", "#components .input-group > input"],
+      ["input-group select", "#components .input-group > select"],
+      ["input-group button", "#components .input-group > .button"],
     ]) {
       const ring = await tabTo(page, sel);
       expect(ring && ring.style === "solid" && ring.width > 0, `${width}px: ${what} has no visible :focus-visible ring`);
     }
+    // The focused input-group child is drawn above its neighbours.
+    const raised = await page.evaluate(() => {
+      const el = document.activeElement;
+      const z = (e) => Number(getComputedStyle(e).zIndex) || 0;
+      return [...el.parentElement.children].every((k) => k === el || z(el) > z(k));
+    });
+    expect(raised, `${width}px: a focused .input-group child is not raised above its neighbours`);
+    // Space toggles a focused switch.
+    await tabTo(page, "#components .switch > input:not(:disabled)");
+    const before = await page.evaluate(() => document.activeElement.checked);
+    await page.keyboard.press("Space");
+    const after = await page.evaluate(() => document.activeElement.checked);
+    expect(before !== after, `${width}px: Space does not toggle a focused .switch`);
+    await page.keyboard.press("Space");
     await page.close();
   }
 
@@ -248,5 +320,5 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(
-  "check-components-browser: components render with tokens, states, focus rings and scrolling tables at 375px and 1280px; avatars are centered squares and .alert-icon sits beside the content; .tabs wraps at 320px.",
+  "check-components-browser: components render with tokens, states, focus rings and scrolling tables at 375px and 1280px; avatars are centered squares and .alert-icon sits beside the content; switches and input groups follow their state and join; .tabs wraps at 320px.",
 );

@@ -111,6 +111,8 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
   - part `.field-label` — the `<label>` of the control
   - part `.field-help` — hint text under the control
   - part `.field-error` — error message; pair with `aria-invalid="true"`
+- `.switch` — on/off toggle: `<label class="switch"><input type="checkbox" role="switch"> Text</label>`; state from `checked` / `disabled`
+- `.input-group` — one `<input>` joined with `.button` and/or `<select>` children; shared borders, outer corners rounded; put in `.field` for a label
 - `.card` — raised self-contained item (project, product, user)
   - part `.card-header` — title area
   - part `.card-body` — main content; grows to align footers
@@ -168,6 +170,8 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
 | Main action | `.button button-primary` |
 | Destructive action | `.button button-danger` |
 | Labeled input with help or error | `.field` + `.field-label` + `.field-help` / `.field-error` |
+| On/off setting | `.switch` on a `<label>` around `<input type="checkbox" role="switch">` |
+| Input with an attached button or select | `.input-group` |
 | Self-contained item | `.card` + parts |
 | Status label | `.badge` + `.badge-success` / -warning / -danger / -info |
 | Message or notification | `.alert` + `.alert-info` / -success / -warning / -danger; optional `.alert-icon` |
@@ -206,7 +210,7 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
 4. Never use inline styles except a token override such as `style="--grid-min: 12rem"`.
 5. In any custom CSS, reference tokens with `var()`; never hard-code colors, px/rem sizes, shadows or durations.
 6. Put components on semantic native elements and keep one component per element.
-7. Express state with attributes: `disabled`, `aria-disabled="true"`, `aria-busy="true"`, `aria-invalid="true"`, `aria-current="page"` (nav), `aria-selected="true"` (tabs).
+7. Express state with attributes: `disabled`, `checked`, `aria-disabled="true"`, `aria-busy="true"`, `aria-invalid="true"`, `aria-current="page"` (nav), `aria-selected="true"` (tabs).
 8. Pick variants by meaning, not look: `button-danger` for destructive actions, `badge-success` for success.
 9. Write no media queries or breakpoint classes; primitives adapt to the space they get.
 10. Keep it accessible: `aria-label` on `.button-icon`, `role="status"` or `role="alert"` on `.alert`, a `<label for>` on every control.
@@ -243,7 +247,7 @@ Page: container + stack, split header with nav, tabs filter beside the main acti
 </main>
 ```
 
-Form: field with an error from aria-invalid, actions in a cluster.
+Form: field with an error from aria-invalid, an invite link with a Copy button, a switch, actions in a cluster.
 
 ```html
 <form class="card">
@@ -252,6 +256,11 @@ Form: field with an error from aria-invalid, actions in a cluster.
     <input id="email" type="email" aria-invalid="true" aria-describedby="email-error">
     <p class="field-error" id="email-error">Enter a full email address.</p>
   </div>
+  <div class="field">
+    <label class="field-label" for="invite">Invite link</label>
+    <div class="input-group"><input id="invite" type="url" readonly value="https://example.com/i/4f2a"><button type="button" class="button">Copy</button></div>
+  </div>
+  <label class="switch"><input type="checkbox" role="switch" checked> Require admin approval</label>
   <div class="cluster-sm">
     <button type="submit" class="button button-primary">Save</button>
     <button type="button" class="button">Cancel</button>
