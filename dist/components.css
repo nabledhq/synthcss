@@ -1,0 +1,836 @@
+/*! SynthCSS v0.5.0 | components.css | MIT License | https://github.com/nabledhq/synthcss */
+/*
+ * SynthCSS components
+ *
+ * Ten semantic components on top of the design tokens and layout
+ * primitives: button, field, card, badge, alert, panel, table, empty-state,
+ * nav and tabs.
+ *
+ * Rules:
+ * - Every color, space, radius, font size, weight and shadow is a token from
+ *   tokens.css. No color literals; tints are color-mix() of two tokens.
+ * - Naming is .component, .component-variant, .component-part.
+ * - State comes from native attributes, not classes: :disabled,
+ *   [aria-disabled="true"], [aria-busy="true"], [aria-invalid="true"],
+ *   [aria-current="page"] (nav) and [aria-selected="true"] (tabs).
+ * - Components never set `display` on parts meant to be combined with a
+ *   layout primitive (for example `class="card-footer split"`).
+ * - Child margin resets use :where() so any author rule wins.
+ * - No JavaScript, no media queries.
+ *
+ * Reference: docs/components.md
+ */
+
+/* -------------------------------------------------------------------------
+   Shared: content regions trim the outer margins of their first and last
+   child (for example the default margins of <p> and <h3>), so arbitrary
+   content sits flush with the padding.
+   ------------------------------------------------------------------------- */
+:where(.card, .card-header, .card-body, .card-footer, .panel, .panel-header, .panel-body, .alert, .empty-state)
+  > :where(:first-child) {
+  margin-block-start: 0;
+}
+
+:where(.card, .card-header, .card-body, .card-footer, .panel, .panel-header, .panel-body, .alert, .empty-state)
+  > :where(:last-child) {
+  margin-block-end: 0;
+}
+
+/* Direct children of the flex-column components get their spacing from gap. */
+:where(.card, .panel, .alert, .empty-state, .field) > * {
+  margin-block: 0;
+}
+
+/* Buttons and links placed directly in a column component keep their own
+   width instead of stretching across it. */
+:where(.card, .panel, .alert) > :where(button, a, .button) {
+  align-self: flex-start;
+}
+
+/* -------------------------------------------------------------------------
+   Button
+   ------------------------------------------------------------------------- */
+.button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  min-block-size: var(--control-height);
+  margin: 0;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-4);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.button:where(:not(:disabled, [aria-disabled="true"])):hover {
+  background: var(--color-surface);
+  border-color: var(--color-text-muted);
+}
+
+.button:focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+/* Icons (inline svg, img or any element) sit next to the label with the gap. */
+.button > :where(svg, img) {
+  flex-shrink: 0;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.button-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.button-primary:where(:not(:disabled, [aria-disabled="true"])):hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.button-secondary {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.button-secondary:where(:not(:disabled, [aria-disabled="true"])):hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary-hover);
+  color: var(--color-primary-hover);
+}
+
+.button-danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--color-on-primary);
+}
+
+.button-danger:where(:not(:disabled, [aria-disabled="true"])):hover {
+  background: color-mix(in srgb, var(--color-danger) 85%, var(--color-text));
+  border-color: color-mix(in srgb, var(--color-danger) 85%, var(--color-text));
+}
+
+.button-sm {
+  min-block-size: calc(var(--control-height) * 0.8);
+  padding-inline: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.button-lg {
+  min-block-size: calc(var(--control-height) * 1.2);
+  padding-inline: var(--space-5);
+  font-size: var(--text-lg);
+}
+
+/* Icon-only: a square button. Always give it an aria-label. */
+.button-icon {
+  inline-size: var(--control-height);
+  block-size: var(--control-height);
+  padding: 0;
+}
+
+.button-icon.button-sm {
+  inline-size: calc(var(--control-height) * 0.8);
+  block-size: calc(var(--control-height) * 0.8);
+}
+
+.button-icon.button-lg {
+  inline-size: calc(var(--control-height) * 1.2);
+  block-size: calc(var(--control-height) * 1.2);
+}
+
+/* Disabled: faded, not-allowed cursor, no hover change. The variant color
+   stays recognizable. aria-disabled keeps the button focusable. */
+.button:disabled,
+.button[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Loading: aria-busy="true" ignores pointer input and shows a spinner after
+   the label. With reduced motion the duration tokens are 0ms and the ring
+   stays still. */
+.button[aria-busy="true"] {
+  cursor: progress;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.button[aria-busy="true"]::after {
+  content: "";
+  flex-shrink: 0;
+  box-sizing: border-box;
+  inline-size: 1em;
+  block-size: 1em;
+  border: calc(var(--border-width) * 2) solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: var(--radius-full);
+  animation: synthcss-spin calc(var(--duration-slow) * 2.5) linear infinite;
+}
+
+/* An icon-only button swaps its icon for the spinner. */
+.button-icon[aria-busy="true"] > * {
+  display: none;
+}
+
+@keyframes synthcss-spin {
+  to { transform: rotate(1turn); }
+}
+
+/* -------------------------------------------------------------------------
+   Field: label + control + help + error. Native controls are only styled
+   inside .field, so SynthCSS never restyles form elements globally.
+   ------------------------------------------------------------------------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-inline-size: 0;
+  color: var(--color-text);
+}
+
+/* A <fieldset class="field"> groups checkboxes or radios. */
+.field:where(fieldset) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.field > :where(legend) {
+  margin-block-end: var(--space-2);
+  padding: 0;
+}
+
+.field-label {
+  color: var(--color-text);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+}
+
+.field-help {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+/* The error text carries an "!" marker, so the error is not shown by color
+   alone. The marker is hidden from screen readers where supported. */
+.field-error {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+}
+
+.field-error::before {
+  content: "!";
+  content: "!" / "";
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  border-radius: var(--radius-full);
+  background: var(--color-danger);
+  color: var(--color-on-primary);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+.field
+  :where(
+    input:not([type]),
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select
+  ) {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-block-size: var(--input-height);
+  margin: 0;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  transition: border-color var(--duration-fast) var(--ease-standard);
+}
+
+.field :where(textarea) {
+  min-block-size: calc(var(--input-height) * 2.5);
+  resize: vertical;
+}
+
+.field
+  :where(
+    input:not([type]),
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select
+  ):hover {
+  border-color: var(--color-text-muted);
+}
+
+.field :where(input[type="checkbox"], input[type="radio"]) {
+  inline-size: 1.125em;
+  block-size: 1.125em;
+  margin-block: 0;
+  margin-inline: 0 var(--space-2);
+  vertical-align: middle;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* A label wrapping a checkbox or radio is clickable as a whole. */
+.field :where(label) {
+  cursor: pointer;
+}
+
+.field :where(input, textarea, select):focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+  border-color: var(--focus-color);
+}
+
+/* Error: a thicker danger border with a heavy start edge, plus the
+   .field-error message and its marker. */
+.field
+  :where(
+    input:not([type]),
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select
+  )[aria-invalid="true"] {
+  border-color: var(--color-danger);
+  border-width: calc(var(--border-width) * 2);
+  border-inline-start-width: calc(var(--border-width) * 5);
+}
+
+.field :where(input[type="checkbox"], input[type="radio"])[aria-invalid="true"] {
+  outline: calc(var(--border-width) * 2) solid var(--color-danger);
+  outline-offset: var(--border-width);
+}
+
+.field :where(input[type="checkbox"], input[type="radio"])[aria-invalid="true"]:focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+/* Disabled: faded on the surface color with a not-allowed cursor, the same
+   treatment as disabled buttons. */
+.field :where(input, textarea, select):disabled {
+  opacity: 0.55;
+  background: var(--color-surface);
+  cursor: not-allowed;
+}
+
+.field :where(input, textarea, select):disabled:hover {
+  border-color: var(--border-color);
+}
+
+.field:has(> :where(input, textarea, select):disabled) .field-label,
+.field :where(label):has(> :where(input):disabled) {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------------------
+   Card: a raised, self-contained block. Optional parts: .card-media,
+   .card-header, .card-body, .card-footer, .card-actions.
+   ------------------------------------------------------------------------- */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-sizing: border-box;
+  min-inline-size: 0;
+  padding: var(--space-5);
+  overflow: hidden;
+  background: var(--color-surface-elevated);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+}
+
+.card-header :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--color-text);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.card-header :where(p) {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* The body grows, so footers line up across cards in a grid row. */
+.card-body {
+  flex-grow: 1;
+  color: var(--color-text-secondary);
+}
+
+/* Media spans the full card width; at the top or bottom it also bleeds over
+   the card padding. */
+.card-media {
+  display: block;
+  margin-inline: calc(var(--space-5) * -1);
+}
+
+.card-media:first-child {
+  margin-block-start: calc(var(--space-5) * -1);
+}
+
+.card-media:last-child {
+  margin-block-end: calc(var(--space-5) * -1);
+}
+
+.card-media > :where(img, video, picture, svg) {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  object-fit: cover;
+}
+
+/* Directly on <img> or <video>: widen by the padding the margins bleed over. */
+.card-media:where(img, video) {
+  box-sizing: border-box;
+  inline-size: calc(100% + var(--space-5) * 2);
+  max-inline-size: none;
+  block-size: auto;
+  object-fit: cover;
+}
+
+.card-footer {
+  margin-inline: calc(var(--space-5) * -1);
+  padding-block: var(--space-4);
+  padding-inline: var(--space-5);
+  border-block-start: var(--border-width) solid var(--border-color);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.card-footer:last-child {
+  margin-block-end: calc(var(--space-5) * -1);
+}
+
+/* A wrapping row of buttons or links. */
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* -------------------------------------------------------------------------
+   Badge: a short status label.
+   ------------------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  padding-block: calc(var(--space-1) / 2);
+  padding-inline: var(--space-2);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.badge-success {
+  border-color: var(--color-success);
+  background: var(--color-background);
+  background: color-mix(in srgb, var(--color-success) 10%, var(--color-background));
+  color: var(--color-success);
+}
+
+.badge-warning {
+  border-color: var(--color-warning);
+  background: var(--color-background);
+  background: color-mix(in srgb, var(--color-warning) 10%, var(--color-background));
+  color: var(--color-warning);
+}
+
+.badge-danger {
+  border-color: var(--color-danger);
+  background: var(--color-background);
+  background: color-mix(in srgb, var(--color-danger) 10%, var(--color-background));
+  color: var(--color-danger);
+}
+
+.badge-info {
+  border-color: var(--color-info);
+  background: var(--color-background);
+  background: color-mix(in srgb, var(--color-info) 10%, var(--color-background));
+  color: var(--color-info);
+}
+
+/* -------------------------------------------------------------------------
+   Alert: a message box. Any headings, paragraphs, lists and buttons inside
+   are spaced by gap; no special structure is needed.
+   ------------------------------------------------------------------------- */
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  min-inline-size: 0;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--border-color);
+  border-inline-start-width: calc(var(--border-width) * 4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  line-height: var(--leading-normal);
+}
+
+.alert :where(h1, h2, h3, h4, h5, h6) {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.alert :where(ul, ol) {
+  padding-inline-start: var(--space-5);
+}
+
+.alert-info {
+  border-color: var(--color-info);
+  background: color-mix(in srgb, var(--color-info) 8%, var(--color-background));
+}
+
+.alert-success {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 8%, var(--color-background));
+}
+
+.alert-warning {
+  border-color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-background));
+}
+
+.alert-danger {
+  border-color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-background));
+}
+
+/* -------------------------------------------------------------------------
+   Panel: a flat, bordered grouping. Lighter than .card: no shadow, smaller
+   radius and padding, surface background.
+   ------------------------------------------------------------------------- */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  min-inline-size: 0;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+}
+
+.panel-header {
+  padding-block-end: var(--space-3);
+  border-block-end: var(--border-width) solid var(--border-color);
+}
+
+.panel-header :where(h1, h2, h3, h4, h5, h6) {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.panel-body {
+  color: var(--color-text-secondary);
+}
+
+/* -------------------------------------------------------------------------
+   Table: apply .table to a native <table>. Wrap it in .table-wrap to let a
+   wide table scroll horizontally on narrow screens.
+   ------------------------------------------------------------------------- */
+.table-wrap {
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+}
+
+/* Give a scrollable wrapper tabindex="0" so keyboard users can scroll it. */
+.table-wrap:focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.table-wrap > .table {
+  margin: 0;
+}
+
+.table :where(caption) {
+  padding-block-end: var(--space-2);
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-semibold);
+  text-align: start;
+}
+
+.table-wrap > .table :where(caption) {
+  padding: var(--space-3);
+}
+
+.table :where(th, td) {
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border-block-end: var(--border-width) solid var(--border-color);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.table :where(thead th, thead td) {
+  border-block-end-width: calc(var(--border-width) * 2);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-semibold);
+  vertical-align: bottom;
+}
+
+.table :where(tbody th) {
+  font-weight: var(--weight-medium);
+}
+
+.table :where(tfoot th, tfoot td) {
+  border-block-end: 0;
+  border-block-start: calc(var(--border-width) * 2) solid var(--border-color);
+  font-weight: var(--weight-semibold);
+}
+
+/* Inside the bordered wrapper the last row needs no bottom border. */
+.table-wrap > .table :where(tbody:last-child tr:last-child) > * {
+  border-block-end: 0;
+}
+
+.table-hover :where(tbody tr:hover) > * {
+  background: var(--color-surface);
+}
+
+.table .numeric {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------------------------
+   Empty state: a centered stack of icon, heading, description and action.
+   ------------------------------------------------------------------------- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  padding-block: var(--space-6);
+  padding-inline: var(--space-4);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.empty-state > * {
+  max-inline-size: var(--content-width);
+}
+
+.empty-state :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--color-text);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.empty-state > :where(svg, img) {
+  inline-size: calc(var(--space-6) * 2);
+  block-size: auto;
+  color: var(--color-text-muted);
+}
+
+/* -------------------------------------------------------------------------
+   Nav: a list of navigation links. .nav only resets the list; add .stack-*
+   for a vertical list or .cluster-* for a horizontal one. The current page
+   is marked with aria-current="page", never with a class.
+   ------------------------------------------------------------------------- */
+.nav {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-md);
+  color: inherit;
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.nav-link > :where(svg, img) {
+  flex-shrink: 0;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.nav-link:hover {
+  background: var(--color-surface);
+}
+
+.nav-link[aria-current="page"] {
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-background));
+  color: var(--color-primary);
+}
+
+.nav-link:focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+/* -------------------------------------------------------------------------
+   Tabs: a segmented control or tab list on a surface track. The selected
+   item is marked with aria-selected="true" (with role="tab"), never with
+   aria-pressed or a class. CSS only: arrow-key focus and panel switching are
+   up to the page's own script. The track wraps instead of overflowing.
+   ------------------------------------------------------------------------- */
+.tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  box-sizing: border-box;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  padding: var(--space-1);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.tabs-item {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  margin: 0;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.tabs-item > :where(svg, img) {
+  flex-shrink: 0;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.tabs-item:hover {
+  color: var(--color-text);
+}
+
+.tabs-item[aria-selected="true"] {
+  border-color: var(--border-color);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+}
+
+.tabs-item:focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
