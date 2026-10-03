@@ -161,3 +161,39 @@ test("fails when doc examples or the showcase use classes that are not in the CS
   const live = files.showcaseHtml.replace('<span class="badge badge-info">Pro plan</span>', '<span class="pill">Pro plan</span>');
   assertError(errorsWith({ showcaseHtml: live }), "uses .pill, which is neither");
 });
+
+test("fails when an avatar is not sized from --control-height or loses its shape", () => {
+  const fixed = withCss((css) => css.replace(/(\.avatar \{[^}]*)inline-size: var\(--control-height\);/, "$1inline-size: var(--input-height);"));
+  assertError(errorsWith(fixed), ".avatar must set inline-size: var(--control-height)");
+  const sm = withCss((css) => css.replace(/(\.avatar-sm \{[^}]*)block-size: calc\(var\(--control-height\) \* 0\.75\);/, "$1block-size: var(--control-height);"));
+  assertError(errorsWith(sm), ".avatar-sm must set block-size to calc(var(--control-height) * N)");
+  const round = withCss((css) => css.replace(/(\.avatar-round \{[^}]*)var\(--radius-full\)/, "$1var(--radius-lg)"));
+  assertError(errorsWith(round), ".avatar-round must set border-radius: var(--radius-full)");
+  const cover = withCss((css) => css.replace("object-fit: cover;\n}\n\n.avatar > :where(img)", "object-fit: fill;\n}\n\n.avatar > :where(img)"));
+  assertError(errorsWith(cover), ".avatar images must use object-fit: cover");
+});
+
+test("fails when an avatar tone does not tint through --tone", () => {
+  const token = withCss((css) => css.replace(".avatar-accent { --tone: var(--color-accent); }", ".avatar-accent { --tone: var(--color-info); }"));
+  assertError(errorsWith(token), ".avatar-accent must set --tone: var(--color-accent)");
+  const mix = withCss((css) => css.replace("var(--tone) 12%, var(--color-background)", "var(--tone) 20%, var(--color-background)"));
+  assertError(errorsWith(mix), "must use background: color-mix(in srgb, var(--tone) 12%, var(--color-background))");
+  const literal = withCss((css) => css.replace(".avatar-info { --tone: var(--color-info); }", ".avatar-info { --tone: 1rem; }"));
+  assertError(errorsWith(literal), "must be a var(--color-*) token");
+  const other = withCss((css) => css + "\n.avatar { --size: var(--control-height); }\n");
+  assertError(errorsWith(other), "must not define custom properties other than --tone");
+});
+
+test("fails when an avatar tone's foreground has too little contrast on its tint", () => {
+  const success = withCss((css) => css.replace("color-mix(in srgb, var(--tone) 90%, var(--color-text))", "var(--tone)"));
+  assertError(errorsWith(success), "contrast too low in .avatar-success: 4.46:1");
+  const tokensCss = files.tokensCss.replace(/--color-accent: #[0-9a-f]+;/, "--color-accent: #a78bfa;");
+  assertError(errorsWith({ tokensCss }), "contrast too low in .avatar-accent");
+});
+
+test("fails when .alert-icon does not switch the alert layout or .alert itself changes", () => {
+  const noGrid = withCss((css) => css.replace(/(\.alert:has\(> \.alert-icon\) \{[^}]*)display: grid;/, "$1"));
+  assertError(errorsWith(noGrid), ".alert:has(> .alert-icon) must switch to display: grid");
+  const changed = withCss((css) => css.replace(/(\.alert \{[^}]*)display: flex;/, "$1display: grid;"));
+  assertError(errorsWith(changed), ".alert must stay display: flex");
+});

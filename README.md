@@ -46,7 +46,7 @@ See [docs/layout.md](docs/layout.md) for each primitive and a compact "AI Layout
 
 ## Components
 
-Ten semantic components in [`src/components.css`](src/components.css), included in the main bundle: `.button`, `.field`, `.card`, `.badge`, `.alert`, `.panel`, `.table`, `.empty-state`, `.nav` and `.tabs`, with a small set of variants (`.button-primary`, `.badge-success`, `.alert-danger`, …) and parts (`.card-header`, `.field-error`, `.nav-link`, `.tabs-item`, …). They use only tokens, take their state from native attributes (`disabled`, `aria-busy="true"`, `aria-invalid="true"`, `aria-current="page"` on the current `.nav-link`, `aria-selected="true"` on the selected `.tabs-item`) and need no JavaScript:
+Eleven semantic components in [`src/components.css`](src/components.css), included in the main bundle: `.button`, `.field`, `.card`, `.badge`, `.alert`, `.panel`, `.table`, `.empty-state`, `.nav`, `.tabs` and `.avatar`, with a small set of variants (`.button-primary`, `.badge-success`, `.alert-danger`, `.avatar-round`, …) and parts (`.card-header`, `.field-error`, `.alert-icon`, `.nav-link`, `.tabs-item`, …). They use only tokens, take their state from native attributes (`disabled`, `aria-busy="true"`, `aria-invalid="true"`, `aria-current="page"` on the current `.nav-link`, `aria-selected="true"` on the selected `.tabs-item`) and need no JavaScript:
 
 ```html
 <form class="card">
@@ -63,7 +63,7 @@ See [docs/components.md](docs/components.md) for each component's variants, comp
 
 ## AI contract
 
-[`synthcss.llm.md`](synthcss.llm.md) is the whole public vocabulary in one prompt-ready file of about 3,500 tokens: every token, layout primitive, component, part and variant, an intent table, composition rules, ten generation rules and valid and invalid examples. Paste it into a model's context. [`synthcss.ai.json`](synthcss.ai.json) is the same contract as structured data and the canonical source. Both state the SynthCSS version they describe; the schema is in [docs/ai-contract.md](docs/ai-contract.md).
+[`synthcss.llm.md`](synthcss.llm.md) is the whole public vocabulary in one prompt-ready file of about 3,900 tokens: every token, layout primitive, component, part and variant, an intent table, composition rules, ten generation rules and valid and invalid examples. Paste it into a model's context. [`synthcss.ai.json`](synthcss.ai.json) is the same contract as structured data and the canonical source. Both state the SynthCSS version they describe; the schema is in [docs/ai-contract.md](docs/ai-contract.md).
 
 **Any change to the public API (a class or token added, renamed or removed, or a new version) must update both contract files in the same pull request.** `npm test` runs `scripts/verify-ai-contract.mjs`, which fails when the contract and the CSS or `package.json` disagree.
 

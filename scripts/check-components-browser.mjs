@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Optional browser check of the components on showcase/index.html at 375px and
-// 1280px viewport width: tokens applied, states, focus rings and table scrolling,
-// plus .tabs at 320px.
+// 1280px viewport width: tokens applied, states, focus rings, table scrolling,
+// avatar sizes and .alert-icon placement, plus .tabs at 320px.
 // Needs Playwright, which is not a dependency of this repository:
 //   npm install --no-save playwright && npx playwright install chromium
 // Usage: node scripts/check-components-browser.mjs
@@ -102,6 +102,45 @@ try {
           tabTrackBg: getComputedStyle(selected.parentElement).backgroundColor === token("--color-surface"),
         };
       }
+      // Avatars: fixed squares from --control-height with centered content;
+      // .alert-icon beside the content, and plain alerts still a column flexbox.
+      function avatarsAndAlerts() {
+        const probeSize = document.createElement("div");
+        probeSize.style.inlineSize = "var(--control-height)";
+        document.body.append(probeSize);
+        const control = probeSize.getBoundingClientRect().width;
+        probeSize.remove();
+        const avatars = [...document.querySelectorAll("#component-avatar ~ .sc-demo .avatar")];
+        const box = (el) => el.getBoundingClientRect();
+        const near = (a, b) => Math.abs(a - b) < 1;
+        const expected = (el) => control * (el.classList.contains("avatar-sm") ? 0.75 : el.classList.contains("avatar-lg") ? 1.5 : 1);
+        const centered = (el) => {
+          const child = el.firstElementChild;
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const inner = child ? box(child) : range.getBoundingClientRect();
+          const outer = box(el);
+          return near(inner.left + inner.width / 2, outer.left + outer.width / 2) && near(inner.top + inner.height / 2, outer.top + outer.height / 2);
+        };
+        const round = avatars.find((a) => a.classList.contains("avatar-round"));
+        const square = avatars.find((a) => !a.classList.contains("avatar-round"));
+        const accent = avatars.find((a) => a.classList.contains("avatar-accent"));
+        const img = avatars.find((a) => a.tagName === "IMG");
+        const iconAlert = document.querySelector("#component-alert ~ .sc-demo .alert:has(> .alert-icon)");
+        const icon = iconAlert.querySelector(".alert-icon");
+        const content = icon.nextElementSibling;
+        const plainAlert = document.querySelector("#component-alert ~ .sc-demo .alert:not(:has(> .alert-icon))");
+        return {
+          avatarSizes: avatars.length > 0 && avatars.every((a) => near(box(a).width, expected(a)) && near(box(a).height, expected(a))),
+          avatarCentered: avatars.filter((a) => a.tagName !== "IMG").every(centered),
+          avatarRound: getComputedStyle(round).borderTopLeftRadius === getComputedStyle(probe).getPropertyValue("--radius-full").trim(),
+          avatarSquareRadius: parseFloat(getComputedStyle(square).borderTopLeftRadius) > 0 && parseFloat(getComputedStyle(square).borderTopLeftRadius) < box(square).width / 2,
+          avatarAccent: getComputedStyle(accent).color === token("--color-accent"),
+          avatarImgCover: getComputedStyle(img).objectFit === "cover",
+          alertIconBeside: box(icon).right <= box(content).left && near(box(icon).top, box(content).top),
+          alertPlainColumn: getComputedStyle(plainAlert).display === "flex" && getComputedStyle(plainAlert).flexDirection === "column",
+        };
+      }
       const result = {
         overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
         primaryBg: css("#components .button-primary", "background-color") === token("--color-primary"),
@@ -119,6 +158,7 @@ try {
         emptyAlign: css("#components .empty-state", "text-align"),
         wraps,
         ...navAndTabs(),
+        ...avatarsAndAlerts(),
       };
       probe.remove();
       return result;
@@ -146,6 +186,14 @@ try {
     expect(m.navVertical && m.navHorizontal, `${width}px: .nav does not follow .stack-sm (vertical) and .cluster-sm (horizontal)`);
     expect(m.tabSelectedBg && m.tabTrackBg, `${width}px: .tabs track or selected .tabs-item does not use its surface tokens`);
     expect(m.tabSelectedDistinct && m.tabUnselectedSame, `${width}px: aria-selected="true" is not distinct, or aria-selected="false" items differ`);
+
+    expect(m.avatarSizes, `${width}px: .avatar sizes are not 0.75×, 1× and 1.5× --control-height squares`);
+    expect(m.avatarCentered, `${width}px: .avatar content is not centered`);
+    expect(m.avatarRound && m.avatarSquareRadius, `${width}px: .avatar-round is not a circle, or .avatar is not a rounded square`);
+    expect(m.avatarAccent, `${width}px: .avatar-accent content is not --color-accent`);
+    expect(m.avatarImgCover, `${width}px: img.avatar does not use object-fit: cover`);
+    expect(m.alertIconBeside, `${width}px: .alert-icon is not to the left of the content, top-aligned`);
+    expect(m.alertPlainColumn, `${width}px: an .alert without an icon is no longer a column flexbox`);
 
     for (const [what, sel] of [
       ["button", "#components .button"],
@@ -199,4 +247,6 @@ if (errors.length) {
   console.error(`\ncheck-components-browser: ${errors.length} problem(s) found.`);
   process.exit(1);
 }
-console.log("check-components-browser: components render with tokens, states, focus rings and scrolling tables at 375px and 1280px; .tabs wraps at 320px.");
+console.log(
+  "check-components-browser: components render with tokens, states, focus rings and scrolling tables at 375px and 1280px; avatars are centered squares and .alert-icon sits beside the content; .tabs wraps at 320px.",
+);

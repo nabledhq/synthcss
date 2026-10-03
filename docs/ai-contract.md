@@ -7,7 +7,7 @@ window, with no need to crawl these docs or read `src/`.
 | File | For | Notes |
 | --- | --- | --- |
 | [`synthcss.ai.json`](../synthcss.ai.json) | Tools and agents that read structured data | The canonical, machine-readable contract. |
-| [`synthcss.llm.md`](../synthcss.llm.md) | Pasting into a prompt | A terse hand-written twin of the JSON, one line per item, about 3,500 tokens. |
+| [`synthcss.llm.md`](../synthcss.llm.md) | Pasting into a prompt | A terse hand-written twin of the JSON, one line per item, about 3,900 tokens. |
 
 Both are published next to the showcase on GitHub Pages
 (`<site>/synthcss.llm.md`, `<site>/synthcss.ai.json`) and are in every release tag.

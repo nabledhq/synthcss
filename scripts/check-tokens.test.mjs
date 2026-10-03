@@ -56,3 +56,10 @@ test("contrast math matches WCAG reference values", () => {
   assert.equal(ratio("#777777", "#ffffff").toFixed(2), "4.48");
   assert.equal(ratio("rgb(255 255 255)", "#ffffff").toFixed(2), "1.00");
 });
+
+test("fails when --color-accent is missing or too light", () => {
+  const missing = css.replace(/^\s*--color-accent:.*$/m, "");
+  assert.ok(errorsFor(missing, docs).some((e) => e.includes("missing required token --color-accent")));
+  const light = css.replace(/--color-accent: #[0-9a-f]+;/, "--color-accent: #b9a6e8;");
+  assert.ok(errorsFor(light, docs).some((e) => e.startsWith("contrast too low, --color-accent")));
+});
