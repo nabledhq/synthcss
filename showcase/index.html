@@ -18,22 +18,22 @@
     See showcase/README.md.
   -->
 
-  <section id="hero" class="cover sc-hero" aria-labelledby="hero-title">
-    <header class="container split">
-      <a class="sc-brand" href="#hero">SynthCSS</a>
-      <nav aria-label="Sections">
-        <ul class="cluster-sm" role="list">
-          <li><a href="#why">Why</a></li>
-          <li><a href="#tokens">Tokens</a></li>
-          <li><a href="#layouts">Layouts</a></li>
-          <li><a href="#responsive">Responsive</a></li>
-          <li><a href="#ai-examples">AI examples</a></li>
-        </ul>
-      </nav>
-    </header>
+  <section id="hero" class="sc-hero" aria-labelledby="hero-title">
+    <div class="container cover sc-hero-cover">
+      <header class="split">
+        <a class="sc-brand" href="#hero">SynthCSS</a>
+        <nav aria-label="Sections">
+          <ul class="cluster-sm" role="list">
+            <li><a href="#why">Why</a></li>
+            <li><a href="#tokens">Tokens</a></li>
+            <li><a href="#layouts">Layouts</a></li>
+            <li><a href="#responsive">Responsive</a></li>
+            <li><a href="#ai-examples">AI examples</a></li>
+          </ul>
+        </nav>
+      </header>
 
-    <div class="cover-main container">
-      <div class="center stack-lg">
+      <div class="cover-main center stack-lg">
         <h1 id="hero-title" class="sc-hero-title">SynthCSS</h1>
         <p class="sc-tagline">CSS designed to be written by machines and used by humans.</p>
         <p class="sc-lead">
@@ -50,9 +50,9 @@
           <a class="sc-button sc-button-secondary" href="https://github.com/nabledhq/synthcss#readme">Read the docs</a>
         </div>
       </div>
-    </div>
 
-    <p class="container sc-muted">This page is built with SynthCSS itself.</p>
+      <p class="sc-muted">This page is built with SynthCSS itself.</p>
+    </div>
   </section>
 
   <main>
@@ -93,7 +93,7 @@
 
         <div class="sc-card stack">
           <h3>Colors</h3>
-          <ul class="grid-sm" role="list" style="--grid-min: 11rem">
+          <ul class="grid-sm" role="list" style="--grid-min: 8rem">
             <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-background)"></span><code>--color-background</code><code class="sc-value" data-token="--color-background"></code></li>
             <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-surface)"></span><code>--color-surface</code><code class="sc-value" data-token="--color-surface"></code></li>
             <li class="sc-swatch"><span class="sc-swatch-chip" style="background: var(--color-surface-elevated)"></span><code>--color-surface-elevated</code><code class="sc-value" data-token="--color-surface-elevated"></code></li>
@@ -139,9 +139,9 @@
           <div class="stack-sm">
             <h4>Line heights</h4>
             <div class="grid">
-              <p class="sc-leading" style="line-height: var(--leading-tight)"><code>--leading-tight</code> Short headings and labels use a tight line height so stacked lines stay together.</p>
-              <p class="sc-leading" style="line-height: var(--leading-normal)"><code>--leading-normal</code> Body text uses the normal line height for comfortable reading at any width.</p>
-              <p class="sc-leading" style="line-height: var(--leading-relaxed)"><code>--leading-relaxed</code> Long-form text can use a relaxed line height for extra breathing room.</p>
+              <p class="sc-stage" style="line-height: var(--leading-tight)"><code>--leading-tight</code> Short headings and labels use a tight line height so stacked lines stay together.</p>
+              <p class="sc-stage" style="line-height: var(--leading-normal)"><code>--leading-normal</code> Body text uses the normal line height for comfortable reading at any width.</p>
+              <p class="sc-stage" style="line-height: var(--leading-relaxed)"><code>--leading-relaxed</code> Long-form text can use a relaxed line height for extra breathing room.</p>
             </div>
           </div>
         </div>
@@ -171,7 +171,7 @@
 
           <div class="sc-card stack">
             <h3>Shadows</h3>
-            <ul class="cluster-lg" role="list">
+            <ul class="cluster-lg sc-stage" role="list">
               <li class="stack-sm"><span class="sc-tile sc-tile-raised" style="box-shadow: var(--shadow-sm)"></span><code>--shadow-sm</code></li>
               <li class="stack-sm"><span class="sc-tile sc-tile-raised" style="box-shadow: var(--shadow-md)"></span><code>--shadow-md</code></li>
               <li class="stack-sm"><span class="sc-tile sc-tile-raised" style="box-shadow: var(--shadow-lg)"></span><code>--shadow-lg</code></li>
