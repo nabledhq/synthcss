@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SynthCSS layout primitives fixture</title>
+  <link rel="stylesheet" href="../src/synthcss.css">
+  <style>
+    /* Demo-only styles: they make boxes visible and never set layout.
+       The fixed frame widths below simulate a phone-sized parent. */
+    body {
+      margin: 0;
+      background: var(--color-background);
+      color: var(--color-text);
+      font-family: var(--font-sans);
+      font-size: var(--text-base);
+      line-height: var(--leading-normal);
+    }
+    h1, h2, h3 { line-height: var(--leading-tight); }
+    h2 { font-size: var(--text-2xl); }
+    h3 { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-muted); }
+    code { font-family: var(--font-mono); font-size: var(--text-sm); }
+    .demo-box {
+      padding: var(--space-3);
+      background: var(--color-surface);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+    .demo-tag {
+      padding: var(--space-1) var(--space-3);
+      background: var(--color-surface);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+    }
+    .demo-button {
+      height: var(--control-height);
+      padding: 0 var(--space-4);
+      border: 0;
+      border-radius: var(--radius-md);
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+      font: inherit;
+    }
+    /* Frames: every primitive is shown in a narrow (375px) and a wide parent.
+       Frames can be resized horizontally to watch the layout respond. */
+    .demo-frame {
+      box-sizing: border-box;
+      padding: var(--space-2);
+      border: var(--border-width) dashed var(--color-text-muted);
+      border-radius: var(--radius-sm);
+      overflow: auto;
+      resize: horizontal;
+    }
+    .demo-frame-narrow { inline-size: 375px; max-inline-size: 100%; }
+    .demo-frame-wide { inline-size: 100%; }
+    .demo-outline { outline: var(--border-width) dashed var(--color-primary); }
+    /* The real .cover is at least one viewport tall. Inside the small demo
+       frames it is limited so the page stays readable. */
+    .demo-frame .cover { min-block-size: 16rem; }
+  </style>
+</head>
+<body>
+  <main class="container stack-lg">
+    <header class="stack-sm">
+      <h1>SynthCSS layout primitives</h1>
+      <p>Every primitive and variant, in a narrow frame (375px) and in a wide frame.
+        Open this page at about 375px and about 1280px viewport width as well.
+        Reference: <a href="../docs/layout.md">docs/layout.md</a>.</p>
+    </header>
+
+    <!-- ===================================================== container -->
+    <section class="stack" id="container">
+      <h2><code>.container</code></h2>
+      <p>The page you are reading is inside a <code>.container</code>. Below, the outline is the container and the box is its content.</p>
+      <h3>Narrow</h3>
+      <div class="demo-frame demo-frame-narrow" data-fixture="container-narrow">
+        <div class="container demo-outline"><div class="demo-box">Full width with fluid side padding.</div></div>
+      </div>
+      <h3>Wide</h3>
+      <div class="demo-frame demo-frame-wide" data-fixture="container-wide">
+        <div class="container demo-outline"><div class="demo-box">Capped at <code>--container-width</code> and centered.</div></div>
+      </div>
+    </section>
+
+    <!-- ========================================================= stack -->
+    <section class="stack" id="stack">
+      <h2><code>.stack</code>, <code>.stack-sm</code>, <code>.stack-lg</code></h2>
+      <h3>Narrow</h3>
+      <div class="demo-frame demo-frame-narrow cluster" data-fixture="stack-narrow">
+        <div class="stack-sm"><div class="demo-box">sm</div><div class="demo-box">sm</div><div class="demo-box">sm</div></div>
+        <div class="stack"><div class="demo-box">default</div><div class="demo-box">default</div><div class="demo-box">default</div></div>
+        <div class="stack-lg"><div class="demo-box">lg</div><div class="demo-box">lg</div><div class="demo-box">lg</div></div>
+      </div>
+      <h3>Wide</h3>
+      <div class="demo-frame demo-frame-wide" data-fixture="stack-wide">
+        <article class="stack">
+          <h4>Article title</h4>
+          <p>Paragraph margins are removed; only the stack gap separates children.</p>
+          <p>Second paragraph.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ======================================================= cluster -->
+    <section class="stack" id="cluster">
+      <h2><code>.cluster</code>, <code>.cluster-sm</code>, <code>.cluster-lg</code></h2>
+      <h3>Narrow (items wrap)</h3>
+      <div class="demo-frame demo-frame-narrow stack" data-fixture="cluster-narrow">
+        <ul class="cluster-sm" role="list" data-check="cluster"><li class="demo-tag">design</li><li class="demo-tag">tokens</li><li class="demo-tag">layout</li><li class="demo-tag">accessibility</li><li class="demo-tag">responsive</li><li class="demo-tag">ai</li></ul>
+        <div class="cluster"><button class="demo-button" type="button">Save</button><button class="demo-button" type="button">Save as draft</button><button class="demo-button" type="button">Cancel</button></div>
+        <div class="cluster-lg"><span class="demo-tag">one</span><span class="demo-tag">two</span><span class="demo-tag">three</span><span class="demo-tag">four</span></div>
+      </div>
+      <h3>Wide (one row)</h3>
+      <div class="demo-frame demo-frame-wide stack" data-fixture="cluster-wide">
+        <ul class="cluster-sm" role="list" data-check="cluster"><li class="demo-tag">design</li><li class="demo-tag">tokens</li><li class="demo-tag">layout</li><li class="demo-tag">accessibility</li><li class="demo-tag">responsive</li><li class="demo-tag">ai</li></ul>
+        <div class="cluster"><button class="demo-button" type="button">Save</button><button class="demo-button" type="button">Save as draft</button><button class="demo-button" type="button">Cancel</button></div>
+        <div class="cluster-lg"><span class="demo-tag">one</span><span class="demo-tag">two</span><span class="demo-tag">three</span><span class="demo-tag">four</span></div>
+      </div>
+    </section>
+
+    <!-- ========================================================== grid -->
+    <section class="stack" id="grid">
+      <h2><code>.grid</code>, <code>.grid-sm</code>, <code>.grid-lg</code></h2>
+      <h3>Narrow (one column)</h3>
+      <div class="demo-frame demo-frame-narrow stack" data-fixture="grid-narrow">
+        <div class="grid" data-check="grid"><div class="demo-box">1</div><div class="demo-box">2</div><div class="demo-box">3</div><div class="demo-box">4</div></div>
+        <div class="grid-sm"><div class="demo-box">sm</div><div class="demo-box">sm</div></div>
+        <div class="grid-lg"><div class="demo-box">lg</div><div class="demo-box">lg</div></div>
+      </div>
+      <h3>Wide (as many columns as fit)</h3>
+      <div class="demo-frame demo-frame-wide stack" data-fixture="grid-wide">
+        <div class="grid" data-check="grid"><div class="demo-box">1</div><div class="demo-box">2</div><div class="demo-box">3</div><div class="demo-box">4</div></div>
+        <div class="grid-sm"><div class="demo-box">sm</div><div class="demo-box">sm</div><div class="demo-box">sm</div><div class="demo-box">sm</div></div>
+        <div class="grid-lg"><div class="demo-box">lg</div><div class="demo-box">lg</div><div class="demo-box">lg</div><div class="demo-box">lg</div></div>
+      </div>
+    </section>
+
+    <!-- ======================================================= sidebar -->
+    <section class="stack" id="sidebar">
+      <h2><code>.sidebar</code>, <code>.sidebar-sm</code>, <code>.sidebar-lg</code></h2>
+      <h3>Narrow (stacks, sidebar first)</h3>
+      <div class="demo-frame demo-frame-narrow stack" data-fixture="sidebar-narrow">
+        <div class="sidebar" data-check="sidebar"><nav class="demo-box">Sidebar</nav><div class="demo-box">Main content grows to fill the rest of the row.</div></div>
+        <div class="sidebar-sm"><aside class="demo-box">sm</aside><div class="demo-box">Main</div></div>
+        <div class="sidebar-lg"><aside class="demo-box">lg</aside><div class="demo-box">Main</div></div>
+      </div>
+      <h3>Wide (side by side)</h3>
+      <div class="demo-frame demo-frame-wide stack" data-fixture="sidebar-wide">
+        <div class="sidebar" data-check="sidebar"><nav class="demo-box">Sidebar</nav><div class="demo-box">Main content grows to fill the rest of the row.</div></div>
+        <div class="sidebar-sm"><aside class="demo-box">sm</aside><div class="demo-box">Main</div></div>
+        <div class="sidebar-lg"><aside class="demo-box">lg</aside><div class="demo-box">Main</div></div>
+      </div>
+    </section>
+
+    <!-- ========================================================= split -->
+    <section class="stack" id="split">
+      <h2><code>.split</code>, <code>.split-sm</code>, <code>.split-lg</code></h2>
+      <h3>Narrow (wraps)</h3>
+      <div class="demo-frame demo-frame-narrow stack" data-fixture="split-narrow">
+        <header class="split" data-check="split"><strong class="demo-box">SynthCSS Dashboard</strong><nav class="cluster-sm"><a href="#split">Docs</a><a href="#split">Pricing</a><a href="#split">Sign in</a></nav></header>
+        <div class="split-sm"><span class="demo-box">Left</span><span class="demo-box">Right</span></div>
+        <div class="split-lg"><span class="demo-box">Left</span><span class="demo-box">Right</span></div>
+      </div>
+      <h3>Wide (ends of one row)</h3>
+      <div class="demo-frame demo-frame-wide stack" data-fixture="split-wide">
+        <header class="split" data-check="split"><strong class="demo-box">SynthCSS Dashboard</strong><nav class="cluster-sm"><a href="#split">Docs</a><a href="#split">Pricing</a><a href="#split">Sign in</a></nav></header>
+        <div class="split-sm"><span class="demo-box">Left</span><span class="demo-box">Right</span></div>
+        <div class="split-lg"><span class="demo-box">Left</span><span class="demo-box">Right</span></div>
+      </div>
+    </section>
+
+    <!-- ======================================================== center -->
+    <section class="stack" id="center">
+      <h2><code>.center</code></h2>
+      <h3>Narrow (fills the parent)</h3>
+      <div class="demo-frame demo-frame-narrow" data-fixture="center-narrow">
+        <div class="center demo-box">A readable column. It is never wider than <code>--content-width</code> and sits in the middle of its parent.</div>
+      </div>
+      <h3>Wide (capped and centered)</h3>
+      <div class="demo-frame demo-frame-wide" data-fixture="center-wide">
+        <div class="center demo-box">A readable column. It is never wider than <code>--content-width</code> and sits in the middle of its parent.</div>
+      </div>
+    </section>
+
+    <!-- ========================================================= cover -->
+    <section class="stack" id="cover">
+      <h2><code>.cover</code></h2>
+      <p>In these frames the cover is limited to 16rem tall; on a real page it is at least one viewport tall.</p>
+      <h3>Narrow</h3>
+      <div class="demo-frame demo-frame-narrow" data-fixture="cover-narrow">
+        <section class="cover demo-outline">
+          <header class="demo-box">Header</header>
+          <div class="cover-main demo-box">Centered with <code>.cover-main</code></div>
+          <footer class="demo-box">Footer</footer>
+        </section>
+      </div>
+      <h3>Wide (only child is centered)</h3>
+      <div class="demo-frame demo-frame-wide" data-fixture="cover-wide">
+        <section class="cover demo-outline">
+          <div class="center demo-box">Only child: centered vertically, and horizontally by <code>.center</code>.</div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ======================================================== nested -->
+    <section class="stack" id="nested">
+      <h2>Nested: <code>.stack</code> in <code>.grid</code> in <code>.container</code> in <code>.sidebar</code></h2>
+      <h3>Narrow</h3>
+      <div class="demo-frame demo-frame-narrow" data-fixture="nested-narrow">
+        <div class="sidebar-lg">
+          <nav class="stack-sm"><a href="#nested">Overview</a><a href="#nested">Reports</a><a href="#nested">Settings</a></nav>
+          <div class="container stack demo-outline">
+            <div class="split"><h4>Reports</h4><div class="cluster-sm"><button class="demo-button" type="button">Export</button><button class="demo-button" type="button">New</button></div></div>
+            <ul class="grid-sm" role="list">
+              <li class="stack-sm demo-box"><h5>Revenue</h5><p>Up 12% this month.</p></li>
+              <li class="stack-sm demo-box"><h5>Users</h5><p>4,210 active.</p></li>
+              <li class="stack-sm demo-box"><h5>Churn</h5><p>Down to 1.8%.</p></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <h3>Wide</h3>
+      <div class="demo-frame demo-frame-wide" data-fixture="nested-wide">
+        <div class="sidebar-lg">
+          <nav class="stack-sm"><a href="#nested">Overview</a><a href="#nested">Reports</a><a href="#nested">Settings</a></nav>
+          <div class="container stack demo-outline">
+            <div class="split"><h4>Reports</h4><div class="cluster-sm"><button class="demo-button" type="button">Export</button><button class="demo-button" type="button">New</button></div></div>
+            <ul class="grid-sm" role="list">
+              <li class="stack-sm demo-box"><h5>Revenue</h5><p>Up 12% this month.</p></li>
+              <li class="stack-sm demo-box"><h5>Users</h5><p>4,210 active.</p></li>
+              <li class="stack-sm demo-box"><h5>Churn</h5><p>Down to 1.8%.</p></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
