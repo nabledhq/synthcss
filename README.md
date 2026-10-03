@@ -6,6 +6,23 @@ SynthCSS is a lightweight, opinionated CSS framework built specifically for AI a
 
 SynthCSS is crowdfunded on [nabled.ai](https://nabled.ai/p/synthcss).
 
+## Install
+
+Load the bundle from the jsDelivr CDN, pinned to a [release](https://github.com/nabledhq/synthcss/releases):
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.1.0/dist/synthcss.min.css">
+```
+
+| File | Contents |
+| --- | --- |
+| `dist/synthcss.css` | Everything: tokens, layout primitives and components in one file. |
+| `dist/tokens.css` | Design tokens only. |
+| `dist/layout.css` | Layout primitives only. Load `tokens.css` first. |
+| `dist/components.css` | Components only. Load `tokens.css` first. |
+
+Use `.min.css` for the minified file (jsDelivr minifies on request) or `.css` for the readable one. `@0.1` follows the latest 0.1.x patch release; pin an exact version in production. To self-host, download the files from a [GitHub release](https://github.com/nabledhq/synthcss/releases) or run `npm run build` and copy `dist/`. SynthCSS follows [semantic versioning](https://semver.org); while it is 0.x, a minor release may contain breaking changes. See [docs/releasing.md](docs/releasing.md) for how releases are made.
+
 ## Design tokens
 
 All visual decisions (color, spacing, typography, radius, borders, shadows, sizing, focus and motion) are CSS custom properties defined on `:root` in [`src/tokens.css`](src/tokens.css). To restyle an interface, override a few tokens:
