@@ -1,13 +1,16 @@
 # Releases SynthCSS to the jsDelivr CDN. Runs on every push to main:
 # - A merge that changes what the CDN serves (src/, synthcss.llm.md, synthcss.ai.json)
-#   gets an automatic minor bump: scripts/bump-version.mjs updates every version
-#   reference and the workflow commits "Release vX.Y.Z" to main. Label the pull request
-#   release:patch, release:major or release:skip to change that.
+#   or SynthMCP (packages/synthmcp/src/, its package.json) gets an automatic minor
+#   bump: scripts/bump-version.mjs updates every version reference and the workflow
+#   commits "Release vX.Y.Z" to main. Label the pull request release:patch,
+#   release:major or release:skip to change that.
 # - A merge that already changed package.json's version is released as it is.
 # - Anything else (docs, showcase, CI) is not released.
 # The tag points at a release commit on top of main that adds the built dist/
 # (dist/ is not committed on main). jsDelivr serves any tag straight from GitHub:
 #   https://cdn.jsdelivr.net/gh/nabledhq/synthcss@<version>/dist/synthcss.min.css
+# SynthMCP (packages/synthmcp) is released with the same version and published to npm
+# when the NPM_TOKEN secret is set.
 # See docs/releasing.md.
 name: Release
 
@@ -65,7 +68,7 @@ jobs:
           elif [ "$(version_at "$BEFORE")" != "$(version_at "$GITHUB_SHA")" ]; then
             bump=none
             echo "The version was bumped in this merge; releasing it as it is."
-          elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qE '^(src/|synthcss\.llm\.md$|synthcss\.ai\.json$)'; then
+          elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qE '^(src/|synthcss\.llm\.md$|synthcss\.ai\.json$|packages/synthmcp/(src/|package\.json$))'; then
             labels=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" --jq '.[0].labels[].name' 2>/dev/null || true)
             case "$labels" in
               *release:skip*) bump=skip ;;
@@ -154,6 +157,30 @@ jobs:
             --title "$TAG" \
             --notes-file notes.md \
             --generate-notes
+
+      # SynthMCP has no build step; npm test above ran its tests. The core synthcss
+      # package is not on npm, so the published package gets a copy of the contract this
+      # release was tested against instead of the workspace link (see docs/mcp.md).
+      - name: Publish SynthMCP to npm
+        if: steps.plan.outputs.bump != 'skip' && steps.version.outputs.exists != 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          test "$(node -p "require('./packages/synthmcp/package.json').version")" = "$VERSION"
+          cp synthcss.ai.json packages/synthmcp/synthcss.ai.json
+          npm pkg delete dependencies.synthcss -w synthmcp
+          npm pack --dry-run -w synthmcp
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::notice::NPM_TOKEN is not set; synthmcp@$VERSION was not published to npm."
+            exit 0
+          fi
+          if npm view "synthmcp@$VERSION" version >/dev/null 2>&1; then
+            echo "synthmcp@$VERSION is already on npm."
+            exit 0
+          fi
+          echo '//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}' > "$RUNNER_TEMP/.npmrc"
+          NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/.npmrc" npm publish -w synthmcp --access public
 
       - name: Refresh jsDelivr version aliases
         if: steps.plan.outputs.bump != 'skip' && steps.version.outputs.exists != 'true'

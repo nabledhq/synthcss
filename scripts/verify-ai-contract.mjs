@@ -16,18 +16,18 @@ import { buildBundle, classesInCss } from "./check-components.mjs";
 import { parseBase } from "./check-base.mjs";
 
 export const DEFAULT_MAX_TOKENS = 8000;
-// Class selectors in the framework CSS that are internal helpers, not public API,
-// and so are not required in the contract. Empty today: every class SynthCSS ships
-// is public.
-export const INTERNAL_CLASSES = [];
 export const JSON_KEYS = [
   "synthcssVersion",
   "contractVersion",
   "tokens",
   "baseStyles",
   "layouts",
+  "primitives",
   "components",
+  "synthjs",
+  "internal",
   "intentMap",
+  "intents",
   "compositionRules",
   "generationRules",
   "extension",
@@ -70,6 +70,12 @@ export const BEHAVIOR_SECTION = "Behaviors (SynthJS)";
 export const BEHAVIOR_KEYS = ["intent", "attribute", "target", "requiredMarkup", "accessibility"];
 export const SYNTH_JS_FILE = "src/js/synth.js";
 const BEHAVIOR_ATTRIBUTE = /^data-synth-[a-z]+(-[a-z]+)*$/;
+// Contract 1.4 additions, read by SynthMCP (packages/synthmcp). Where a part sits
+// relative to its base class: inside it (default), a direct child, or wrapping it.
+export const PLACEMENTS = ["inside", "child", "wraps"];
+export const SEVERITIES = ["error", "warning"];
+// synthjs.attributes values: "id" names the target element, "none" is a bare attribute.
+export const SYNTH_VALUES = ["id", "none"];
 
 // `.name` not preceded by a word character, dot, slash or dash, so file names
 // (synthcss.ai.json), URLs and "e.g." are not read as classes.
@@ -248,6 +254,166 @@ function checkJsonShape(c) {
     const [min, max] = VALID_EXAMPLES;
     if (ex.valid.length < min || ex.valid.length > max) errors.push(`${JSON_FILE}: needs ${min}–${max} valid examples, found ${ex.valid.length}`);
     if (ex.invalid.length < 2) errors.push(`${JSON_FILE}: needs at least 2 invalid examples`);
+  }
+  errors.push(...checkMcpShape(c));
+  return errors;
+}
+
+const isText = (v) => typeof v === "string" && v.trim() !== "";
+const isList = (a) => Array.isArray(a) && a.every(isText);
+const isPlacement = (p) => isObject(p) && Object.values(p).every((v) => PLACEMENTS.includes(v));
+const isA11yRule = (r) =>
+  isObject(r) &&
+  isText(r.expectation) &&
+  isText(r.class) &&
+  SEVERITIES.includes(r.severity) &&
+  (r.elements !== undefined || r.attributes !== undefined) &&
+  (r.elements === undefined || (isList(r.elements) && r.elements.length > 0)) &&
+  (r.attributes === undefined || (isList(r.attributes) && r.attributes.length > 0)) &&
+  (r.values === undefined || (r.attributes !== undefined && isList(r.values) && r.values.length > 0));
+
+// Shape of the sections SynthMCP reads (contract 1.4): layout primitives, component
+// accessibility / example / placement, SynthJS attributes, internal markers, intents
+// and the named example patterns.
+function checkMcpShape(c) {
+  const errors = [];
+  if (!isObject(c.primitives)) errors.push(`${JSON_FILE}: primitives must be an object`);
+  else {
+    for (const [name, p] of Object.entries(c.primitives)) {
+      const ok =
+        isObject(p) &&
+        isList(p.variants) &&
+        (p.modifiers === undefined || isList(p.modifiers)) &&
+        (p.parts === undefined || isList(p.parts)) &&
+        (p.placement === undefined || isPlacement(p.placement)) &&
+        isText(p.responsive) &&
+        isList(p.composition) &&
+        p.composition.length > 0 &&
+        isText(p.example);
+      if (!ok) {
+        errors.push(`${JSON_FILE}: primitives.${name} must be { variants: [], modifiers?: [], parts?: [], placement?: {part: ${PLACEMENTS.join("|")}}, responsive, composition: [], example }`);
+      }
+    }
+  }
+  if (isObject(c.components)) {
+    for (const [name, comp] of Object.entries(c.components)) {
+      if (!isObject(comp)) continue;
+      if (!Array.isArray(comp.accessibility) || !comp.accessibility.every(isA11yRule)) {
+        errors.push(`${JSON_FILE}: components.${name}.accessibility must be a list of { expectation, class, elements?: [], attributes?: [], values?: [], severity: ${SEVERITIES.join("|")} }`);
+      }
+      if (!isText(comp.example)) errors.push(`${JSON_FILE}: components.${name}.example must be a minimal HTML example`);
+      if (comp.placement !== undefined && !isPlacement(comp.placement)) {
+        errors.push(`${JSON_FILE}: components.${name}.placement must map parts to ${PLACEMENTS.join(", ")}`);
+      }
+    }
+  }
+  const isSelectors = (a) => isList(a) && a.length > 0;
+  const isSynthAttr = (a) =>
+    isObject(a) &&
+    isText(a.behavior) &&
+    SYNTH_VALUES.includes(a.value) &&
+    isText(a.purpose) &&
+    (a.targetElements === undefined || (a.value === "id" && isSelectors(a.targetElements))) &&
+    (a.closest === undefined || isSelectors(a.closest)) &&
+    (a.contains === undefined || (Array.isArray(a.contains) && a.contains.length > 0 && a.contains.every(isSelectors)));
+  if (!isObject(c.synthjs) || !isObject(c.synthjs.attributes) || !Object.values(c.synthjs.attributes).every(isSynthAttr)) {
+    errors.push(`${JSON_FILE}: synthjs must be { attributes: { "data-synth-…": { behavior, value: ${SYNTH_VALUES.join("|")}, purpose, targetElements?, closest?, contains? } } }`);
+  }
+  if (!isObject(c.internal) || !isText(c.internal.note) || !isList(c.internal.classes) || !isList(c.internal.attributes)) {
+    errors.push(`${JSON_FILE}: internal must be { note, classes: [], attributes: [] }`);
+  }
+  const isIntent = (e) =>
+    isObject(e) &&
+    isText(e.class) &&
+    isText(e.reason) &&
+    isList(e.keywords) &&
+    e.keywords.length > 0 &&
+    (e.with === undefined || isList(e.with)) &&
+    (e.attribute === undefined || isText(e.attribute));
+  if (!Array.isArray(c.intents) || !c.intents.length || !c.intents.every(isIntent)) {
+    errors.push(`${JSON_FILE}: intents must be a list of { class, with?: [], attribute?, reason, keywords: [] }`);
+  }
+  const patterns = c.examples?.patterns;
+  if (!isObject(patterns) || !Object.values(patterns).every(isExample)) {
+    errors.push(`${JSON_FILE}: examples.patterns must map each pattern name to { html, note }`);
+  }
+  return errors;
+}
+
+// Meaning of the 1.4 sections: every class they name is public, primitives cover the
+// layouts, parts and accessibility rules belong to their component, SynthJS
+// attributes match the behaviors and the runtime, and their HTML follows the markup
+// rules.
+function checkMcpSections(contract, { vocab, cssClasses, synthJs }, markupContext) {
+  const errors = [];
+  const internal = new Set(contract.internal.classes);
+  const isPublic = (cls) => vocab.has(cls) && !internal.has(cls);
+  for (const cls of contract.internal.classes) {
+    if (!cssClasses.has(cls)) errors.push(`${JSON_FILE}: internal class .${cls} is not a selector in the SynthCSS CSS`);
+    if (vocab.has(cls)) errors.push(`${JSON_FILE}: internal class .${cls} is also listed as public vocabulary`);
+  }
+
+  const covered = new Map();
+  const cover = (cls, by) => {
+    if (!(cls in contract.layouts)) errors.push(`${JSON_FILE}: primitives.${by} names .${cls}, which is not in layouts`);
+    else if (covered.has(cls)) errors.push(`${JSON_FILE}: layout .${cls} belongs to both primitives.${covered.get(cls)} and primitives.${by}`);
+    else covered.set(cls, by);
+  };
+  for (const [name, p] of Object.entries(contract.primitives)) {
+    cover(name, name);
+    for (const cls of [...p.variants, ...(p.modifiers ?? []), ...(p.parts ?? [])]) cover(cls, name);
+    for (const part of Object.keys(p.placement ?? {})) {
+      if (!(p.parts ?? []).includes(part)) errors.push(`${JSON_FILE}: primitives.${name}.placement names .${part}, which is not one of its parts`);
+    }
+    errors.push(...checkMarkup(`${JSON_FILE}: primitives.${name}.example`, p.example, undefined, markupContext));
+  }
+  for (const cls of Object.keys(contract.layouts)) {
+    if (!covered.has(cls)) errors.push(`${JSON_FILE}: layout .${cls} is not listed in primitives (as a primitive, variant, modifier or part)`);
+  }
+
+  for (const [name, comp] of Object.entries(contract.components)) {
+    const own = new Set([name, ...Object.keys(comp.parts), ...Object.keys(comp.variants)]);
+    for (const part of Object.keys(comp.placement ?? {})) {
+      if (!(part in comp.parts)) errors.push(`${JSON_FILE}: components.${name}.placement names .${part}, which is not one of its parts`);
+    }
+    for (const rule of comp.accessibility) {
+      if (!own.has(rule.class)) errors.push(`${JSON_FILE}: components.${name}.accessibility rule for .${rule.class} must name the component, a part or a variant`);
+    }
+    errors.push(...checkMarkup(`${JSON_FILE}: components.${name}.example`, comp.example, undefined, markupContext));
+    if (!new RegExp(`class="([^"]*\\s)?${name}(\\s[^"]*)?"`).test(comp.example)) {
+      errors.push(`${JSON_FILE}: components.${name}.example must use .${name}`);
+    }
+  }
+
+  const attributes = contract.synthjs.attributes;
+  const behaviorAttributes = new Set(behaviorsOf(contract).map((b) => b.attribute));
+  for (const attr of behaviorAttributes) {
+    if (attributes[attr]?.behavior !== attr) errors.push(`${JSON_FILE}: synthjs.attributes must list the behavior attribute ${attr} with behavior "${attr}"`);
+  }
+  for (const [attr, meta] of Object.entries(attributes)) {
+    if (!BEHAVIOR_ATTRIBUTE.test(attr)) errors.push(`${JSON_FILE}: synthjs.attributes ${attr} must be data-synth-<name>`);
+    if (!behaviorAttributes.has(meta.behavior)) errors.push(`${JSON_FILE}: synthjs.attributes ${attr} belongs to ${meta.behavior}, which is not a behavior attribute`);
+    if (synthJs !== undefined && !synthJs.includes(`"${attr}`) && !synthJs.includes(`[${attr}`)) {
+      errors.push(`${JSON_FILE}: synthjs.attributes ${attr} is not used by ${SYNTH_JS_FILE}`);
+    }
+  }
+  for (const attr of contract.internal.attributes) {
+    if (attr in attributes) errors.push(`${JSON_FILE}: internal attribute ${attr} is also a public synthjs attribute`);
+  }
+
+  contract.intents.forEach((intent, i) => {
+    const where = `${JSON_FILE}: intents ${i + 1} (${intent.class})`;
+    for (const cls of [intent.class, ...(intent.with ?? [])]) {
+      if (!isPublic(cls)) errors.push(`${where}: .${cls} is not a public contract class`);
+    }
+    if (intent.attribute !== undefined && !behaviorAttributes.has(intent.attribute)) {
+      errors.push(`${where}: ${intent.attribute} is not a behavior attribute`);
+    }
+  });
+
+  for (const [name, p] of Object.entries(contract.examples.patterns)) {
+    if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(name)) errors.push(`${JSON_FILE}: examples.patterns name "${name}" must be lowercase and dashed`);
+    errors.push(...checkMarkup(`${JSON_FILE}: examples.patterns.${name}`, p.html, undefined, markupContext));
   }
   return errors;
 }
@@ -442,7 +608,8 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
 
   const cssClasses = classesInCss(files.builtCss);
   const cssTokens = new Set(parseTokens(files.builtCss).root.keys());
-  const publicClasses = new Set([...cssClasses].filter((c) => !INTERNAL_CLASSES.includes(c)));
+  const internalClasses = new Set(contract.internal.classes);
+  const publicClasses = new Set([...cssClasses].filter((c) => !internalClasses.has(c)));
   const { version } = JSON.parse(files.pkg);
 
   // Versions.
@@ -461,7 +628,7 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
     if (!cssClasses.has(cls)) errors.push(`${JSON_FILE}: class .${cls} is not a selector in the SynthCSS CSS`);
   }
   for (const cls of diff(publicClasses, vocab)) {
-    errors.push(`class .${cls} is in the SynthCSS CSS but missing from ${JSON_FILE} (add it to layouts or components, or to INTERNAL_CLASSES)`);
+    errors.push(`class .${cls} is in the SynthCSS CSS but missing from ${JSON_FILE} (add it to layouts or components, or to internal.classes)`);
   }
   const jsonTokens = new Set(Object.keys(contract.tokens));
   for (const token of sorted(new Set([...jsonTokens, ...jsonMentions.tokens]))) {
@@ -513,6 +680,9 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
     }
     errors.push(...checkMarkup(`${where}: requiredMarkup`, b.requiredMarkup, undefined, markupContext));
   }
+
+  // Sections read by SynthMCP.
+  errors.push(...checkMcpSections(contract, { vocab, cssClasses, synthJs: files.synthJs }, markupContext));
 
   // Markdown.
   const { preamble, sections } = parseMarkdown(md);

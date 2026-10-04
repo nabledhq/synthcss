@@ -1,2 +1,4 @@
 node_modules/
 dist/
+# Added to the published synthmcp package by the release workflow; never committed.
+packages/synthmcp/synthcss.ai.json

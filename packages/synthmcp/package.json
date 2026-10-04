@@ -1,0 +1,36 @@
+{
+  "name": "synthmcp",
+  "version": "0.9.0",
+  "description": "SynthMCP: a stdio MCP server that answers SynthCSS questions and validates markup from synthcss.ai.json.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nabledhq/synthcss.git",
+    "directory": "packages/synthmcp"
+  },
+  "homepage": "https://github.com/nabledhq/synthcss/blob/main/docs/mcp.md",
+  "keywords": ["mcp", "model-context-protocol", "synthcss", "css", "ai"],
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "synthmcp": "src/server.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "synthcss.ai.json"
+  ],
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.0",
+    "parse5": "^7.3.0",
+    "synthcss": "file:../.."
+  }
+}

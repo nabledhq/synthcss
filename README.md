@@ -33,7 +33,7 @@ All visual decisions (color, spacing, typography, radius, borders, shadows, sizi
 :root { --color-primary: #YOUR_COLOR; --radius-md: 0.5rem; --space-3: 0.75rem; }
 ```
 
-The main bundle also applies the tokens to plain markup: `--font-sans`, `--color-text` and `--color-background` on the page and the `--text-*` scale on `h1`–`h4`, in a zero-specificity `synth.base` cascade layer that any rule of your own overrides ([`src/base.css`](src/base.css)). See [docs/tokens.md](docs/tokens.md) for the full token reference, override examples, guidance for AI agents and reduced-motion behavior. Run `npm install` once, then `npm test` to check that the tokens, the docs and the contrast requirements are in sync. It needs Node.js 20 or later; the only dependency is the dev dependency happy-dom, for the SynthJS tests.
+The main bundle also applies the tokens to plain markup: `--font-sans`, `--color-text` and `--color-background` on the page and the `--text-*` scale on `h1`–`h4`, in a zero-specificity `synth.base` cascade layer that any rule of your own overrides ([`src/base.css`](src/base.css)). See [docs/tokens.md](docs/tokens.md) for the full token reference, override examples, guidance for AI agents and reduced-motion behavior. Run `npm install` once, then `npm test` to check that the tokens, the docs and the contrast requirements are in sync. It needs Node.js 20 or later. The core package's only dependency is the dev dependency happy-dom, for the SynthJS tests; `npm install` also installs the [SynthMCP](docs/mcp.md) workspace and its two dependencies.
 
 ## Layout primitives
 
@@ -81,6 +81,18 @@ It initializes itself on load; call `Synth.init(element)` after inserting markup
 
 **Any change to the public API (a class, token or `data-synth-*` behavior added, renamed or removed, or a new version) must update both contract files in the same pull request.** The Behaviors (SynthJS) section of `synthcss.llm.md` is generated from the JSON with `npm run contract:write`. `npm test` runs `scripts/verify-ai-contract.mjs`, which fails when the contract and the CSS or `package.json` disagree.
 
+## SynthMCP
+
+[SynthMCP](docs/mcp.md) (`packages/synthmcp/`) is a stdio [MCP](https://modelcontextprotocol.io) server that lets coding agents query and validate SynthCSS instead of carrying the whole contract in their prompt. Every answer comes from `synthcss.ai.json`. It has seven read-only tools:
+
+- `list_components` and `get_component`;
+- `list_layouts` and `get_layout`;
+- `resolve_intent`, which maps "a row of buttons that wraps" to `.cluster`;
+- `validate_markup`, which flags unknown classes, misused variants and parts, `data-synth-*` mistakes and accessibility gaps;
+- `get_example`.
+
+Start it with `npm run --silent mcp`, `npx synthmcp` or `node packages/synthmcp/src/server.js`. See [docs/mcp.md](docs/mcp.md) for client configuration and every tool's arguments and responses. It is a separate workspace package: the stylesheets and SynthJS do not depend on it.
+
 ## Showcase
 
-[`showcase/`](showcase/) is a static page built with SynthCSS that shows the tokens, layout primitives and components live, plus a composed settings screen and the AI contract, with copyable snippets and width-adjustable demos. Open `showcase/index.html` in a browser to preview it. It is published to GitHub Pages by [`.github/workflows/pages.yml`](.github/workflows/pages.yml). See [showcase/README.md](showcase/README.md) for local preview, deployment, the one-time Pages setting and how to add a section.
+[`showcase/`](showcase/) is a static page built with SynthCSS that shows the tokens, layout primitives and components live, plus a composed settings screen, the AI contract and SynthMCP, with copyable snippets and width-adjustable demos. Open `showcase/index.html` in a browser to preview it. It is published to GitHub Pages by [`.github/workflows/pages.yml`](.github/workflows/pages.yml). See [showcase/README.md](showcase/README.md) for local preview, deployment, the one-time Pages setting and how to add a section.

@@ -23,12 +23,21 @@ Class names are written **without** the leading dot. Token names keep their `--`
 | `tokens` | object | Token name → short purpose, for every custom property on `:root` in `src/tokens.css`. |
 | `baseStyles` | object | `{ note, rules }`: what the base styles in `src/base.css` apply. `note` is a one-sentence summary that the Markdown Design Tokens section repeats; `rules` maps each selector (without `:where()`) to its declarations, exactly as in `src/base.css`. |
 | `layouts` | object | Layout class → intent: the eight primitives, their `-sm` / `-lg` gap variants, `cover-main` and `sidebar-end`. |
-| `components` | object | Component base class → `{ intent, parts, variants, behaviors? }`. `parts` and `variants` map class → purpose (empty `{}` when there are none). `behaviors` (optional) lists the [SynthJS](behaviors.md) behaviors that belong to the component, each `{ intent, attribute, target, requiredMarkup, accessibility }`: `attribute` is the one `data-synth-*` attribute for the intent, `target` says what it points at, `requiredMarkup` is minimal valid HTML and `accessibility` a list of what SynthJS guarantees or the author must add. |
+| `primitives` | object | Layout primitive (one of the eight) → `{ variants, modifiers?, parts?, placement?, responsive, composition, example }`. Every `layouts` class belongs to exactly one primitive: as the primitive itself, a gap variant (used on its own or next to the base class), a modifier (needs the primitive or one of its variants on the same element, e.g. `sidebar-end`) or a part (`cover-main`). `placement` says where a part sits (see `components`), `responsive` how it adapts, `composition` how to combine it and `example` is minimal HTML. |
+| `components` | object | Component base class → `{ intent, parts, variants, behaviors?, placement?, accessibility, example }`. `parts` and `variants` map class → purpose (empty `{}` when there are none); variants need the base class on the same element. `behaviors` (optional) lists the [SynthJS](behaviors.md) behaviors that belong to the component, each `{ intent, attribute, target, requiredMarkup, accessibility }`: `attribute` is the one `data-synth-*` attribute for the intent, `target` says what it points at, `requiredMarkup` is minimal valid HTML and `accessibility` a list of what SynthJS guarantees or the author must add. `placement` (optional) maps a part to `"inside"` (a descendant of the base class, the default for parts not listed), `"child"` (a direct child) or `"wraps"` (an ancestor, like `table-wrap`). `accessibility` lists checkable expectations, each `{ expectation, class, elements?, attributes?, values?, severity }`: elements with `class` must be one of `elements` (tag names) and carry one of `attributes`, with a value from `values` when given; `severity` is `"error"` or `"warning"`. `example` is minimal HTML. |
+| `synthjs` | object | `{ attributes }`: every `data-synth-*` attribute SynthJS reads → `{ behavior, value, purpose, targetElements?, closest?, contains? }`. `behavior` is the behavior attribute it belongs to; `value` is `"id"` (names the target element's id; `targetElements` limits its tag) or `"none"` (a bare attribute); `closest` lists selectors one of which must match the element or an ancestor; `contains` lists groups of selectors, each group matched by a descendant. Selectors are a tag name, `[attr]` or `[attr="value"]`. |
+| `internal` | object | `{ note, classes, attributes }`: markers SynthCSS or SynthJS set themselves and markup must never contain (`data-synth`, on the style element SynthJS injects). `classes` is empty today: every class SynthCSS ships is public. |
 | `intentMap` | array | `{ intent, use }` pairs: a plain-language need and the markup to use for it. |
+| `intents` | array | `{ class, with?, attribute?, reason, keywords }`: the intent index SynthMCP's `resolve_intent` scores a request against. `class` is the public class to use, `with` the classes it needs on the same element (`button` for `button-primary`), `attribute` a SynthJS attribute when the intent is a behavior, `reason` one line on why, and `keywords` the words and short phrases that select it. |
 | `compositionRules` | object | `{ recommended: [], avoid: [] }`: how to combine primitives and components. |
 | `generationRules` | array | Exactly 10 rules an agent must follow when generating SynthCSS markup. |
 | `extension` | object | The one fallback when the vocabulary lacks a pattern: `{ rule, steps, attribute, layer, values, properties, keywords, notCovered }`. `attribute` is `"data-ui"`, `layer` is `"synth.ext"`; `steps` is the rule in order; `properties` lists the CSS properties extension rules may set and `keywords` the bare words allowed next to `var(--…)` values. `notCovered` lists patterns with no class of their own, each `{ pattern, use, html }` for a composition of existing classes, plus `css` for a `data-ui` fallback. |
-| `examples` | object | `{ valid: [], invalid: [] }`, each item `{ html, note }`. 2–5 valid examples (one is a full app-shell page); invalid ones show what not to generate. |
+| `examples` | object | `{ valid: [], invalid: [], patterns: {} }`, each item `{ html, note }`. 2–5 valid examples (one is a full app-shell page); invalid ones show what not to generate. `patterns` maps a pattern name (`dashboard-header`, `settings-form`, `card-grid`, `dialog`, `tabs`, `empty-state`) to its official example, served by SynthMCP's `get_example`. |
+
+`primitives`, `synthjs`, `internal`, `intents`, `examples.patterns` and the components'
+`placement`, `accessibility` and `example` were added in contract 1.4.0 for
+[SynthMCP](mcp.md). They are JSON only: `synthcss.llm.md` stays a compact prompt and
+does not repeat them.
 
 ```json
 {
@@ -105,7 +114,8 @@ layout and component rules are unlayered, so they win over anything in `synth.ex
 
 Any change to the public API (a class or token added, renamed or removed, or a
 `data-synth-*` behavior) must update **both** files in the same pull request. Bump
-`contractVersion`'s minor for additions to the format (1.3.0 added `behaviors`) and its
+`contractVersion`'s minor for additions to the format (1.3.0 added `behaviors`, 1.4.0 the
+sections SynthMCP reads) and its
 major for breaking changes. Version bumps are automatic: the release
 workflow updates `synthcssVersion` and the Markdown header with
 [`scripts/bump-version.mjs`](../scripts/bump-version.mjs) (see [releasing.md](releasing.md)).
@@ -116,8 +126,8 @@ workflow updates `synthcssVersion` and the Markdown header with
 - a class in either file is not a selector in the built CSS (`src/synthcss.css` with its
   imports inlined), or a token is not defined on `:root`;
 - a class in the CSS is missing from the JSON `layouts` / `components`, or a `:root`
-  token is missing from `tokens`. Internal helper classes can be excluded through the
-  `INTERNAL_CLASSES` allowlist in the script (empty today: every class is public);
+  token is missing from `tokens`. Internal helper classes are excluded by listing them
+  in the contract's `internal.classes` (empty today: every class is public);
 - `baseStyles.rules` differs from the rules in `src/base.css`, or the Markdown Design
   Tokens section does not state `baseStyles.note`;
 - the classes in the Markdown Layout and Component Vocabulary, or the tokens in its
@@ -140,6 +150,13 @@ workflow updates `synthcssVersion` and the Markdown header with
   the attribute and the component's class or breaks the markup rules above,
   `src/js/synth.js` does not implement the attribute, or the Markdown Behaviors
   (SynthJS) section is not the rendering of the JSON;
+- a 1.4 section is malformed or inconsistent: a `layouts` class is not covered by exactly
+  one `primitives` entry, a `placement` or `accessibility` rule names a class that is not
+  the component's or primitive's own, a component or primitive `example` or an
+  `examples.patterns` item breaks the markup rules above, a `synthjs.attributes` entry
+  does not belong to a behavior or is not used by `src/js/synth.js` (or a behavior
+  attribute is missing from it), or an `intents` entry names a class that is not public
+  or an attribute that is not a behavior;
 - the showcase AI Contract section, the Pages workflow or the README no longer publish
   and describe the contract.
 

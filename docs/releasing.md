@@ -50,7 +50,7 @@ The **Release** workflow runs on every push to `main` and decides from the merge
 
 | The merge… | Result |
 | --- | --- |
-| changes `src/`, `synthcss.llm.md` or `synthcss.ai.json` | Minor bump and release. |
+| changes `src/`, `synthcss.llm.md`, `synthcss.ai.json`, `packages/synthmcp/src/` or `packages/synthmcp/package.json` | Minor bump and release. |
 | … and the pull request is labelled `release:patch` | Patch bump and release. |
 | … and the pull request is labelled `release:major` | Major bump and release. |
 | … and the pull request is labelled `release:skip` | No release; the change ships with the next one. |
@@ -58,11 +58,22 @@ The **Release** workflow runs on every push to `main` and decides from the merge
 | changes nothing the CDN serves (docs, showcase, scripts, CI) | No release. |
 
 To bump, the workflow runs `node scripts/bump-version.mjs <minor|patch|major>`. It
-updates every file that states the version (`package.json`, `synthcssVersion` in
-`synthcss.ai.json`, the header and CDN link of `synthcss.llm.md`, and the README's CDN
-snippet). The workflow runs `npm test`, commits "Release vX.Y.Z" to `main` and pushes it.
+updates every file that states the version (`package.json`, `packages/synthmcp/package.json`,
+`synthcssVersion` in `synthcss.ai.json`, the header and CDN link of `synthcss.llm.md`,
+and the README's CDN snippet). The workflow runs `npm test`, commits "Release vX.Y.Z" to `main` and pushes it.
 It then builds `dist/`, pushes the `vX.Y.Z` tag and creates the GitHub release. If the
 tag already exists it does nothing.
+
+## SynthMCP on npm
+
+[SynthMCP](mcp.md) (`packages/synthmcp`) is released with SynthCSS and always carries
+the same version. `npm test` runs its tests. After the GitHub release, the workflow
+publishes it to npm as `synthmcp`. The core `synthcss` package is private and not on
+npm, so before publishing the workflow copies `synthcss.ai.json` into the package and
+drops its workspace-only `synthcss` dependency: the published server reads the copy of
+the contract it was tested against. Publishing needs an npm automation token in the
+`NPM_TOKEN` repository secret. Without it the step only checks that the package packs
+and logs a notice. A version that is already on npm is skipped.
 
 Pull requests should not change the version themselves. The workflow bumps it after
 the merge, so feature branches never conflict on the version lines. Pull `main` after a

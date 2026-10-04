@@ -4,6 +4,7 @@ import { bumpFiles, nextVersion } from "./bump-version.mjs";
 
 const files = {
   "package.json": '{\n  "name": "synthcss",\n  "version": "0.2.0",\n  "private": true\n}\n',
+  "packages/synthmcp/package.json": '{\n  "name": "synthmcp",\n  "version": "0.2.0",\n  "dependencies": { "synthcss": "file:../.." }\n}\n',
   "synthcss.ai.json": '{\n  "synthcssVersion": "0.2.0",\n  "contractVersion": "1.0.0"\n}\n',
   "synthcss.llm.md":
     "# SynthCSS\r\n\r\nVersion: SynthCSS 0.2.0 · contract 1.0.0\r\n\r\nLoad: `https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.2.0/dist/synthcss.min.css`\r\n",
@@ -22,6 +23,7 @@ test("computes the next version", () => {
 test("updates every version reference and keeps line endings", () => {
   const out = bumpFiles(files, "0.2.0", "0.3.0");
   assert.ok(out["package.json"].includes('"version": "0.3.0"'));
+  assert.ok(out["packages/synthmcp/package.json"].includes('"version": "0.3.0"'), "SynthMCP tracks the SynthCSS version");
   assert.ok(out["synthcss.ai.json"].includes('"synthcssVersion": "0.3.0"'));
   assert.ok(out["synthcss.ai.json"].includes('"contractVersion": "1.0.0"'), "contract version is separate");
   assert.ok(out["synthcss.llm.md"].includes("Version: SynthCSS 0.3.0 · contract 1.0.0\r\n"));
