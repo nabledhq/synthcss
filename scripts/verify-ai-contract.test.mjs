@@ -214,7 +214,7 @@ const editAppShell = (find, replace) => {
   };
 };
 
-test("states the one extension rule in both files, at contract 1.3.0", () => {
+test("states the one extension rule in both files, at contract 1.4.0", () => {
   const ext = contract.extension;
   assert.equal(ext.attribute, "data-ui");
   assert.equal(ext.layer, "synth.ext");
@@ -223,8 +223,8 @@ test("states the one extension rule in both files, at contract 1.3.0", () => {
   for (const banned of ["display", "flex", "grid-template-columns", "gap", "margin", "position", "order"]) {
     assert.ok(!ext.properties.includes(banned), `${banned} is not an extension property`);
   }
-  assert.equal(contract.contractVersion, "1.3.0");
-  assert.match(files.md, /· contract 1\.3\.0 ·/);
+  assert.equal(contract.contractVersion, "1.4.0");
+  assert.match(files.md, /· contract 1\.4\.0 ·/);
   assert.match(files.md, /^## When the vocabulary is missing a pattern$/m);
   for (const phrase of ['`data-ui="<name>"`', "`@layer synth.ext", "`var(--…)`"]) assert.ok(files.md.includes(phrase), phrase);
   assertError(errorsWith(withJson((c) => delete c.extension)), 'missing top-level key "extension"');
@@ -372,4 +372,37 @@ test("--write replaces only the behavior section", () => {
   const md = replaceSection(files.md, BEHAVIOR_SECTION, "\nnew body\n");
   assert.ok(md.includes(`## ${BEHAVIOR_SECTION}\n\nnew body\n\n## Composition Rules\n`));
   assert.equal(replaceSection(md, BEHAVIOR_SECTION, renderBehaviors(contract)), files.md);
+});
+
+test("checks the 1.4 sections SynthMCP reads: primitives, accessibility, synthjs, internal, intents, patterns", () => {
+  for (const key of ["primitives", "synthjs", "internal", "intents"]) {
+    assertError(errorsWith(withJson((c) => delete c[key])), `missing top-level key "${key}"`);
+  }
+  assert.deepEqual(Object.keys(contract.primitives), ["container", "stack", "cluster", "grid", "sidebar", "split", "center", "cover"]);
+  assertError(errorsWith(withJson((c) => c.primitives.stack.variants.pop())), "layout .stack-lg is not listed in primitives");
+  assertError(errorsWith(withJson((c) => c.primitives.split.variants.push("stack-sm"))), "layout .stack-sm belongs to both primitives.stack and primitives.split");
+  assertError(errorsWith(withJson((c) => delete c.primitives.grid.responsive)), "primitives.grid must be");
+  assertError(errorsWith(withJson((c) => (c.primitives.cover.placement = { "cover-main": "beside" }))), "primitives.cover must be");
+
+  assertError(errorsWith(withJson((c) => delete c.components.card.example)), "components.card.example must be a minimal HTML example");
+  assertError(errorsWith(withJson((c) => (c.components.card.example = '<div class="tile">…</div>'))), "components.card.example uses .tile");
+  assertError(errorsWith(withJson((c) => (c.components.badge.example = '<span class="alert">…</span>'))), "components.badge.example must use .badge");
+  assertError(errorsWith(withJson((c) => (c.components.table.placement = { "card-body": "inside" }))), "components.table.placement names .card-body");
+  const foreignRule = withJson((c) => c.components.tabs.accessibility.push({ expectation: "…", class: "nav-link", elements: ["a"], severity: "error" }));
+  assertError(errorsWith(foreignRule), "components.tabs.accessibility rule for .nav-link must name the component");
+  const badRule = withJson((c) => (c.components.alert.accessibility[0].severity = "fatal"));
+  assertError(errorsWith(badRule), "components.alert.accessibility must be a list of");
+
+  assertError(errorsWith(withJson((c) => delete c.synthjs.attributes["data-synth-toggle"])), "synthjs.attributes must list the behavior attribute data-synth-toggle");
+  const unused = withJson((c) => (c.synthjs.attributes["data-synth-collapse"] = { behavior: "data-synth-toggle", value: "none", purpose: "…" }));
+  assertError(errorsWith(unused), "synthjs.attributes data-synth-collapse is not used by src/js/synth.js");
+  assertError(errorsWith(withJson((c) => (c.synthjs.attributes["data-synth-open"].value = "selector"))), "synthjs must be");
+
+  assertError(errorsWith(withJson((c) => c.internal.classes.push("button"))), "internal class .button is also listed as public vocabulary");
+  assertError(errorsWith(withJson((c) => c.intents.push({ class: "hero", reason: "…", keywords: ["hero"] }))), "(hero): .hero is not a public contract class");
+  assertError(errorsWith(withJson((c) => (c.intents[0].attribute = "data-synth-collapse"))), "data-synth-collapse is not a behavior attribute");
+
+  assertError(errorsWith(withJson((c) => delete c.examples.patterns)), "examples.patterns must map each pattern name");
+  const pattern = withJson((c) => (c.examples.patterns.dialog.html = '<div class="modal">…</div>'));
+  assertError(errorsWith(pattern), "examples.patterns.dialog uses .modal");
 });

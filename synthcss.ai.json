@@ -1,6 +1,6 @@
 {
   "synthcssVersion": "0.9.0",
-  "contractVersion": "1.3.0",
+  "contractVersion": "1.4.0",
   "tokens": {
     "--color-background": "page background",
     "--color-surface": "subtle background for panels, table heads, footers",
@@ -101,6 +101,83 @@
     "cover": "full-viewport-height section, main child vertically centered",
     "cover-main": "the child of .cover that is vertically centered"
   },
+  "primitives": {
+    "container": {
+      "variants": [],
+      "responsive": "full width of its parent below --container-width, then stops growing and is centered; side padding grows from --space-4 to --space-6",
+      "composition": [
+        "Wrap the page's main content, or each full-width band, and put .stack or .stack-lg on the same element.",
+        "Never nest a .container in another; narrow text with .center instead."
+      ],
+      "example": "<main class=\"container stack-lg\">\n  <h1>Settings</h1>\n  <p>…</p>\n</main>"
+    },
+    "stack": {
+      "variants": ["stack-sm", "stack-lg"],
+      "responsive": "a column at every width; spacing comes from the gap, children keep their normal width",
+      "composition": [
+        "Form fields, card and panel content, page sections.",
+        "Wrap a button in a .cluster inside the stack to keep it at its content width."
+      ],
+      "example": "<section class=\"stack\">\n  <h2>Profile</h2>\n  <p>…</p>\n</section>"
+    },
+    "cluster": {
+      "variants": ["cluster-sm", "cluster-lg"],
+      "responsive": "items stay in one row while they fit, then wrap; items keep their own width",
+      "composition": [
+        "Rows of buttons, tags, badges or inline links.",
+        "Use .cluster-sm for the actions of a form, a .card-footer or a .split header."
+      ],
+      "example": "<div class=\"cluster-sm\">\n  <button type=\"button\" class=\"button button-primary\">Save</button>\n  <button type=\"button\" class=\"button\">Cancel</button>\n</div>"
+    },
+    "grid": {
+      "variants": ["grid-sm", "grid-lg"],
+      "responsive": "as many equal columns as fit, each at least --grid-min wide; one column on a phone, never overflows its parent",
+      "composition": [
+        "A <ul role=\"list\"> of .card items for collections.",
+        "Set the column width per grid with an inline token override: style=\"--grid-min: 12rem\"."
+      ],
+      "example": "<ul class=\"grid\" role=\"list\" style=\"--grid-min: 14rem\">\n  <li class=\"card\">…</li>\n  <li class=\"card\">…</li>\n</ul>"
+    },
+    "sidebar": {
+      "variants": ["sidebar-sm", "sidebar-lg"],
+      "modifiers": ["sidebar-end"],
+      "responsive": "the narrow column keeps --sidebar-width and the main area grows (at least half); both stack when the layout itself gets narrow, with no media queries",
+      "composition": [
+        "Exactly two children: the narrow column (navigation, filters) first, then the main area.",
+        "Add .sidebar-end to put the narrow column last, on the right; override --sidebar-width inline per layout."
+      ],
+      "example": "<div class=\"sidebar\">\n  <nav class=\"stack-sm\" aria-label=\"Settings\">…</nav>\n  <main class=\"stack\">…</main>\n</div>"
+    },
+    "split": {
+      "variants": ["split-sm", "split-lg"],
+      "responsive": "first and last child pushed to opposite ends and vertically centered; the second group wraps under the first when they no longer fit",
+      "composition": [
+        "Page, card and panel headers: a title and a .cluster-sm of actions.",
+        "Toolbars and footers with two groups, e.g. class=\"card-footer split-sm\"."
+      ],
+      "example": "<header class=\"split\">\n  <h1>Projects</h1>\n  <button type=\"button\" class=\"button button-primary\">New project</button>\n</header>"
+    },
+    "center": {
+      "variants": [],
+      "responsive": "fills its parent up to --content-width, then is centered; it centers the box, not the text",
+      "composition": [
+        "Articles, long-form text and narrow forms.",
+        "Add .stack on the same element for vertical rhythm."
+      ],
+      "example": "<article class=\"center stack\">\n  <h1>Release notes</h1>\n  <p>…</p>\n</article>"
+    },
+    "cover": {
+      "variants": [],
+      "parts": ["cover-main"],
+      "placement": { "cover-main": "child" },
+      "responsive": "at least the viewport height (100dvh) and grows with its content; .cover-main is vertically centered, other children sit at the top and bottom",
+      "composition": [
+        "Sign-in, onboarding and error pages.",
+        "Put .center and .stack on the .cover-main child."
+      ],
+      "example": "<main class=\"cover\">\n  <form class=\"cover-main center stack\">…</form>\n</main>"
+    }
+  },
   "components": {
     "button": {
       "intent": "an action, on <button> or <a href>",
@@ -136,7 +213,12 @@
             "the target stays in the DOM; hidden removes it from the accessibility tree"
           ]
         }
-      ]
+      ],
+      "accessibility": [
+        { "expectation": "Put .button on a native <button type> or an <a href>.", "class": "button", "elements": ["button", "a"], "severity": "error" },
+        { "expectation": "An icon-only .button-icon needs an accessible name: aria-label or aria-labelledby.", "class": "button-icon", "attributes": ["aria-label", "aria-labelledby"], "severity": "error" }
+      ],
+      "example": "<button type=\"button\" class=\"button button-primary\">Save</button>"
     },
     "field": {
       "intent": "one labeled form control with help or error text",
@@ -145,17 +227,28 @@
         "field-help": "hint text under the control",
         "field-error": "error message; pair with aria-invalid=\"true\""
       },
-      "variants": {}
+      "variants": {},
+      "accessibility": [
+        { "expectation": ".field-label is a <label> element.", "class": "field-label", "elements": ["label"], "severity": "error" },
+        { "expectation": ".field-label names its control with for=\"<id>\".", "class": "field-label", "attributes": ["for"], "severity": "warning" }
+      ],
+      "example": "<div class=\"field\">\n  <label class=\"field-label\" for=\"name\">Name</label>\n  <input id=\"name\" type=\"text\" aria-describedby=\"name-help\">\n  <p class=\"field-help\" id=\"name-help\">Shown on your profile.</p>\n</div>"
     },
     "switch": {
       "intent": "on/off toggle: <label class=\"switch\"><input type=\"checkbox\" role=\"switch\"> Text</label>; state from checked / disabled",
       "parts": {},
-      "variants": {}
+      "variants": {},
+      "accessibility": [
+        { "expectation": ".switch is a <label> around <input type=\"checkbox\" role=\"switch\">.", "class": "switch", "elements": ["label"], "severity": "error" }
+      ],
+      "example": "<label class=\"switch\"><input type=\"checkbox\" role=\"switch\" checked> Email alerts</label>"
     },
     "input-group": {
       "intent": "one <input> joined with .button and/or <select> children; shared borders, outer corners rounded; put in .field for a label",
       "parts": {},
-      "variants": {}
+      "variants": {},
+      "accessibility": [],
+      "example": "<div class=\"input-group\"><input type=\"search\" aria-label=\"Search\"><button type=\"submit\" class=\"button\">Search</button></div>"
     },
     "card": {
       "intent": "raised self-contained item (project, product, user)",
@@ -166,7 +259,9 @@
         "card-media": "full-width image or video",
         "card-actions": "wrapping row of buttons or links"
       },
-      "variants": {}
+      "variants": {},
+      "accessibility": [],
+      "example": "<article class=\"card\">\n  <div class=\"card-header\"><h2>Atlas</h2></div>\n  <div class=\"card-body\">Design system migration.</div>\n  <div class=\"card-footer split-sm\"><span class=\"badge badge-success\">Active</span></div>\n</article>"
     },
     "badge": {
       "intent": "short status label",
@@ -176,7 +271,9 @@
         "badge-warning": "needs attention",
         "badge-danger": "failed or blocked",
         "badge-info": "neutral information"
-      }
+      },
+      "accessibility": [],
+      "example": "<span class=\"badge badge-success\">Active</span>"
     },
     "alert": {
       "intent": "message box; role=\"status\" or role=\"alert\"",
@@ -201,7 +298,13 @@
             "inside a <dialog> it closes the dialog and focus returns to the opener"
           ]
         }
-      ]
+      ],
+      "placement": { "alert-icon": "child" },
+      "accessibility": [
+        { "expectation": ".alert needs role=\"status\" (polite) or role=\"alert\" (urgent).", "class": "alert", "attributes": ["role"], "values": ["status", "alert"], "severity": "error" },
+        { "expectation": ".alert-icon is decorative: aria-hidden=\"true\".", "class": "alert-icon", "attributes": ["aria-hidden"], "values": ["true"], "severity": "error" }
+      ],
+      "example": "<div class=\"alert alert-warning\" role=\"status\">\n  <p>Your trial ends in 3 days.</p>\n</div>"
     },
     "panel": {
       "intent": "flat bordered group of secondary content",
@@ -209,7 +312,9 @@
         "panel-header": "title area with a bottom border",
         "panel-body": "content area"
       },
-      "variants": {}
+      "variants": {},
+      "accessibility": [],
+      "example": "<section class=\"panel\">\n  <div class=\"panel-header\"><h2>Activity</h2></div>\n  <div class=\"panel-body\">…</div>\n</section>"
     },
     "table": {
       "intent": "tabular data on a native <table>",
@@ -219,12 +324,20 @@
       },
       "variants": {
         "table-hover": "highlight the hovered row"
-      }
+      },
+      "placement": { "table-wrap": "wraps" },
+      "accessibility": [
+        { "expectation": ".table goes on a native <table>.", "class": "table", "elements": ["table"], "severity": "error" },
+        { "expectation": ".table-wrap needs tabindex=\"0\" so keyboard users can scroll it.", "class": "table-wrap", "attributes": ["tabindex"], "values": ["0"], "severity": "warning" }
+      ],
+      "example": "<div class=\"table-wrap\" tabindex=\"0\">\n  <table class=\"table\">\n    <thead><tr><th>Plan</th><th class=\"numeric\">Price</th></tr></thead>\n    <tbody><tr><td>Team</td><td class=\"numeric\">$12</td></tr></tbody>\n  </table>\n</div>"
     },
     "empty-state": {
       "intent": "nothing to show yet: icon, heading, text, action",
       "parts": {},
-      "variants": {}
+      "variants": {},
+      "accessibility": [],
+      "example": "<div class=\"empty-state\">\n  <h2>No projects yet</h2>\n  <p>Create a project to get started.</p>\n  <button type=\"button\" class=\"button button-primary\">New project</button>\n</div>"
     },
     "nav": {
       "intent": "list reset for navigation links on <ul>; add .stack-sm (vertical) or .cluster-sm (horizontal)",
@@ -244,7 +357,12 @@
             "a disclosure list of links: no role=\"menu\", which promises arrow-key navigation SynthJS does not add"
           ]
         }
-      ]
+      ],
+      "accessibility": [
+        { "expectation": ".nav is a list: <ul> or <ol>, with role=\"list\".", "class": "nav", "elements": ["ul", "ol"], "severity": "error" },
+        { "expectation": "Each .nav-link is an <a href>; the current page has aria-current=\"page\".", "class": "nav-link", "elements": ["a"], "severity": "error" }
+      ],
+      "example": "<ul class=\"nav stack-sm\" role=\"list\">\n  <li><a class=\"nav-link\" href=\"/\" aria-current=\"page\">Home</a></li>\n  <li><a class=\"nav-link\" href=\"/team\">Team</a></li>\n</ul>"
     },
     "tabs": {
       "intent": "tab list or segmented filter; role=\"tablist\" + aria-label; wraps when narrow. Arrow keys and panel switching: data-synth-tabs (SynthJS, see behaviors)",
@@ -264,7 +382,14 @@
             "panels of unselected tabs get hidden; label each panel with aria-labelledby"
           ]
         }
-      ]
+      ],
+      "accessibility": [
+        { "expectation": ".tabs has role=\"tablist\".", "class": "tabs", "attributes": ["role"], "values": ["tablist"], "severity": "error" },
+        { "expectation": ".tabs needs a label: aria-label or aria-labelledby.", "class": "tabs", "attributes": ["aria-label", "aria-labelledby"], "severity": "error" },
+        { "expectation": "Each .tabs-item has role=\"tab\".", "class": "tabs-item", "attributes": ["role"], "values": ["tab"], "severity": "error" },
+        { "expectation": "Each .tabs-item states aria-selected=\"true\" or \"false\"; never aria-pressed.", "class": "tabs-item", "attributes": ["aria-selected"], "values": ["true", "false"], "severity": "error" }
+      ],
+      "example": "<div class=\"tabs\" role=\"tablist\" aria-label=\"Range\">\n  <button type=\"button\" class=\"tabs-item\" role=\"tab\" aria-selected=\"true\">Week</button>\n  <button type=\"button\" class=\"tabs-item\" role=\"tab\" aria-selected=\"false\">Month</button>\n</div>"
     },
     "avatar": {
       "intent": "fixed square for initials, a photo or an icon, on <span>, <div> or <img>",
@@ -279,8 +404,27 @@
         "avatar-danger": "danger tint",
         "avatar-info": "info tint",
         "avatar-accent": "violet tint with no status meaning"
-      }
+      },
+      "accessibility": [],
+      "example": "<span class=\"avatar avatar-round\" aria-hidden=\"true\">AL</span>"
     }
+  },
+  "synthjs": {
+    "attributes": {
+      "data-synth-open": { "behavior": "data-synth-open", "value": "id", "purpose": "on a button: the id of the <dialog> it opens", "targetElements": ["dialog"] },
+      "data-synth-dismiss": { "behavior": "data-synth-dismiss", "value": "none", "purpose": "on a button: closes the closest <dialog>, otherwise hides the closest [data-synth-dismissible]", "closest": ["dialog", "[data-synth-dismissible]"] },
+      "data-synth-dismissible": { "behavior": "data-synth-dismiss", "value": "none", "purpose": "marks the element a data-synth-dismiss button inside it hides" },
+      "data-synth-toggle": { "behavior": "data-synth-toggle", "value": "id", "purpose": "on a button: the id of the element whose hidden attribute it toggles" },
+      "data-synth-tabs": { "behavior": "data-synth-tabs", "value": "none", "purpose": "on the container of a role=\"tablist\" and its role=\"tabpanel\" elements", "contains": [["[role=\"tab\"]"]] },
+      "data-synth-dropdown": { "behavior": "data-synth-dropdown", "value": "none", "purpose": "on the wrapper of a trigger button and a menu", "contains": [["[data-synth-dropdown-trigger]", "button"], ["[data-synth-dropdown-menu]", "[role=\"menu\"]"]] },
+      "data-synth-dropdown-trigger": { "behavior": "data-synth-dropdown", "value": "none", "purpose": "marks the trigger button of a dropdown (default: its first <button>)", "closest": ["[data-synth-dropdown]"] },
+      "data-synth-dropdown-menu": { "behavior": "data-synth-dropdown", "value": "none", "purpose": "marks the menu of a dropdown (default: its [role=\"menu\"])", "closest": ["[data-synth-dropdown]"] }
+    }
+  },
+  "internal": {
+    "note": "Markers SynthCSS or SynthJS set themselves. Never write them in markup.",
+    "classes": [],
+    "attributes": ["data-synth"]
   },
   "intentMap": [
     { "intent": "Page or section wrapper", "use": ".container" },
@@ -313,6 +457,40 @@
     { "intent": "Show or hide a section", "use": ".button with data-synth-toggle (SynthJS)" },
     { "intent": "Dropdown of links", "use": "data-synth-dropdown around a .button and a .nav list (SynthJS)" },
     { "intent": "Dismissible message", "use": ".alert with data-synth-dismissible and a data-synth-dismiss .button (SynthJS)" }
+  ],
+  "intents": [
+    { "class": "container", "reason": "Centered page-width wrapper with side padding.", "keywords": ["container", "wrapper", "page wrapper", "page width", "max width", "centered page", "section wrapper"] },
+    { "class": "stack", "reason": "Vertical flow of blocks with an even gap.", "keywords": ["stack", "vertical", "vertically", "one below another", "below each other", "on top of each other", "vertical list", "vertical spacing", "list of blocks", "form fields"] },
+    { "class": "cluster", "reason": "Wrapping row of small items (buttons, tags, links) that keep their own width.", "keywords": ["cluster", "row", "wrap", "wraps", "wrapping", "item", "inline", "horizontal", "tag", "chip", "button group", "button row", "row of links"] },
+    { "class": "grid", "reason": "Responsive equal columns, as many as fit; set --grid-min per grid.", "keywords": ["grid", "tile", "gallery", "column", "as many as fit", "responsive card", "card grid", "grid of card", "collection"] },
+    { "class": "sidebar", "reason": "Narrow side column next to the main area; stacks when narrow.", "keywords": ["sidebar", "side nav", "side navigation", "side panel", "next to", "beside", "main content", "main area", "aside", "two column", "filter panel"] },
+    { "class": "sidebar-end", "with": ["sidebar"], "reason": "Main area first, narrow column on the right.", "keywords": ["right column", "right sidebar", "sidebar on the right", "narrow column on the right", "side column on the right", "secondary column"] },
+    { "class": "split", "reason": "Two groups pushed to opposite ends of a row; wraps when tight.", "keywords": ["split", "two ends", "opposite ends", "opposite sides", "space between", "left and right", "header", "header bar", "toolbar", "title and actions", "push apart"] },
+    { "class": "center", "reason": "Readable, horizontally centered column of text.", "keywords": ["center", "centered", "readable", "text column", "article", "prose", "long text", "long form", "reading width"] },
+    { "class": "cover", "reason": "Full-viewport-height section with its .cover-main child vertically centered.", "keywords": ["cover", "full screen", "fullscreen", "full height", "full page", "viewport height", "hero", "vertically centered", "sign in page", "login page", "splash"] },
+    { "class": "button", "reason": "An action on a native <button> or <a href>.", "keywords": ["button", "action", "click"] },
+    { "class": "button-primary", "with": ["button"], "reason": "The main action of a form or page.", "keywords": ["primary", "main action", "call to action", "cta", "submit", "save button", "primary button"] },
+    { "class": "button-secondary", "with": ["button"], "reason": "An alternative or cancel action.", "keywords": ["secondary", "cancel", "secondary button", "alternative action"] },
+    { "class": "button-danger", "with": ["button"], "reason": "A destructive action (delete, remove).", "keywords": ["danger", "destructive", "delete", "remove", "delete button", "red button"] },
+    { "class": "button-icon", "with": ["button"], "reason": "Square icon-only button; give it aria-label.", "keywords": ["icon button", "icon only", "close icon", "icon-only button"] },
+    { "class": "field", "reason": "One labeled form control with .field-label, .field-help and .field-error.", "keywords": ["field", "form field", "input", "text field", "label", "help text", "error message", "validation", "form control"] },
+    { "class": "switch", "reason": "On/off setting: a <label> around <input type=\"checkbox\" role=\"switch\">.", "keywords": ["switch", "toggle switch", "on off", "setting toggle", "checkbox toggle"] },
+    { "class": "input-group", "reason": "An input joined with a .button or <select>.", "keywords": ["input group", "attached button", "search box", "input with button", "copy link", "inline form"] },
+    { "class": "card", "reason": "Raised self-contained item with .card-header, .card-body and .card-footer.", "keywords": ["card", "self contained", "product card", "project card", "profile card"] },
+    { "class": "badge", "reason": "Short status label; pick .badge-success / -warning / -danger / -info by meaning.", "keywords": ["badge", "pill", "status", "status label", "count"] },
+    { "class": "alert", "reason": "Message box with role=\"status\" or role=\"alert\".", "keywords": ["alert", "message", "notification", "banner", "warning", "info box", "callout", "toast"] },
+    { "class": "panel", "reason": "Flat bordered group of secondary content.", "keywords": ["panel", "box", "secondary content", "group of content", "bordered section"] },
+    { "class": "table", "reason": "Tabular data on a native <table>, wrapped in .table-wrap.", "keywords": ["table", "tabular", "data table", "rows and columns", "spreadsheet", "list of records"] },
+    { "class": "empty-state", "reason": "Nothing to show yet: icon, heading, text and an action.", "keywords": ["empty", "empty state", "no data", "nothing yet", "no results", "blank slate", "zero state"] },
+    { "class": "nav", "reason": "Navigation links: .nav on a list with .nav-link anchors.", "keywords": ["nav", "navigation", "nav links", "menu links", "site navigation", "current page"] },
+    { "class": "tabs", "reason": "Tab list or segmented filter with .tabs-item buttons.", "keywords": ["tabs", "tab", "segmented", "segmented control", "filter tabs", "tab list"] },
+    { "class": "tabs", "attribute": "data-synth-tabs", "reason": "Tabs that switch panels: data-synth-tabs around .tabs and role=\"tabpanel\" panels (SynthJS).", "keywords": ["switch between", "tab panel", "switch panel", "tabbed content"] },
+    { "class": "avatar", "reason": "Square for initials or a photo; add .avatar-round for people.", "keywords": ["avatar", "initials", "profile picture", "user photo", "person"] },
+    { "class": "avatar-accent", "with": ["avatar"], "reason": "Icon on a tinted tile; pick the tint by meaning.", "keywords": ["icon tile", "tinted icon", "icon background"] },
+    { "class": "button", "attribute": "data-synth-open", "reason": "A .button with data-synth-open opens a <dialog> (SynthJS).", "keywords": ["modal", "dialog", "popup", "confirm", "confirmation", "lightbox", "overlay"] },
+    { "class": "button", "attribute": "data-synth-toggle", "reason": "A .button with data-synth-toggle shows or hides a section (SynthJS).", "keywords": ["collapse", "expand", "collapsible", "disclosure", "accordion", "hide", "reveal", "toggle section"] },
+    { "class": "nav", "attribute": "data-synth-dropdown", "reason": "data-synth-dropdown around a .button and a .nav list of links (SynthJS).", "keywords": ["dropdown", "drop down", "menu", "account menu", "user menu", "overflow menu"] },
+    { "class": "alert", "attribute": "data-synth-dismiss", "reason": "An .alert with data-synth-dismissible and a data-synth-dismiss .button (SynthJS).", "keywords": ["dismiss", "dismissible", "dismissable", "closable", "close message"] }
   ],
   "compositionRules": {
     "recommended": [
@@ -457,6 +635,32 @@
         "html": "<span class=\"user-avatar rounded-full\">AL</span>",
         "note": "Invented classes. Use .avatar and .avatar-round."
       }
-    ]
+    ],
+    "patterns": {
+      "dashboard-header": {
+        "html": "<header class=\"split\">\n  <div class=\"stack-sm\">\n    <h1>Dashboard</h1>\n    <p>Updated 5 minutes ago.</p>\n  </div>\n  <div class=\"cluster-sm\">\n    <button type=\"button\" class=\"button\">Export</button>\n    <button type=\"button\" class=\"button button-primary\">New report</button>\n  </div>\n</header>",
+        "note": "Page header: .split puts the title group and the actions at opposite ends; the actions sit in a .cluster-sm with the main action last."
+      },
+      "settings-form": {
+        "html": "<form class=\"stack\">\n  <div class=\"field\">\n    <label class=\"field-label\" for=\"workspace\">Workspace name</label>\n    <input id=\"workspace\" type=\"text\" aria-describedby=\"workspace-help\">\n    <p class=\"field-help\" id=\"workspace-help\">Shown to everyone you invite.</p>\n  </div>\n  <div class=\"field\">\n    <label class=\"field-label\" for=\"timezone\">Time zone</label>\n    <select id=\"timezone\"><option>UTC</option><option>Europe/Berlin</option></select>\n  </div>\n  <label class=\"switch\"><input type=\"checkbox\" role=\"switch\" checked> Email notifications</label>\n  <div class=\"cluster-sm\">\n    <button type=\"submit\" class=\"button button-primary\">Save changes</button>\n    <button type=\"button\" class=\"button\">Cancel</button>\n  </div>\n</form>",
+        "note": "Settings form: a .stack of .field controls with labels and help text, a .switch, and the actions in a .cluster-sm."
+      },
+      "card-grid": {
+        "html": "<ul class=\"grid\" role=\"list\" style=\"--grid-min: 16rem\">\n  <li class=\"card\">\n    <div class=\"card-header\"><h2>Atlas</h2></div>\n    <div class=\"card-body\">Design system migration.</div>\n    <div class=\"card-footer split-sm\"><span class=\"badge badge-success\">Active</span><a href=\"/projects/atlas\">Open</a></div>\n  </li>\n  <li class=\"card\">\n    <div class=\"card-header\"><h2>Beacon</h2></div>\n    <div class=\"card-body\">Status page rewrite.</div>\n    <div class=\"card-footer split-sm\"><span class=\"badge badge-warning\">Paused</span><a href=\"/projects/beacon\">Open</a></div>\n  </li>\n</ul>",
+        "note": "Collection: a .grid list of .card items with header, body and a .split-sm footer; --grid-min sets the column width."
+      },
+      "dialog": {
+        "html": "<button type=\"button\" class=\"button button-danger\" data-synth-open=\"delete-dialog\">Delete project</button>\n<dialog id=\"delete-dialog\" aria-labelledby=\"delete-dialog-title\">\n  <div class=\"stack\">\n    <h2 id=\"delete-dialog-title\">Delete project?</h2>\n    <p>This removes the project and its history for everyone.</p>\n    <div class=\"cluster-sm\">\n      <button type=\"button\" class=\"button button-danger\">Delete</button>\n      <button type=\"button\" class=\"button\" data-synth-dismiss>Cancel</button>\n    </div>\n  </div>\n</dialog>",
+        "note": "Modal dialog (SynthJS): data-synth-open names the <dialog> id, data-synth-dismiss closes it, aria-labelledby labels it."
+      },
+      "tabs": {
+        "html": "<div class=\"stack\" data-synth-tabs>\n  <div class=\"tabs\" role=\"tablist\" aria-label=\"Report range\">\n    <button type=\"button\" class=\"tabs-item\" role=\"tab\" id=\"tab-week\" aria-controls=\"panel-week\" aria-selected=\"true\">Week</button>\n    <button type=\"button\" class=\"tabs-item\" role=\"tab\" id=\"tab-month\" aria-controls=\"panel-month\" aria-selected=\"false\">Month</button>\n  </div>\n  <div role=\"tabpanel\" id=\"panel-week\" aria-labelledby=\"tab-week\">…</div>\n  <div role=\"tabpanel\" id=\"panel-month\" aria-labelledby=\"tab-month\" hidden>…</div>\n</div>",
+        "note": "Tabs that switch panels (SynthJS): data-synth-tabs around a labeled .tabs list; each .tabs-item names its panel with aria-controls."
+      },
+      "empty-state": {
+        "html": "<div class=\"empty-state\">\n  <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg>\n  <h2>No projects yet</h2>\n  <p>Projects group your reports and your team.</p>\n  <button type=\"button\" class=\"button button-primary\">Create project</button>\n</div>",
+        "note": "Nothing to show yet: an .empty-state with a decorative icon, a heading, one sentence and the main action."
+      }
+    }
   }
 }
