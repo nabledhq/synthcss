@@ -309,3 +309,33 @@ test("a missing or invalid target warns once per element and never throws", (t) 
   assert.equal(warnings.list.length, 8, "no repeated warnings after clicks or another init");
   assert.equal($("#b6").getAttribute("aria-selected"), "true", "tabs without panels still select");
 });
+
+test("the showcase demos initialize without warnings and respond", (t) => {
+  const html = readFileSync(new URL("../showcase/index.html", import.meta.url), "utf8");
+  const body = html.split(/<body[^>]*>/)[1].split("</body>")[0];
+  const { $, key, focused, warnings } = page(t, body);
+  assert.deepEqual(warnings.messages(), []);
+
+  $('[data-synth-open="demo-confirm"]').click();
+  assert.equal($("#demo-confirm").open, true);
+  $("#demo-confirm [data-synth-dismiss]").click();
+  assert.equal($("#demo-confirm").open, false);
+
+  $('[data-synth-toggle="demo-filters"]').click();
+  assert.equal($("#demo-filters").hidden, false);
+
+  $("#demo-tab-week").focus();
+  key($("#demo-tab-week"), "End");
+  assert.equal(focused(), "demo-tab-month");
+  assert.equal($("#demo-panel-month").hidden, false);
+  assert.equal($("#demo-panel-week").hidden, true);
+
+  const menu = $("#behavior-dropdown ~ .sc-demo [data-synth-dropdown-menu]");
+  $("#behavior-dropdown ~ .sc-demo [data-synth-dropdown-trigger]").click();
+  assert.equal(menu.hidden, false);
+  $("#behaviors-title").click();
+  assert.equal(menu.hidden, true);
+
+  $("#demo-saved [data-synth-dismiss]").click();
+  assert.equal($("#demo-saved").hidden, true);
+});
