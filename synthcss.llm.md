@@ -1,9 +1,9 @@
 # SynthCSS AI Contract
 
-Version: SynthCSS 0.9.0 · contract 1.4.0 · machine-readable twin: synthcss.ai.json
+Version: SynthCSS 0.10.0 · contract 1.4.0 · machine-readable twin: synthcss.ai.json
 
 The complete public vocabulary of SynthCSS. Use only the classes and tokens listed here; anything else does not exist.
-Load: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.9.0/dist/synthcss.min.css">`
+Load: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.10.0/dist/synthcss.min.css">`
 
 ## Design Tokens
 
@@ -192,7 +192,7 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
 
 <!-- Generated from the components' "behaviors" in synthcss.ai.json by `npm run contract:write`. Edit the JSON, not this section. -->
 
-Optional SynthJS script, loaded after the stylesheet: `<script src="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.9.0/dist/synth.js" defer></script>`.
+Optional SynthJS script, loaded after the stylesheet: `<script src="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.10.0/dist/synth.js" defer></script>`.
 Declare interactivity with exactly one `data-synth-*` attribute per intent, as below: no aliases, no `data-synth-collapse`, no event handlers of your own. Triggers are `<button type="button">`; state lives in `hidden` and ARIA attributes, which SynthJS keeps in sync. Without the script the page still renders; only these behaviors are inactive. After inserting markup later, call `Synth.init(element)`.
 
 ### `data-synth-open` — open a modal dialog

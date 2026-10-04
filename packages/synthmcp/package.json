@@ -1,6 +1,6 @@
 {
   "name": "synthmcp",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "SynthMCP: a stdio MCP server that answers SynthCSS questions and validates markup from synthcss.ai.json.",
   "license": "MIT",
   "type": "module",

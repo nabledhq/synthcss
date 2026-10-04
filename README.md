@@ -11,7 +11,7 @@ SynthCSS is crowdfunded on [nabled.ai](https://nabled.ai/p/synthcss).
 Load the bundle from the jsDelivr CDN, pinned to a [release](https://github.com/nabledhq/synthcss/releases):
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.9.0/dist/synthcss.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.10.0/dist/synthcss.min.css">
 ```
 
 | File | Contents |
@@ -23,7 +23,7 @@ Load the bundle from the jsDelivr CDN, pinned to a [release](https://github.com/
 | `dist/components.css` | Components only. Load `tokens.css` first. |
 | `dist/synth.js` | Optional [SynthJS](docs/behaviors.md) behaviors script (`<script src="…/dist/synth.js" defer>`). Not needed for any styling. |
 
-Use `.min.css` for the minified file (jsDelivr minifies on request) or `.css` for the readable one. `@0.9` follows the latest 0.9.x patch release; pin an exact version in production. To self-host, download the files from a [GitHub release](https://github.com/nabledhq/synthcss/releases) or run `npm run build` and copy `dist/`. SynthCSS follows [semantic versioning](https://semver.org); while it is 0.x, a minor release may contain breaking changes. See [docs/releasing.md](docs/releasing.md) for how releases are made.
+Use `.min.css` for the minified file (jsDelivr minifies on request) or `.css` for the readable one. `@0.10` follows the latest 0.10.x patch release; pin an exact version in production. To self-host, download the files from a [GitHub release](https://github.com/nabledhq/synthcss/releases) or run `npm run build` and copy `dist/`. SynthCSS follows [semantic versioning](https://semver.org); while it is 0.x, a minor release may contain breaking changes. See [docs/releasing.md](docs/releasing.md) for how releases are made.
 
 ## Design tokens
 
@@ -67,7 +67,7 @@ See [docs/components.md](docs/components.md) for each component's variants, comp
 [`dist/synth.js`](docs/behaviors.md) is an optional, dependency-free script that makes the markup interactive. Declare the intent with one `data-synth-*` attribute and SynthJS handles the events and keeps `hidden` and the ARIA state in sync: `data-synth-open` (modal `<dialog>`, focus returns to the opener), `data-synth-dismiss` (close a dialog or hide a `[data-synth-dismissible]` alert), `data-synth-toggle` (show or hide a section, with `aria-expanded`), `data-synth-tabs` (tab panels with arrow, Home and End keys) and `data-synth-dropdown` (a list of links that closes on an outside click or Escape). CSS-only pages keep working without it.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.9.0/dist/synth.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.10.0/dist/synth.js" defer></script>
 
 <button type="button" class="button" data-synth-toggle="filters">Filters</button>
 <div id="filters" class="panel" hidden>…</div>
