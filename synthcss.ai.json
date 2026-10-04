@@ -229,7 +229,7 @@
       },
       "variants": {},
       "accessibility": [
-        { "expectation": ".field-label is a <label> element.", "class": "field-label", "elements": ["label"], "severity": "error" },
+        { "expectation": ".field-label must be a <label> element.", "class": "field-label", "elements": ["label"], "severity": "error" },
         { "expectation": ".field-label names its control with for=\"<id>\".", "class": "field-label", "attributes": ["for"], "severity": "warning" }
       ],
       "example": "<div class=\"field\">\n  <label class=\"field-label\" for=\"name\">Name</label>\n  <input id=\"name\" type=\"text\" aria-describedby=\"name-help\">\n  <p class=\"field-help\" id=\"name-help\">Shown on your profile.</p>\n</div>"
@@ -239,7 +239,7 @@
       "parts": {},
       "variants": {},
       "accessibility": [
-        { "expectation": ".switch is a <label> around <input type=\"checkbox\" role=\"switch\">.", "class": "switch", "elements": ["label"], "severity": "error" }
+        { "expectation": ".switch must be a <label> around <input type=\"checkbox\" role=\"switch\">.", "class": "switch", "elements": ["label"], "severity": "error" }
       ],
       "example": "<label class=\"switch\"><input type=\"checkbox\" role=\"switch\" checked> Email alerts</label>"
     },
@@ -302,7 +302,7 @@
       "placement": { "alert-icon": "child" },
       "accessibility": [
         { "expectation": ".alert needs role=\"status\" (polite) or role=\"alert\" (urgent).", "class": "alert", "attributes": ["role"], "values": ["status", "alert"], "severity": "error" },
-        { "expectation": ".alert-icon is decorative: aria-hidden=\"true\".", "class": "alert-icon", "attributes": ["aria-hidden"], "values": ["true"], "severity": "error" }
+        { "expectation": ".alert-icon is decorative and needs aria-hidden=\"true\".", "class": "alert-icon", "attributes": ["aria-hidden"], "values": ["true"], "severity": "error" }
       ],
       "example": "<div class=\"alert alert-warning\" role=\"status\">\n  <p>Your trial ends in 3 days.</p>\n</div>"
     },
@@ -327,7 +327,7 @@
       },
       "placement": { "table-wrap": "wraps" },
       "accessibility": [
-        { "expectation": ".table goes on a native <table>.", "class": "table", "elements": ["table"], "severity": "error" },
+        { "expectation": ".table must be on a native <table>.", "class": "table", "elements": ["table"], "severity": "error" },
         { "expectation": ".table-wrap needs tabindex=\"0\" so keyboard users can scroll it.", "class": "table-wrap", "attributes": ["tabindex"], "values": ["0"], "severity": "warning" }
       ],
       "example": "<div class=\"table-wrap\" tabindex=\"0\">\n  <table class=\"table\">\n    <thead><tr><th>Plan</th><th class=\"numeric\">Price</th></tr></thead>\n    <tbody><tr><td>Team</td><td class=\"numeric\">$12</td></tr></tbody>\n  </table>\n</div>"
@@ -359,8 +359,8 @@
         }
       ],
       "accessibility": [
-        { "expectation": ".nav is a list: <ul> or <ol>, with role=\"list\".", "class": "nav", "elements": ["ul", "ol"], "severity": "error" },
-        { "expectation": "Each .nav-link is an <a href>; the current page has aria-current=\"page\".", "class": "nav-link", "elements": ["a"], "severity": "error" }
+        { "expectation": ".nav must be on a list, <ul> or <ol>, with role=\"list\".", "class": "nav", "elements": ["ul", "ol"], "severity": "error" },
+        { "expectation": "Each .nav-link must be an <a href>; the current page gets aria-current=\"page\".", "class": "nav-link", "elements": ["a"], "severity": "error" }
       ],
       "example": "<ul class=\"nav stack-sm\" role=\"list\">\n  <li><a class=\"nav-link\" href=\"/\" aria-current=\"page\">Home</a></li>\n  <li><a class=\"nav-link\" href=\"/team\">Team</a></li>\n</ul>"
     },
@@ -384,10 +384,10 @@
         }
       ],
       "accessibility": [
-        { "expectation": ".tabs has role=\"tablist\".", "class": "tabs", "attributes": ["role"], "values": ["tablist"], "severity": "error" },
+        { "expectation": ".tabs needs role=\"tablist\".", "class": "tabs", "attributes": ["role"], "values": ["tablist"], "severity": "error" },
         { "expectation": ".tabs needs a label: aria-label or aria-labelledby.", "class": "tabs", "attributes": ["aria-label", "aria-labelledby"], "severity": "error" },
-        { "expectation": "Each .tabs-item has role=\"tab\".", "class": "tabs-item", "attributes": ["role"], "values": ["tab"], "severity": "error" },
-        { "expectation": "Each .tabs-item states aria-selected=\"true\" or \"false\"; never aria-pressed.", "class": "tabs-item", "attributes": ["aria-selected"], "values": ["true", "false"], "severity": "error" }
+        { "expectation": "Each .tabs-item needs role=\"tab\".", "class": "tabs-item", "attributes": ["role"], "values": ["tab"], "severity": "error" },
+        { "expectation": "Each .tabs-item needs aria-selected=\"true\" or \"false\"; never aria-pressed.", "class": "tabs-item", "attributes": ["aria-selected"], "values": ["true", "false"], "severity": "error" }
       ],
       "example": "<div class=\"tabs\" role=\"tablist\" aria-label=\"Range\">\n  <button type=\"button\" class=\"tabs-item\" role=\"tab\" aria-selected=\"true\">Week</button>\n  <button type=\"button\" class=\"tabs-item\" role=\"tab\" aria-selected=\"false\">Month</button>\n</div>"
     },

@@ -27,6 +27,8 @@ export function nextVersion(current, bump) {
 // being released with a stale version.
 export const TARGETS = {
   "package.json": (from, to) => [[`"version": "${from}"`, `"version": "${to}"`]],
+  // SynthMCP is released with SynthCSS and carries the same version.
+  "packages/synthmcp/package.json": (from, to) => [[`"version": "${from}"`, `"version": "${to}"`]],
   "synthcss.ai.json": (from, to) => [[`"synthcssVersion": "${from}"`, `"synthcssVersion": "${to}"`]],
   "synthcss.llm.md": (from, to) => [
     [`Version: SynthCSS ${from} `, `Version: SynthCSS ${to} `],

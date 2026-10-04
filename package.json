@@ -8,6 +8,9 @@
   "engines": {
     "node": ">=20"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "node scripts/build.mjs",
     "check:tokens": "node scripts/check-tokens.mjs",
@@ -22,7 +25,9 @@
     "check:ai-contract": "node scripts/verify-ai-contract.mjs",
     "contract:write": "node scripts/verify-ai-contract.mjs --write",
     "test:js": "node --test scripts/synth-js.test.mjs",
-    "test": "node scripts/check-tokens.mjs && node scripts/check-base.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node scripts/verify-ai-contract.mjs && node --test scripts/build.test.mjs scripts/bump-version.test.mjs scripts/check-tokens.test.mjs scripts/check-base.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs scripts/verify-ai-contract.test.mjs scripts/synth-js.test.mjs"
+    "test:mcp": "npm run test -w synthmcp",
+    "mcp": "npm run --silent start -w synthmcp",
+    "test": "node scripts/check-tokens.mjs && node scripts/check-base.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node scripts/verify-ai-contract.mjs && node --test scripts/build.test.mjs scripts/bump-version.test.mjs scripts/check-tokens.test.mjs scripts/check-base.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs scripts/verify-ai-contract.test.mjs scripts/synth-js.test.mjs && npm run test -w synthmcp"
   },
   "devDependencies": {
     "happy-dom": "^20.14.5"
