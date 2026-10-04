@@ -27,6 +27,7 @@ export const JSON_KEYS = [
   "intentMap",
   "compositionRules",
   "generationRules",
+  "extension",
   "examples",
 ];
 export const MD_SECTIONS = [
@@ -36,16 +37,24 @@ export const MD_SECTIONS = [
   "Intent Mapping",
   "Composition Rules",
   "AI Generation Rules",
+  "When the vocabulary is missing a pattern",
+  "Not covered yet",
   "Valid Examples",
   "Invalid / Discouraged Examples",
 ];
 const INVALID_SECTION = "Invalid / Discouraged Examples";
+const EXTENSION_SECTION = "When the vocabulary is missing a pattern";
+const NOT_COVERED_SECTION = "Not covered yet";
+// The one fallback when the vocabulary lacks a pattern: a data-ui hook styled in
+// this cascade layer.
+export const EXTENSION_ATTRIBUTE = "data-ui";
+export const EXTENSION_LAYER = "synth.ext";
 export const GENERATION_RULES = 10;
 // Parts whose state comes from one ARIA attribute. The contract must name that
 // attribute in the part's entry (JSON and Markdown), and the Markdown must rule
 // out aria-pressed, so models do not pick a different attribute per run.
 export const STATE_ATTRIBUTES = { "nav-link": 'aria-current="page"', "tabs-item": 'aria-selected="true"' };
-export const VALID_EXAMPLES = [2, 4];
+export const VALID_EXAMPLES = [2, 5];
 // The showcase may round the size it prints; it must stay within this fraction.
 export const SHOWCASE_SIZE_TOLERANCE = 0.1;
 export const LLM_FILE = "synthcss.llm.md";
@@ -195,6 +204,24 @@ function checkJsonShape(c) {
   if (!Array.isArray(c.generationRules) || c.generationRules.length !== GENERATION_RULES) {
     errors.push(`${JSON_FILE}: generationRules must list exactly ${GENERATION_RULES} rules`);
   }
+  const ext = c.extension;
+  const strings = (a) => Array.isArray(a) && a.every((v) => typeof v === "string" && v.trim());
+  const isItem = (n) =>
+    isObject(n) && ["pattern", "use", "html"].every((k) => typeof n[k] === "string" && n[k].trim()) && (n.css === undefined || typeof n.css === "string");
+  if (
+    !isObject(ext) ||
+    ![ext.rule, ext.attribute, ext.layer, ext.values].every((v) => typeof v === "string") ||
+    !strings(ext.steps) ||
+    !strings(ext.properties) ||
+    !strings(ext.keywords) ||
+    !Array.isArray(ext.notCovered) ||
+    !ext.notCovered.every(isItem)
+  ) {
+    errors.push(`${JSON_FILE}: extension must be { rule, steps: [], attribute, layer, values, properties: [], keywords: [], notCovered: [{ pattern, use, html, css? }] }`);
+  } else {
+    if (ext.attribute !== EXTENSION_ATTRIBUTE) errors.push(`${JSON_FILE}: extension.attribute must be "${EXTENSION_ATTRIBUTE}"`);
+    if (ext.layer !== EXTENSION_LAYER) errors.push(`${JSON_FILE}: extension.layer must be "${EXTENSION_LAYER}"`);
+  }
   const ex = c.examples;
   if (!isObject(ex) || !Array.isArray(ex.valid) || !Array.isArray(ex.invalid) || ![...ex.valid, ...ex.invalid].every(isExample)) {
     errors.push(`${JSON_FILE}: examples must be { valid: [{ html, note }], invalid: [{ html, note }] }`);
@@ -215,6 +242,116 @@ export function jsonVocabulary(c) {
   }
   return classes;
 }
+
+const DATA_UI = /\bdata-ui="([^"]*)"/g;
+const STYLE_BLOCK = /<style\b[^>]*>([\s\S]*?)<\/style>/g;
+const TOKEN_VALUE = /var\((--[a-z][a-z0-9-]*)\)/g;
+
+// Checks CSS written under the extension rule: one `@layer synth.ext { … }` block
+// whose selectors are all [data-ui="<name>"], whose properties are in
+// extension.properties and whose values are var(--token)s plus extension.keywords.
+// Returns the data-ui names it styles and the problems found.
+export function checkExtensionCss(css, extension, cssTokens) {
+  const errors = [];
+  const names = new Set();
+  const layer = extension.layer.replace(/\./g, "\\.");
+  const block = new RegExp(`^@layer\\s+${layer}\\s*\\{([\\s\\S]*)\\}$`).exec(css.replace(/\/\*[\s\S]*?\*\//g, "").trim());
+  if (!block) return { names, errors: [`must be a single @layer ${extension.layer} { … } block`] };
+  const rest = block[1].replace(/([^{}]*)\{([^{}]*)\}/g, (_, selectors, decls) => {
+    for (const selector of selectors.split(",").map((s) => s.trim())) {
+      const m = new RegExp(`^\\[${extension.attribute}="([a-z][a-z0-9-]*)"\\]$`).exec(selector);
+      if (m) names.add(m[1]);
+      else errors.push(`selector "${selector}" must be [${extension.attribute}="<name>"] and nothing else`);
+    }
+    for (const decl of decls.split(";").map((d) => d.trim()).filter(Boolean)) {
+      const i = decl.indexOf(":");
+      if (i === -1) {
+        errors.push(`cannot read the declaration "${decl}"`);
+        continue;
+      }
+      const [prop, value] = [decl.slice(0, i).trim(), decl.slice(i + 1).trim()];
+      if (!extension.properties.includes(prop)) errors.push(`property ${prop} is not in extension.properties`);
+      const bare = value.replace(TOKEN_VALUE, (_, token) => {
+        if (!cssTokens.has(token)) errors.push(`${prop} uses ${token}, which is not a SynthCSS token`);
+        return " ";
+      });
+      for (const word of bare.split(/[\s,]+/).filter(Boolean)) {
+        if (!extension.keywords.includes(word)) errors.push(`${prop}: "${word}" is not a var(--token) or an allowed keyword`);
+      }
+    }
+    return "";
+  });
+  if (rest.trim()) errors.push(`unexpected CSS outside a rule: ${rest.trim()}`);
+  return { names, errors };
+}
+
+// Inline styles may only override tokens: style="--grid-min: 12rem".
+export function inlineStyleErrors(html, cssTokens) {
+  const errors = [];
+  for (const m of html.matchAll(/\bstyle="([^"]*)"/g)) {
+    for (const decl of m[1].split(";").map((d) => d.trim()).filter(Boolean)) {
+      const prop = decl.split(":")[0].trim();
+      if (!prop.startsWith("--")) errors.push(`inline style "${decl}" is not a token override`);
+      else if (!cssTokens.has(prop)) errors.push(`inline style overrides ${prop}, which is not a SynthCSS token`);
+    }
+  }
+  return errors;
+}
+
+// Markup in valid examples and not-covered snippets: contract classes only,
+// token-only inline styles, and extension CSS (from <style> blocks or a separate
+// css string) that obeys the extension rule and styles hooks present in the HTML.
+function checkMarkup(where, html, css, { vocab, cssClasses, cssTokens, extension }) {
+  const errors = [];
+  for (const cls of sorted(classAttrs(html))) {
+    if (!cssClasses.has(cls)) errors.push(`${where} uses .${cls}, which is not a SynthCSS class`);
+    else if (!vocab.has(cls)) errors.push(`${where} uses .${cls}, which is not in the contract vocabulary`);
+  }
+  for (const e of inlineStyleErrors(html, cssTokens)) errors.push(`${where}: ${e}`);
+  const hooks = new Set([...html.replace(STYLE_BLOCK, "").matchAll(DATA_UI)].map((m) => m[1]));
+  const sheets = [...html.matchAll(STYLE_BLOCK)].map((m) => m[1]);
+  if (css !== undefined) sheets.push(css);
+  const styled = new Set();
+  for (const sheet of sheets) {
+    const { names, errors: cssErrors } = checkExtensionCss(sheet, extension, cssTokens);
+    for (const e of cssErrors) errors.push(`${where}: extension CSS ${e}`);
+    names.forEach((n) => styled.add(n));
+  }
+  for (const n of sorted(styled)) if (!hooks.has(n)) errors.push(`${where}: CSS styles [data-ui="${n}"] but no element has data-ui="${n}"`);
+  for (const n of sorted(hooks)) if (!styled.has(n)) errors.push(`${where}: data-ui="${n}" has no rule in @layer ${extension.layer}`);
+  return errors;
+}
+
+// Items of the Markdown "Not covered yet" list: `- Pattern — use: \`<html>\``, or
+// `- Pattern — use` followed by html and css code blocks.
+export function parseNotCovered(body) {
+  const items = [];
+  const errors = [];
+  let fence = null;
+  for (const line of body.split("\n")) {
+    if (fence) {
+      if (/^```\s*$/.test(line)) {
+        const item = items.at(-1);
+        if (!item) errors.push(`${LLM_FILE}: Not covered yet has a code block before its first item`);
+        else if (item[fence.lang] !== undefined) errors.push(`${LLM_FILE}: Not covered yet item "${item.pattern}" has two ${fence.lang} snippets`);
+        else item[fence.lang] = fence.lines.join("\n").trim();
+        fence = null;
+      } else fence.lines.push(line);
+      continue;
+    }
+    const open = /^```(html|css)\s*$/.exec(line);
+    if (open) fence = { lang: open[1], lines: [] };
+    else if (/^- /.test(line)) {
+      const m = /^- (.+?) — (.+?)(?::\s*`(<[^`]+>)`)?$/.exec(line);
+      if (!m) errors.push(`${LLM_FILE}: Not covered yet items must read "- Pattern — use: \`<html>\`", found: ${line}`);
+      else items.push({ pattern: m[1], use: m[2], ...(m[3] ? { html: m[3] } : {}) });
+    }
+  }
+  return { items, errors };
+}
+
+const plain = (s) => (s ?? "").replace(/`/g, "").replace(/\s+/g, " ").trim();
+const backticked = (line) => [...(line ?? "").matchAll(/`([^`]+)`/g)].map((m) => m[1]);
 
 export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
   const errors = [];
@@ -276,10 +413,16 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
     if (!baseRules.has(selector)) errors.push(`${JSON_FILE}: baseStyles.rules["${selector}"] is not a rule in src/base.css`);
   }
 
+  const extension = contract.extension;
+  const markupContext = { vocab, cssClasses, cssTokens, extension };
   contract.examples.valid.forEach((e, i) => {
-    for (const cls of sorted(classAttrs(e.html))) {
-      if (!cssClasses.has(cls)) errors.push(`${JSON_FILE}: valid example ${i + 1} uses .${cls}, which is not a SynthCSS class`);
-    }
+    errors.push(...checkMarkup(`${JSON_FILE}: valid example ${i + 1}`, e.html, undefined, markupContext));
+  });
+  extension.notCovered.forEach((item, i) => {
+    const where = `${JSON_FILE}: extension.notCovered ${i + 1} (${item.pattern})`;
+    if (/<style\b/.test(item.html)) errors.push(`${where}: put fallback CSS in "css", not a <style> block`);
+    if (item.css !== undefined && !item.use.includes(extension.attribute)) errors.push(`${where}: a fallback's "use" must name ${extension.attribute}`);
+    errors.push(...checkMarkup(where, item.html, item.css, markupContext));
   });
   contract.examples.invalid.forEach((e, i) => {
     errors.push(...checkInvalidExample(`${JSON_FILE}: invalid example ${i + 1}`, e.html, e.note, cssClasses, cssTokens));
@@ -344,6 +487,36 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
   if (rules.length !== GENERATION_RULES) {
     errors.push(`${LLM_FILE}: AI Generation Rules must list exactly ${GENERATION_RULES} numbered rules, found ${rules.length}`);
   }
+
+  const extensionMd = section(EXTENSION_SECTION);
+  for (const phrase of [`${extension.attribute}="<name>"`, `@layer ${extension.layer}`, "var(--…)"]) {
+    if (!extensionMd.includes(phrase)) errors.push(`${LLM_FILE}: ${EXTENSION_SECTION} must state \`${phrase}\``);
+  }
+  const steps = extensionMd.split("\n").filter((l) => /^\d+\.\s/.test(l));
+  if (steps.length !== extension.steps.length) {
+    errors.push(`${LLM_FILE}: ${EXTENSION_SECTION} has ${steps.length} numbered steps, ${JSON_FILE} extension.steps has ${extension.steps.length}`);
+  }
+  for (const [label, key] of [["Allowed properties:", "properties"], ["Allowed keywords:", "keywords"]]) {
+    const listed = backticked(extensionMd.split("\n").find((l) => l.startsWith(label)));
+    if (listed.join(",") !== extension[key].join(",")) {
+      errors.push(`${LLM_FILE}: ${EXTENSION_SECTION} must have a "${label}" line listing extension.${key} in order`);
+    }
+  }
+  const notCovered = parseNotCovered(section(NOT_COVERED_SECTION));
+  errors.push(...notCovered.errors);
+  if (notCovered.items.length !== extension.notCovered.length) {
+    errors.push(`${LLM_FILE}: Not covered yet has ${notCovered.items.length} items, ${JSON_FILE} extension.notCovered has ${extension.notCovered.length}`);
+  }
+  notCovered.items.forEach((item, i) => {
+    const twin = extension.notCovered[i];
+    if (!twin) return;
+    const same =
+      plain(item.pattern) === plain(twin.pattern) &&
+      plain(item.use) === plain(twin.use) &&
+      item.html?.trim() === twin.html.trim() &&
+      item.css?.trim() === twin.css?.trim();
+    if (!same) errors.push(`${LLM_FILE}: Not covered yet item ${i + 1} (${item.pattern}) must match ${JSON_FILE} extension.notCovered ${i + 1}`);
+  });
 
   const valid = [...section("Valid Examples").matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1].trim());
   const jsonValid = contract.examples.valid.map((e) => e.html.trim());

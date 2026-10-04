@@ -1,6 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_MAX_TOKENS, estimateTokens, maxTokensFrom, readRepoFiles, verifyContract } from "./verify-ai-contract.mjs";
+import {
+  DEFAULT_MAX_TOKENS,
+  checkExtensionCss,
+  estimateTokens,
+  maxTokensFrom,
+  parseNotCovered,
+  readRepoFiles,
+  verifyContract,
+} from "./verify-ai-contract.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const files = readRepoFiles(repo);
@@ -188,4 +196,109 @@ test("fails when the showcase, Pages workflow or README stop publishing the cont
   assertError(errorsWith({ workflow }), "pages.yml must copy synthcss.ai.json into _site/");
   const readme = files.readme.replace(/same pull request/g, "next release");
   assertError(errorsWith({ readme }), "same pull request");
+});
+
+const appShellIndex = contract.examples.valid.findIndex((e) => e.html.startsWith("<!doctype html>"));
+const appShell = contract.examples.valid[appShellIndex];
+// Edits the app-shell example in both files so they stay in sync.
+const editAppShell = (find, replace) => {
+  assert.ok(appShell.html.includes(find), `app shell contains ${find}`);
+  return {
+    ...withJson((c) => (c.examples.valid[appShellIndex].html = appShell.html.replace(find, replace))),
+    md: files.md.replace(appShell.html, appShell.html.replace(find, replace)),
+  };
+};
+
+test("states the one extension rule in both files, at contract 1.2.0", () => {
+  const ext = contract.extension;
+  assert.equal(ext.attribute, "data-ui");
+  assert.equal(ext.layer, "synth.ext");
+  assert.match(ext.values, /tokens only/);
+  assert.ok(ext.properties.includes("padding-inline-start"));
+  for (const banned of ["display", "flex", "grid-template-columns", "gap", "margin", "position", "order"]) {
+    assert.ok(!ext.properties.includes(banned), `${banned} is not an extension property`);
+  }
+  assert.equal(contract.contractVersion, "1.2.0");
+  assert.match(files.md, /· contract 1\.2\.0 ·/);
+  assert.match(files.md, /^## When the vocabulary is missing a pattern$/m);
+  for (const phrase of ['`data-ui="<name>"`', "`@layer synth.ext", "`var(--…)`"]) assert.ok(files.md.includes(phrase), phrase);
+  assertError(errorsWith(withJson((c) => delete c.extension)), 'missing top-level key "extension"');
+  assertError(errorsWith(withJson((c) => (c.extension.layer = "ext"))), 'extension.layer must be "synth.ext"');
+  assertError(errorsWith(withJson((c) => (c.extension.attribute = "data-x"))), 'extension.attribute must be "data-ui"');
+  const md = files.md.replace(/^Allowed properties: `color`, /m, "Allowed properties: ");
+  assertError(errorsWith({ md }), 'must have a "Allowed properties:" line');
+  const steps = files.md.replace(/^4\. Add no class names.*\n/m, "");
+  assertError(errorsWith({ md: steps }), "has 4 numbered steps");
+});
+
+test("checks extension CSS: one synth.ext layer, data-ui selectors, listed properties, token values", () => {
+  const tokens = new Set(["--space-4", "--color-border", "--border-width"]);
+  const ok = checkExtensionCss('@layer synth.ext { [data-ui="x"] { padding: var(--space-4); border: var(--border-width) solid var(--color-border); } }', contract.extension, tokens);
+  assert.deepEqual(ok.errors, []);
+  assert.deepEqual([...ok.names], ["x"]);
+  const run = (css) => checkExtensionCss(css, contract.extension, tokens).errors.join("\n");
+  assert.match(run('[data-ui="x"] { padding: var(--space-4); }'), /single @layer synth\.ext/);
+  assert.match(run('@layer synth.ext { .card { padding: var(--space-4); } }'), /selector "\.card"/);
+  assert.match(run('@layer synth.ext { [data-ui="x"] .card { padding: var(--space-4); } }'), /must be \[data-ui="<name>"\]/);
+  assert.match(run('@layer synth.ext { [data-ui="x"] { display: flex; } }'), /property display is not in extension\.properties/);
+  assert.match(run('@layer synth.ext { [data-ui="x"] { padding: 16px; } }'), /"16px" is not a var\(--token\)/);
+  assert.match(run('@layer synth.ext { [data-ui="x"] { padding: var(--space-4) !important; } }'), /"!important"/);
+  assert.match(run('@layer synth.ext { [data-ui="x"] { padding: var(--space-9); } }'), /--space-9, which is not a SynthCSS token/);
+});
+
+test("has a full app-shell valid example built from contract vocabulary only", () => {
+  assert.ok(appShell, "a valid example is a full page starting with <!doctype html>");
+  const html = appShell.html;
+  assert.match(html, /<body data-ui="app">/);
+  assert.match(html, /<div class="sidebar-lg"[^>]*>\s*<nav class="panel" aria-label="Main">/);
+  assert.match(html, /<ul class="nav stack-sm" role="list">/);
+  assert.match(html, /<main class="container stack-lg">/);
+  assert.match(html, /<header class="split">[\s\S]*?class="button button-primary"[\s\S]*?<\/header>/);
+  assert.match(html, /<ul class="grid"[^>]*>\s*<li class="card">/);
+  assert.match(html, /class="sidebar-lg sidebar-end"/);
+  assert.match(html, /@layer synth\.ext \{\s*\[data-ui="app"\] \{ font-family: var\(--font-sans\);/);
+  assert.ok(files.md.includes(html));
+
+  assertError(errorsWith(editAppShell('class="card"', 'class="card stat-card"')), "uses .stat-card, which is not a SynthCSS class");
+  assertError(errorsWith(editAppShell("font-family: var(--font-sans);", "display: flex;")), "property display is not in extension.properties");
+  assertError(errorsWith(editAppShell("font-size: var(--text-base);", "font-size: 15px;")), '"15px" is not a var(--token)');
+  assertError(errorsWith(editAppShell('style="--grid-min: 12rem"', 'style="gap: 1rem"')), 'inline style "gap: 1rem" is not a token override');
+  assertError(errorsWith(editAppShell('<body data-ui="app">', '<body data-ui="shell">')), 'no element has data-ui="app"');
+  assertError(errorsWith(editAppShell('[data-ui="app"]', ".app")), 'selector ".app"');
+});
+
+test("lists every not-covered pattern with a composition or a data-ui fallback", () => {
+  const patterns = contract.extension.notCovered.map((n) => n.pattern);
+  assert.deepEqual(patterns, [
+    "Avatar or initials",
+    "Icon tile",
+    "Nav link with current state",
+    "Tabs or segmented control",
+    "Switch",
+    "Input with attached button",
+    "Narrow right column",
+    "Timeline",
+  ]);
+  for (const item of contract.extension.notCovered) {
+    assert.ok(item.html.includes('class="'), `${item.pattern} has a snippet`);
+    if (item.css) {
+      assert.match(item.html, /data-ui="[a-z-]+"/);
+      assert.match(item.css, /^@layer synth\.ext \{/);
+    } else assert.doesNotMatch(item.html, /data-ui/);
+  }
+  const { items, errors } = parseNotCovered(files.md.split("## Not covered yet")[1].split("\n## ")[0]);
+  assert.deepEqual(errors, []);
+  assert.equal(items.length, patterns.length);
+  assert.ok(items.at(-1).css.includes('[data-ui="timeline-item"]'));
+
+  const badCss = withJson((c) => (c.extension.notCovered.at(-1).css = c.extension.notCovered.at(-1).css.replace("var(--space-4)", "1rem")));
+  assertError(errorsWith(badCss), 'extension.notCovered 8 (Timeline): extension CSS padding-inline-start: "1rem"');
+  const unstyled = withJson((c) => (c.extension.notCovered[0].html = '<span class="avatar" data-ui="initials">AL</span>'));
+  assertError(errorsWith(unstyled), 'data-ui="initials" has no rule in @layer synth.ext');
+  const invented = withJson((c) => (c.extension.notCovered[2].html = '<a class="nav-link nav-link-active" href="/">Home</a>'));
+  assertError(errorsWith(invented), "uses .nav-link-active, which is not a SynthCSS class");
+  const md = files.md.replace("- Switch — ", "- Toggle — ");
+  assertError(errorsWith({ md }), "Not covered yet item 5 (Toggle) must match");
+  const dropped = files.md.replace(/^- Icon tile — .*\n/m, "");
+  assertError(errorsWith({ md: dropped }), "Not covered yet has 7 items");
 });
