@@ -10,6 +10,7 @@ on:
     paths:
       - "showcase/**"
       - "src/**.css"
+      - "src/**.js"
       - "synthcss.llm.md"
       - "synthcss.ai.json"
       - ".github/workflows/pages.yml"
@@ -37,6 +38,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install dev dependencies
+        run: npm ci
+
       - name: Run checks
         run: npm test
 
@@ -45,9 +49,11 @@ jobs:
 
       - name: Assemble site
         run: |
-          mkdir -p _site/showcase _site/src
+          mkdir -p _site/showcase _site/src/js
           cp showcase/index.html showcase/showcase.css showcase/showcase.js _site/showcase/
           cp src/*.css _site/src/
+          # SynthJS, loaded by the showcase's interactive demos.
+          cp src/js/synth.js _site/src/js/
           # The AI contract, linked from the showcase as ../synthcss.llm.md and ../synthcss.ai.json.
           cp synthcss.llm.md synthcss.ai.json _site/
           # Cache busting: Pages lets browsers cache files for 10 minutes, so add the

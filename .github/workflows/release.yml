@@ -48,6 +48,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install dev dependencies
+        run: npm ci
+
       - name: Decide what to release
         id: plan
         env:
@@ -143,9 +146,10 @@ jobs:
           - Base styles only (load tokens first): ${cdn}/dist/base.min.css
           - Layout only (load tokens first): ${cdn}/dist/layout.min.css
           - Components only (load tokens first): ${cdn}/dist/components.min.css
+          - Optional SynthJS behaviors: ${cdn}/dist/synth.js (or synth.min.js)
           - AI contract: ${cdn}/synthcss.llm.md and ${cdn}/synthcss.ai.json
           EOF
-          gh release create "$TAG" dist/*.css \
+          gh release create "$TAG" dist/*.css dist/*.js \
             --verify-tag \
             --title "$TAG" \
             --notes-file notes.md \
@@ -164,6 +168,9 @@ jobs:
               for ext in css min.css; do
                 curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${alias}/dist/${file}.${ext}" >/dev/null
               done
+            done
+            for ext in js min.js; do
+              curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${alias}/dist/synth.${ext}" >/dev/null
             done
             for file in synthcss.llm.md synthcss.ai.json; do
               curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${alias}/${file}" >/dev/null
