@@ -35,6 +35,7 @@
             <li><a href="#composed">Composed</a></li>
             <li><a href="#ai-examples">AI examples</a></li>
             <li><a href="#ai-contract">AI contract</a></li>
+            <li><a href="#synthmcp">SynthMCP</a></li>
           </ul>
         </nav>
       </header>
@@ -1270,6 +1271,71 @@
 &lt;/section&gt;</code></pre></div>
           </div>
         </article>
+      </div>
+    </section>
+
+    <section id="synthmcp" class="sc-band" aria-labelledby="synthmcp-title">
+      <div class="container stack-lg">
+        <div class="stack-sm">
+          <h2 id="synthmcp-title">SynthMCP</h2>
+          <p class="sc-muted">
+            A stdio MCP server for coding agents. Instead of the whole contract in the prompt, an
+            agent asks seven read-only tools: <code>list_components</code>,
+            <code>get_component</code>, <code>list_layouts</code>, <code>get_layout</code>,
+            <code>resolve_intent</code>, <code>validate_markup</code> and <code>get_example</code>.
+            Every answer comes from <code>synthcss.ai.json</code> and carries
+            <code>synthVersion</code> and <code>contractVersion</code>. Start it with
+            <code>npx synthmcp</code> or <code>npm run --silent mcp</code>.
+          </p>
+        </div>
+        <div class="cluster">
+          <a class="sc-button" href="https://github.com/nabledhq/synthcss/blob/main/docs/mcp.md">Read the SynthMCP docs</a>
+          <a href="https://github.com/nabledhq/synthcss/tree/main/packages/synthmcp">packages/synthmcp</a>
+        </div>
+        <div class="grid-lg" style="--grid-min: 22rem">
+          <article class="sc-card stack" aria-labelledby="synthmcp-intent">
+            <h3 id="synthmcp-intent">Intent to class: <code>.cluster</code></h3>
+            <p>The agent describes the need; <code>resolve_intent</code> scores it against the contract's intents, with no model involved.</p>
+            <p class="sc-label">Tool call</p>
+            <div class="sc-code"><pre><code>resolve_intent({ "intent": "a row of buttons that wraps" })</code></pre></div>
+            <p class="sc-label">Response</p>
+            <div class="sc-code"><pre><code>{
+  "class": ".cluster",
+  "classes": "cluster",
+  "reason": "Wrapping row of small items (buttons, tags, links) that keep their own width."
+}</code></pre></div>
+            <p class="sc-label">Rendered with SynthCSS</p>
+            <div class="sc-demo">
+              <div class="cluster">
+                <button type="button" class="button">Archive</button>
+                <button type="button" class="button">Duplicate</button>
+                <button type="button" class="button">Share</button>
+                <button type="button" class="button button-primary">Publish</button>
+              </div>
+            </div>
+          </article>
+          <article class="sc-card stack" aria-labelledby="synthmcp-validate">
+            <h3 id="synthmcp-validate">Validation: <code>.button-danger</code></h3>
+            <p><code>validate_markup</code> parses the HTML and catches a variant used without its base class, with the fix as a suggestion.</p>
+            <p class="sc-label">Tool call</p>
+            <div class="sc-code"><pre><code>validate_markup({ "html": "&lt;button class=\"button-danger\"&gt;Delete&lt;/button&gt;" })</code></pre></div>
+            <p class="sc-label">Response</p>
+            <div class="sc-code"><pre><code>{
+  "valid": false,
+  "issues": [{
+    "type": "unsupported-variant",
+    "severity": "error",
+    "value": "button-danger",
+    "message": ".button-danger is a variant of .button and needs class \"button\" on the same element.",
+    "suggestion": "button button-danger"
+  }]
+}</code></pre></div>
+            <p class="sc-label">Fixed, rendered with SynthCSS</p>
+            <div class="sc-demo">
+              <button type="button" class="button button-danger">Delete project</button>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
   </main>

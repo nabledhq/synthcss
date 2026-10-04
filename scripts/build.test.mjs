@@ -66,3 +66,11 @@ test("package.json has no runtime dependencies", () => {
   assert.equal(pkg.dependencies, undefined);
   assert.deepEqual(Object.keys(pkg.devDependencies ?? {}), ["happy-dom"]);
 });
+
+test("the browser build never includes SynthMCP or its dependencies", () => {
+  const src = new URL("../src/", import.meta.url);
+  const outputs = build("0.0.0", (file) => readFileSync(new URL(file, src), "utf8"));
+  for (const [file, text] of Object.entries(outputs)) {
+    assert.doesNotMatch(text, /synthmcp|modelcontextprotocol|parse5|packages\//i, `dist/${file}`);
+  }
+});

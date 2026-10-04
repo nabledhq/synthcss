@@ -2,7 +2,7 @@
 
 A single static page that shows what SynthCSS is, why it is AI-first, and live demos
 of its design tokens, layout primitives and components, plus a composed interface built
-only from SynthCSS classes. It is built with SynthCSS itself and
+only from SynthCSS classes, the AI contract and the SynthMCP server. It is built with SynthCSS itself and
 published to GitHub Pages.
 
 | File | Purpose |
