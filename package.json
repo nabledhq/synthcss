@@ -1,6 +1,6 @@
 {
   "name": "synthcss",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "description": "A lightweight, opinionated CSS framework built for AI agents and code generators.",
   "license": "MIT",
