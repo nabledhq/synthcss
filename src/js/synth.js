@@ -219,7 +219,11 @@
     if (!target || typeof target.closest !== "function") return;
 
     if (event.key === "Escape") {
-      var expanded = openDropdowns(target.ownerDocument || target);
+      // Inside an open dialog, only its own menus: Escape then closes the dialog.
+      var dialog = target.closest("dialog[open]");
+      var expanded = openDropdowns(target.ownerDocument).filter(function (parts) {
+        return !dialog || dialog.contains(parts.wrapper);
+      });
       if (!expanded.length) return;
       // Close the menus, not the dialog they may sit in.
       event.preventDefault();

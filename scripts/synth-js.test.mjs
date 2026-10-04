@@ -277,6 +277,34 @@ test("data-synth-dropdown closes on Escape and returns focus to the trigger", (t
   assert.equal(key(trigger, "Escape"), true);
 });
 
+test("Escape in a dialog leaves menus outside it alone, and closes menus inside it first", (t) => {
+  const { $, key, focused } = page(t, `
+    <div data-synth-dropdown>
+      <button type="button" id="more">More</button>
+      <ul data-synth-dropdown-menu id="more-menu" hidden><li><button type="button" id="rename" data-synth-open="dlg">Rename…</button></li></ul>
+    </div>
+    <dialog id="dlg">
+      <div data-synth-dropdown>
+        <button type="button" id="inner">Options</button>
+        <ul data-synth-dropdown-menu id="inner-menu" hidden><li><button type="button" id="opt">Option</button></li></ul>
+      </div>
+    </dialog>`);
+  $("#more").click();
+  $("#rename").click();
+  assert.equal($("#dlg").open, true);
+  $("#inner").focus();
+  assert.equal(key($("#inner"), "Escape"), true, "Escape is left to the dialog");
+  assert.equal($("#more-menu").hidden, false, "the menu behind the dialog is untouched");
+
+  $("#inner").click();
+  assert.equal($("#more-menu").hidden, true, "a click in the dialog is outside the other menu");
+  $("#opt").focus();
+  assert.equal(key($("#opt"), "Escape"), false, "the dialog's own menu closes first");
+  assert.equal($("#inner-menu").hidden, true);
+  assert.equal(focused(), "inner");
+  assert.equal(key($("#inner"), "Escape"), true, "then Escape is left to the dialog");
+});
+
 test("data-synth-dropdown falls back to the first button and a role=menu element", (t) => {
   const { $ } = page(t, `
     <div data-synth-dropdown>

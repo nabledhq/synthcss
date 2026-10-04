@@ -289,7 +289,8 @@ positioning engine.
 - Clicking the trigger toggles the menu's `hidden` and the trigger's `aria-expanded`.
 - A click anywhere outside the wrapper closes the menu without moving focus.
 - <kbd>Escape</kbd> closes an open menu and returns focus to its trigger. It does not
-  also close a dialog the menu sits in.
+  also close a dialog the menu sits in; with no menu open in the dialog, Escape closes
+  the dialog as usual.
 - Reuse `.nav` + `.nav-link` for the list: it is a list of links reached with
   <kbd>Tab</kbd>.
 
