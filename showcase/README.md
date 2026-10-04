@@ -9,7 +9,10 @@ published to GitHub Pages.
 | --- | --- |
 | `index.html` | The page. Loads the real framework from `../src/synthcss.css`. |
 | `showcase.css` | Showcase-only styles (base typography, demo boxes, frames, copy buttons). Every class starts with `sc-`, and every value is a `var(--token)` from `src/tokens.css`. |
-| `showcase.js` | Optional vanilla JS: copy buttons, frame-width sliders, the motion demo and live token values. The page works without it. |
+| `showcase.js` | Optional vanilla JS: copy buttons, frame-width sliders, the motion demo, live token values and the "show the alert again" button. The page works without it. |
+
+The page also loads the real SynthJS runtime from `../src/js/synth.js` for the live
+Behaviors section (dialog, toggle, tabs, dropdown and dismissible alert).
 
 There is no build step and no dependency. Token values are never copied into the
 showcase: swatches and specimens use `var(--…)`, and the values printed next to them
@@ -36,11 +39,11 @@ python3 -m http.server 8000
 [`.github/workflows/pages.yml`](../.github/workflows/pages.yml) deploys the page with the
 official `actions/configure-pages`, `actions/upload-pages-artifact` and
 `actions/deploy-pages` actions. It runs on every push to `main` that changes
-`showcase/**`, a framework stylesheet (`src/**.css`), an AI contract file
+`showcase/**`, a framework stylesheet (`src/**.css`), SynthJS (`src/**.js`), an AI contract file
 (`synthcss.llm.md`, `synthcss.ai.json`) or the workflow itself, and can be
 started by hand from the Actions tab (`workflow_dispatch`).
 
-The build job runs `npm test`, then assembles a temporary `_site/` folder that mirrors
+The build job runs `npm ci` and `npm test`, then assembles a temporary `_site/` folder that mirrors
 the repository layout:
 
 ```text
@@ -49,7 +52,7 @@ _site/
   synthcss.llm.md   the AI contract, linked from the AI Contract section
   synthcss.ai.json
   showcase/         index.html, showcase.css, showcase.js
-  src/              tokens.css, layout.css, components.css, synthcss.css
+  src/              tokens.css, layout.css, components.css, synthcss.css, js/synth.js
 ```
 
 Because `showcase/` sits next to `src/`, the same relative link works locally and on
@@ -100,7 +103,8 @@ a new primitive or component, append a section:
 `npm test` runs [`scripts/check-showcase.mjs`](../scripts/check-showcase.mjs) (Node.js
 only). It checks that the page loads the framework bundle and no other stylesheet, that
 every section and hero item exists, that every token is rendered with `var(--…)`, that
-every layout primitive has a demo, description and snippet, that grid, sidebar, cluster
+every layout primitive has a demo, description and snippet, that SynthJS is loaded and
+each `data-synth-*` behavior has a live demo and a snippet, that grid, sidebar, cluster
 and split have width-adjustable frames, that every component has an article with a live
 demo of all its classes and a snippet, that the composed interface (`data-composed`)
 uses only SynthCSS classes and at least six components, that there are at least three intent examples

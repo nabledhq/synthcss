@@ -21,6 +21,7 @@ Load the bundle from the jsDelivr CDN, pinned to a [release](https://github.com/
 | `dist/base.css` | Base styles only (page font and colors, `h1`–`h4` sizes). Load `tokens.css` first. |
 | `dist/layout.css` | Layout primitives only. Load `tokens.css` first. |
 | `dist/components.css` | Components only. Load `tokens.css` first. |
+| `dist/synth.js` | Optional [SynthJS](docs/behaviors.md) behaviors script (`<script src="…/dist/synth.js" defer>`). Not needed for any styling. |
 
 Use `.min.css` for the minified file (jsDelivr minifies on request) or `.css` for the readable one. `@0.8` follows the latest 0.8.x patch release; pin an exact version in production. To self-host, download the files from a [GitHub release](https://github.com/nabledhq/synthcss/releases) or run `npm run build` and copy `dist/`. SynthCSS follows [semantic versioning](https://semver.org); while it is 0.x, a minor release may contain breaking changes. See [docs/releasing.md](docs/releasing.md) for how releases are made.
 
@@ -32,7 +33,7 @@ All visual decisions (color, spacing, typography, radius, borders, shadows, sizi
 :root { --color-primary: #YOUR_COLOR; --radius-md: 0.5rem; --space-3: 0.75rem; }
 ```
 
-The main bundle also applies the tokens to plain markup: `--font-sans`, `--color-text` and `--color-background` on the page and the `--text-*` scale on `h1`–`h4`, in a zero-specificity `synth.base` cascade layer that any rule of your own overrides ([`src/base.css`](src/base.css)). See [docs/tokens.md](docs/tokens.md) for the full token reference, override examples, guidance for AI agents and reduced-motion behavior. Run `npm test` to check that the tokens, the docs and the contrast requirements are in sync. It needs only Node.js 18 or later.
+The main bundle also applies the tokens to plain markup: `--font-sans`, `--color-text` and `--color-background` on the page and the `--text-*` scale on `h1`–`h4`, in a zero-specificity `synth.base` cascade layer that any rule of your own overrides ([`src/base.css`](src/base.css)). See [docs/tokens.md](docs/tokens.md) for the full token reference, override examples, guidance for AI agents and reduced-motion behavior. Run `npm install` once, then `npm test` to check that the tokens, the docs and the contrast requirements are in sync. It needs Node.js 20 or later; the only dependency is the dev dependency happy-dom, for the SynthJS tests.
 
 ## Layout primitives
 
@@ -61,11 +62,24 @@ Thirteen semantic components in [`src/components.css`](src/components.css), incl
 
 See [docs/components.md](docs/components.md) for each component's variants, composition with the layout primitives and accessibility notes, plus a compact "AI Component Reference" table to give to a model.
 
+## Behaviors (SynthJS)
+
+[`dist/synth.js`](docs/behaviors.md) is an optional, dependency-free script that makes the markup interactive. Declare the intent with one `data-synth-*` attribute and SynthJS handles the events and keeps `hidden` and the ARIA state in sync: `data-synth-open` (modal `<dialog>`, focus returns to the opener), `data-synth-dismiss` (close a dialog or hide a `[data-synth-dismissible]` alert), `data-synth-toggle` (show or hide a section, with `aria-expanded`), `data-synth-tabs` (tab panels with arrow, Home and End keys) and `data-synth-dropdown` (a list of links that closes on an outside click or Escape). CSS-only pages keep working without it.
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.8.0/dist/synth.js" defer></script>
+
+<button type="button" class="button" data-synth-toggle="filters">Filters</button>
+<div id="filters" class="panel" hidden>…</div>
+```
+
+It initializes itself on load; call `Synth.init(element)` after inserting markup (repeated calls are safe). See [docs/behaviors.md](docs/behaviors.md) for each behavior's markup, accessibility and common misuse, plus a compact "AI Behavior Reference" table.
+
 ## AI contract
 
 [`synthcss.llm.md`](synthcss.llm.md) is the whole public vocabulary in one prompt-ready file of about 7,000 tokens: every token, layout primitive, component, part and variant, an intent table, the SynthJS behaviors (`data-synth-*`), composition rules, ten generation rules, the one legal fallback when the vocabulary lacks a pattern (`data-ui="<name>"` styled inside `@layer synth.ext` with tokens only) with a "Not covered yet" list, and valid and invalid examples, including a full app-shell page. Paste it into a model's context. [`synthcss.ai.json`](synthcss.ai.json) is the same contract as structured data and the canonical source. Both state the SynthCSS version they describe; the schema is in [docs/ai-contract.md](docs/ai-contract.md).
 
-**Any change to the public API (a class or token added, renamed or removed, or a new version) must update both contract files in the same pull request.** `npm test` runs `scripts/verify-ai-contract.mjs`, which fails when the contract and the CSS or `package.json` disagree.
+**Any change to the public API (a class, token or `data-synth-*` behavior added, renamed or removed, or a new version) must update both contract files in the same pull request.** The Behaviors (SynthJS) section of `synthcss.llm.md` is generated from the JSON with `npm run contract:write`. `npm test` runs `scripts/verify-ai-contract.mjs`, which fails when the contract and the CSS or `package.json` disagree.
 
 ## Showcase
 

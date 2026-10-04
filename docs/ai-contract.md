@@ -7,7 +7,7 @@ window, with no need to crawl these docs or read `src/`.
 | File | For | Notes |
 | --- | --- | --- |
 | [`synthcss.ai.json`](../synthcss.ai.json) | Tools and agents that read structured data | The canonical, machine-readable contract. |
-| [`synthcss.llm.md`](../synthcss.llm.md) | Pasting into a prompt | A terse hand-written twin of the JSON, one line per item, about 5,700 tokens. |
+| [`synthcss.llm.md`](../synthcss.llm.md) | Pasting into a prompt | A terse twin of the JSON, one line per item, about 7,000 tokens. Hand-written, except the Behaviors (SynthJS) section, which is generated from the JSON. |
 
 Both are published next to the showcase on GitHub Pages
 (`<site>/synthcss.llm.md`, `<site>/synthcss.ai.json`) and are in every release tag.
@@ -23,7 +23,7 @@ Class names are written **without** the leading dot. Token names keep their `--`
 | `tokens` | object | Token name → short purpose, for every custom property on `:root` in `src/tokens.css`. |
 | `baseStyles` | object | `{ note, rules }`: what the base styles in `src/base.css` apply. `note` is a one-sentence summary that the Markdown Design Tokens section repeats; `rules` maps each selector (without `:where()`) to its declarations, exactly as in `src/base.css`. |
 | `layouts` | object | Layout class → intent: the eight primitives, their `-sm` / `-lg` gap variants, `cover-main` and `sidebar-end`. |
-| `components` | object | Component base class → `{ intent, parts, variants }`. `parts` and `variants` map class → purpose (empty `{}` when there are none). |
+| `components` | object | Component base class → `{ intent, parts, variants, behaviors? }`. `parts` and `variants` map class → purpose (empty `{}` when there are none). `behaviors` (optional) lists the [SynthJS](behaviors.md) behaviors that belong to the component, each `{ intent, attribute, target, requiredMarkup, accessibility }`: `attribute` is the one `data-synth-*` attribute for the intent, `target` says what it points at, `requiredMarkup` is minimal valid HTML and `accessibility` a list of what SynthJS guarantees or the author must add. |
 | `intentMap` | array | `{ intent, use }` pairs: a plain-language need and the markup to use for it. |
 | `compositionRules` | object | `{ recommended: [], avoid: [] }`: how to combine primitives and components. |
 | `generationRules` | array | Exactly 10 rules an agent must follow when generating SynthCSS markup. |
@@ -38,7 +38,15 @@ Class names are written **without** the leading dot. Token names keep their `--`
   "baseStyles": { "note": "Base styles apply --font-sans, … Override the tokens to restyle.", "rules": { "h1": { "font-size": "var(--text-3xl)" } } },
   "layouts": { "stack": "vertical flow with tokenized spacing" },
   "components": {
-    "badge": { "intent": "short status label", "parts": {}, "variants": { "badge-success": "positive status" } }
+    "badge": { "intent": "short status label", "parts": {}, "variants": { "badge-success": "positive status" } },
+    "button": {
+      "intent": "…", "parts": {}, "variants": { "…": "…" },
+      "behaviors": [{
+        "intent": "show or hide a section", "attribute": "data-synth-toggle", "target": "the id of any element; …",
+        "requiredMarkup": "<button type=\"button\" class=\"button\" data-synth-toggle=\"filters\">Filters</button>\n<div id=\"filters\" hidden>…</div>",
+        "accessibility": ["aria-expanded on the button follows the target's hidden state", "…"]
+      }]
+    }
   },
   "intentMap": [{ "intent": "Vertical list of blocks", "use": ".stack" }],
   "compositionRules": { "recommended": ["…"], "avoid": ["…"] },
@@ -67,7 +75,8 @@ class if its note names that class as the alternative (for example
 ## `synthcss.llm.md` layout
 
 A version header (`SynthCSS <version> · contract <version>`), then these `##` sections:
-Design Tokens, Layout Vocabulary, Component Vocabulary, Intent Mapping, Composition
+Design Tokens, Layout Vocabulary, Component Vocabulary, Intent Mapping, Behaviors
+(SynthJS) (generated, see below), Composition
 Rules (with `### Recommended` and `### Avoid`), AI Generation Rules (numbered 1–10),
 When the vocabulary is missing a pattern (the extension rule as numbered steps, then an
 `Allowed properties:` and an `Allowed keywords:` line listing the JSON arrays in order),
@@ -76,6 +85,12 @@ Not covered yet (one line per `extension.notCovered` item:
 code block for a fallback), Valid Examples (one `html` code block each) and Invalid /
 Discouraged Examples (one line each: `` - `<html>` — note ``). It is written by hand;
 keep it in step with the JSON.
+
+The Behaviors (SynthJS) section is the exception: `npm run contract:write`
+(`node scripts/verify-ai-contract.mjs --write`) renders it from the components'
+`behaviors` entries, in component order, and the verifier fails when it differs from
+that rendering. Edit the JSON, then run the command; there is no separate registry of
+behaviors.
 
 ## The extension rule
 
@@ -88,8 +103,10 @@ layout and component rules are unlayered, so they win over anything in `synth.ex
 
 ## Changing the contract
 
-Any change to the public API (a class or token added, renamed or removed) must update
-**both** files in the same pull request. Version bumps are automatic: the release
+Any change to the public API (a class or token added, renamed or removed, or a
+`data-synth-*` behavior) must update **both** files in the same pull request. Bump
+`contractVersion`'s minor for additions to the format (1.3.0 added `behaviors`) and its
+major for breaking changes. Version bumps are automatic: the release
 workflow updates `synthcssVersion` and the Markdown header with
 [`scripts/bump-version.mjs`](../scripts/bump-version.mjs) (see [releasing.md](releasing.md)).
 
@@ -118,6 +135,11 @@ workflow updates `synthcssVersion` and the Markdown header with
   `notCovered` snippet uses a class outside the contract or an inline style other than a
   token override; or the Markdown extension section and Not covered yet list differ
   from the JSON;
+- a `behaviors` entry lacks one of its five keys or has another, two entries share an
+  attribute, an attribute is not `data-synth-<name>`, its `requiredMarkup` does not use
+  the attribute and the component's class or breaks the markup rules above,
+  `src/js/synth.js` does not implement the attribute, or the Markdown Behaviors
+  (SynthJS) section is not the rendering of the JSON;
 - the showcase AI Contract section, the Pages workflow or the README no longer publish
   and describe the contract.
 

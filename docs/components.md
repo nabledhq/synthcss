@@ -43,7 +43,8 @@ How the components behave:
   `class="card-footer split"`, `class="card-body stack"`. Arbitrary headings and
   paragraphs inside cards, panels, alerts and empty states lose their outer margins and
   are spaced by the component.
-- **No JavaScript.**
+- **No JavaScript.** Interactivity (dialogs, toggles, tab panels, dropdowns, dismissible
+  alerts) is optional: load [SynthJS](behaviors.md) and add `data-synth-*` attributes.
 
 ## AI Component Reference
 
@@ -937,7 +938,9 @@ Put a filter next to a heading with `.split`, or above content in a `.stack`. In
 - When the tabs switch panels, link each tab to its panel with `aria-controls` and give
   the panel `role="tabpanel"` and `aria-labelledby`. Panels are not styled by SynthCSS.
 - Keyboard: the recommended pattern is a roving `tabindex` (only the selected tab is
-  in the tab order) with arrow keys moving between tabs. That script is the author's.
+  in the tab order) with arrow keys moving between tabs. The CSS does not do this; wrap
+  the tabs and panels in `data-synth-tabs` and [SynthJS](behaviors.md#data-synth-tabs)
+  does it, or write your own script.
 - Items show a `:focus-visible` ring from the `--focus-*` tokens.
 
 ### Recommended use
