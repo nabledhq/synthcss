@@ -2,10 +2,13 @@
 // Dependency-free verification of the AI contract: synthcss.ai.json (canonical,
 // machine-readable) and synthcss.llm.md (prompt-ready) against the framework CSS,
 // package.json, each other, the showcase and the Pages workflow.
-// Usage: node scripts/verify-ai-contract.mjs [--max-tokens=8000]
+// It is also the generator of the one generated part of synthcss.llm.md: the
+// Behaviors (SynthJS) section, rendered from the components' "behaviors" in
+// synthcss.ai.json. --write rewrites that section, then verifies.
+// Usage: node scripts/verify-ai-contract.mjs [--write] [--max-tokens=8000]
 //   The size threshold can also be set with SYNTHCSS_AI_CONTRACT_MAX_TOKENS.
 
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { parseTokens } from "./check-tokens.mjs";
@@ -35,6 +38,7 @@ export const MD_SECTIONS = [
   "Layout Vocabulary",
   "Component Vocabulary",
   "Intent Mapping",
+  "Behaviors (SynthJS)",
   "Composition Rules",
   "AI Generation Rules",
   "When the vocabulary is missing a pattern",
@@ -59,6 +63,13 @@ export const VALID_EXAMPLES = [2, 5];
 export const SHOWCASE_SIZE_TOLERANCE = 0.1;
 export const LLM_FILE = "synthcss.llm.md";
 export const JSON_FILE = "synthcss.ai.json";
+// SynthJS behaviors: components.<name>.behaviors entries, each with exactly these
+// keys, rendered into this Markdown section. Each attribute is one intent with no
+// aliases, and must be implemented by the runtime.
+export const BEHAVIOR_SECTION = "Behaviors (SynthJS)";
+export const BEHAVIOR_KEYS = ["intent", "attribute", "target", "requiredMarkup", "accessibility"];
+export const SYNTH_JS_FILE = "src/js/synth.js";
+const BEHAVIOR_ATTRIBUTE = /^data-synth-[a-z]+(-[a-z]+)*$/;
 
 // `.name` not preceded by a word character, dot, slash or dash, so file names
 // (synthcss.ai.json), URLs and "e.g." are not read as classes.
@@ -163,6 +174,12 @@ function jsonStrings(contract) {
 
 const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const isExample = (e) => isObject(e) && typeof e.html === "string" && typeof e.note === "string";
+const isStrings = (a) => Array.isArray(a) && a.length > 0 && a.every((v) => typeof v === "string" && v.trim());
+const isBehavior = (b) =>
+  isObject(b) &&
+  Object.keys(b).join() === BEHAVIOR_KEYS.join() &&
+  BEHAVIOR_KEYS.slice(0, 4).every((k) => typeof b[k] === "string" && b[k].trim()) &&
+  isStrings(b.accessibility);
 
 function checkJsonShape(c) {
   const errors = [];
@@ -190,7 +207,9 @@ function checkJsonShape(c) {
   else {
     for (const [name, comp] of Object.entries(c.components)) {
       if (!isObject(comp) || typeof comp.intent !== "string" || !isObject(comp.parts) || !isObject(comp.variants)) {
-        errors.push(`${JSON_FILE}: components.${name} must be { intent, parts: {class: purpose}, variants: {class: purpose} }`);
+        errors.push(`${JSON_FILE}: components.${name} must be { intent, parts: {class: purpose}, variants: {class: purpose}, behaviors? }`);
+      } else if (comp.behaviors !== undefined && !(Array.isArray(comp.behaviors) && comp.behaviors.length && comp.behaviors.every(isBehavior))) {
+        errors.push(`${JSON_FILE}: components.${name}.behaviors must be a list of { ${BEHAVIOR_KEYS.join(", ")} } with accessibility a list of strings`);
       }
     }
   }
@@ -241,6 +260,55 @@ export function jsonVocabulary(c) {
     classes.push(name, ...Object.keys(comp.parts), ...Object.keys(comp.variants));
   }
   return classes;
+}
+
+// Every SynthJS behavior, in contract order, with the component it belongs to.
+export function behaviorsOf(contract) {
+  return Object.entries(contract.components).flatMap(([component, comp]) =>
+    (comp.behaviors ?? []).map((behavior) => ({ component, ...behavior })),
+  );
+}
+
+// Backticks markup in free text for the Markdown: <tags>, [selectors],
+// attr="value" pairs, data-synth-* attributes and .class mentions.
+const CODE_IN_TEXT = /<[^>]+>|\[[^\]]+\]|\b[a-z][a-z-]*="[^"]*"|\bdata-synth-[a-z-]*[a-z]|(?<![\w./-])\.[a-z][a-z0-9-]*/g;
+const codify = (text) => text.replace(CODE_IN_TEXT, (code) => `\`${code}\``);
+
+// The body of the Markdown Behaviors (SynthJS) section, generated from the JSON.
+export function renderBehaviors(contract) {
+  const script = `https://cdn.jsdelivr.net/gh/nabledhq/synthcss@${contract.synthcssVersion}/dist/synth.js`;
+  const lines = [
+    "",
+    `<!-- Generated from the components' "behaviors" in ${JSON_FILE} by \`npm run contract:write\`. Edit the JSON, not this section. -->`,
+    "",
+    `Optional SynthJS script, loaded after the stylesheet: \`<script src="${script}" defer></script>\`.`,
+    "Declare interactivity with exactly one `data-synth-*` attribute per intent, as below: no aliases, no `data-synth-collapse`, no event handlers of your own. Triggers are `<button type=\"button\">`; state lives in `hidden` and ARIA attributes, which SynthJS keeps in sync. Without the script the page still renders; only these behaviors are inactive. After inserting markup later, call `Synth.init(element)`.",
+  ];
+  for (const b of behaviorsOf(contract)) {
+    lines.push(
+      "",
+      `### \`${b.attribute}\` — ${b.intent}`,
+      "",
+      `- Component: \`.${b.component}\``,
+      `- Target: ${codify(b.target)}`,
+      "- Accessibility:",
+      ...b.accessibility.map((line) => `  - ${codify(line)}`),
+      "",
+      "```html",
+      b.requiredMarkup.trim(),
+      "```",
+    );
+  }
+  return lines.join("\n") + "\n";
+}
+
+// Replaces the body of the "## title" section of a Markdown file.
+export function replaceSection(md, title, body) {
+  const start = md.search(new RegExp(`^## ${title.replace(/[()]/g, "\\$&")}\\s*$`, "m"));
+  if (start === -1) throw new Error(`${LLM_FILE} has no "## ${title}" section`);
+  const head = md.indexOf("\n", start) + 1;
+  const next = md.slice(head).search(/^## /m);
+  return md.slice(0, head) + body + (next === -1 ? "" : "\n" + md.slice(head + next));
 }
 
 const DATA_UI = /\bdata-ui="([^"]*)"/g;
@@ -428,6 +496,24 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
     errors.push(...checkInvalidExample(`${JSON_FILE}: invalid example ${i + 1}`, e.html, e.note, cssClasses, cssTokens));
   });
 
+  // SynthJS behaviors.
+  const behaviors = behaviorsOf(contract);
+  const seenAttributes = new Set();
+  for (const b of behaviors) {
+    const where = `${JSON_FILE}: components.${b.component}.behaviors ${b.attribute}`;
+    if (!BEHAVIOR_ATTRIBUTE.test(b.attribute)) errors.push(`${where}: attribute must be data-synth-<name>`);
+    if (seenAttributes.has(b.attribute)) errors.push(`${where}: attribute is listed more than once (one attribute per intent)`);
+    seenAttributes.add(b.attribute);
+    if (!new RegExp(`\\s${b.attribute}[\\s=>]`).test(b.requiredMarkup)) errors.push(`${where}: requiredMarkup must use ${b.attribute}`);
+    if (!new RegExp(`class="([^"]*\\s)?${b.component}(\\s[^"]*)?"`).test(b.requiredMarkup)) {
+      errors.push(`${where}: requiredMarkup must use .${b.component}`);
+    }
+    if (files.synthJs !== undefined && !files.synthJs.includes(`"${b.attribute}`) && !files.synthJs.includes(`[${b.attribute}`)) {
+      errors.push(`${where}: ${SYNTH_JS_FILE} does not implement ${b.attribute}`);
+    }
+    errors.push(...checkMarkup(`${where}: requiredMarkup`, b.requiredMarkup, undefined, markupContext));
+  }
+
   // Markdown.
   const { preamble, sections } = parseMarkdown(md);
   const header = /SynthCSS v?(\d+\.\d+\.\d+\S*)\s*·\s*contract v?(\d+\.\d+\.\d+)/.exec(preamble);
@@ -470,6 +556,10 @@ export function verifyContract(files, { maxTokens = DEFAULT_MAX_TOKENS } = {}) {
   }
   if (!/never\b[^\n]*`aria-pressed`/i.test(section("Component Vocabulary"))) {
     errors.push(`${LLM_FILE}: the Component Vocabulary must say never to use \`aria-pressed\``);
+  }
+
+  if (sections.has(BEHAVIOR_SECTION) && sections.get(BEHAVIOR_SECTION).trim() !== renderBehaviors(contract).trim()) {
+    errors.push(`${LLM_FILE}: the ${BEHAVIOR_SECTION} section must be generated from ${JSON_FILE}; run npm run contract:write`);
   }
 
   const rows = section("Intent Mapping").split("\n").filter((l) => /^\s*\|/.test(l)).slice(2);
@@ -628,6 +718,7 @@ export function readRepoFiles(repo) {
     workflow: read(".github/workflows/pages.yml"),
     readme: read("README.md"),
     schemaDoc: read("docs/ai-contract.md"),
+    synthJs: read(SYNTH_JS_FILE),
   };
 }
 
@@ -645,7 +736,13 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   const repo = resolve(dirname(fileURLToPath(import.meta.url)), "..");
   const maxTokens = maxTokensFrom(process.argv.slice(2), process.env);
-  const { errors, warnings, size } = verifyContract(readRepoFiles(repo), { maxTokens });
+  const files = readRepoFiles(repo);
+  if (process.argv.includes("--write")) {
+    files.md = replaceSection(files.md, BEHAVIOR_SECTION, renderBehaviors(JSON.parse(files.json)));
+    writeFileSync(resolve(repo, LLM_FILE), files.md);
+    console.log(`verify-ai-contract: wrote the ${BEHAVIOR_SECTION} section of ${LLM_FILE}.`);
+  }
+  const { errors, warnings, size } = verifyContract(files, { maxTokens });
   console.log(`verify-ai-contract: ${LLM_FILE} is ${size.chars} characters, ~${size.tokens} tokens (chars ÷ 4; threshold ${maxTokens}).`);
   for (const w of warnings) console.warn(`  WARN ${w}`);
   if (errors.length) {

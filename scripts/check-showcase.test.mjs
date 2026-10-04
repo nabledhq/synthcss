@@ -82,3 +82,12 @@ test("fails when the composed interface is missing or uses non-SynthCSS classes"
   const custom = files.html.replace('<div class="alert alert-warning" role="status">\n                <h4>Your trial', '<div class="sc-box" role="status">\n                <h4>Your trial');
   assertError(errorsWith({ html: custom }), "composed: uses .sc-box");
 });
+
+test("fails when SynthJS or a behavior demo is missing", () => {
+  const noScript = files.html.replace('<script src="../src/js/synth.js" defer></script>', "");
+  assertError(errorsWith({ html: noScript }), "must load SynthJS");
+  assertError(errorsWith({ html: files.html.replace('id="behaviors"', 'id="other"') }), 'missing <section id="behaviors">');
+  assertError(errorsWith({ html: files.html.replace('id="behavior-dropdown"', 'id="behavior-x"') }), "missing example for data-synth-dropdown");
+  const noDemo = files.html.replace('data-synth-toggle="demo-filters"', "");
+  assertError(errorsWith({ html: noDemo }), "data-synth-toggle example has no live demo");
+});

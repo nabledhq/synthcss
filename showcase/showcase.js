@@ -68,3 +68,10 @@ for (const toggle of document.querySelectorAll("[data-motion-toggle]")) {
     toggle.setAttribute("aria-pressed", String(playing));
   });
 }
+
+// Behaviors demo: bring a dismissed alert back.
+for (const button of document.querySelectorAll("[data-sc-restore]")) {
+  button.addEventListener("click", () => {
+    document.getElementById(button.dataset.scRestore).hidden = false;
+  });
+}

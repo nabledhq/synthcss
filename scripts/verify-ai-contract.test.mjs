@@ -1,12 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  BEHAVIOR_KEYS,
+  BEHAVIOR_SECTION,
   DEFAULT_MAX_TOKENS,
+  behaviorsOf,
   checkExtensionCss,
   estimateTokens,
   maxTokensFrom,
   parseNotCovered,
   readRepoFiles,
+  renderBehaviors,
+  replaceSection,
   verifyContract,
 } from "./verify-ai-contract.mjs";
 
@@ -209,7 +214,7 @@ const editAppShell = (find, replace) => {
   };
 };
 
-test("states the one extension rule in both files, at contract 1.2.0", () => {
+test("states the one extension rule in both files, at contract 1.3.0", () => {
   const ext = contract.extension;
   assert.equal(ext.attribute, "data-ui");
   assert.equal(ext.layer, "synth.ext");
@@ -218,8 +223,8 @@ test("states the one extension rule in both files, at contract 1.2.0", () => {
   for (const banned of ["display", "flex", "grid-template-columns", "gap", "margin", "position", "order"]) {
     assert.ok(!ext.properties.includes(banned), `${banned} is not an extension property`);
   }
-  assert.equal(contract.contractVersion, "1.2.0");
-  assert.match(files.md, /· contract 1\.2\.0 ·/);
+  assert.equal(contract.contractVersion, "1.3.0");
+  assert.match(files.md, /· contract 1\.3\.0 ·/);
   assert.match(files.md, /^## When the vocabulary is missing a pattern$/m);
   for (const phrase of ['`data-ui="<name>"`', "`@layer synth.ext", "`var(--…)`"]) assert.ok(files.md.includes(phrase), phrase);
   assertError(errorsWith(withJson((c) => delete c.extension)), 'missing top-level key "extension"');
@@ -301,4 +306,70 @@ test("lists every not-covered pattern with a composition or a data-ui fallback",
   assertError(errorsWith({ md }), "Not covered yet item 5 (Toggle) must match");
   const dropped = files.md.replace(/^- Icon tile — .*\n/m, "");
   assertError(errorsWith({ md: dropped }), "Not covered yet has 7 items");
+});
+
+// Edits the JSON and regenerates the Markdown behavior section from it.
+const withBehaviors = (edit) => {
+  const c = structuredClone(contract);
+  edit(c);
+  return { json: JSON.stringify(c, null, 2), md: replaceSection(files.md, BEHAVIOR_SECTION, renderBehaviors(c)) };
+};
+
+test("lists the five SynthJS behaviors on their components, one attribute each", () => {
+  const behaviors = behaviorsOf(contract);
+  assert.deepEqual(
+    behaviors.map((b) => [b.component, b.attribute]),
+    [
+      ["button", "data-synth-open"],
+      ["button", "data-synth-toggle"],
+      ["alert", "data-synth-dismiss"],
+      ["nav", "data-synth-dropdown"],
+      ["tabs", "data-synth-tabs"],
+    ],
+  );
+  for (const b of behaviors) {
+    assert.deepEqual(Object.keys(b), ["component", ...BEHAVIOR_KEYS]);
+    assert.ok(b.accessibility.length >= 2, `${b.attribute} has accessibility expectations`);
+  }
+  assert.ok(!files.md.includes("data-synth-collapse=") && !files.synthJs.includes("data-synth-collapse"), "no collapse alias");
+});
+
+test("generates the Markdown behavior section from the JSON", () => {
+  const body = files.md.split(`## ${BEHAVIOR_SECTION}\n`)[1].split("\n## ")[0];
+  assert.equal(body.trim(), renderBehaviors(contract).trim());
+  assert.match(body, /Generated from the components' "behaviors" in synthcss\.ai\.json/);
+  assert.match(body, /synthcss@\d+\.\d+\.\d+\/dist\/synth\.js/);
+  for (const b of behaviorsOf(contract)) {
+    assert.ok(body.includes(`### \`${b.attribute}\` — ${b.intent}`), b.attribute);
+    assert.ok(body.includes("```html\n" + b.requiredMarkup + "\n```"), `${b.attribute} markup`);
+  }
+  // Editing the JSON without regenerating fails; regenerating passes.
+  const stale = withJson((c) => (c.components.tabs.behaviors[0].intent = "pick a panel"));
+  assertError(errorsWith(stale), "the Behaviors (SynthJS) section must be generated from synthcss.ai.json");
+  assert.deepEqual(errorsWith(withBehaviors((c) => (c.components.tabs.behaviors[0].intent = "pick a panel"))), []);
+  const hand = files.md.replace("- Component: `.tabs`", "- Component: `.tabs` (edited)");
+  assertError(errorsWith({ md: hand }), "must be generated");
+  assertError(errorsWith({ md: files.md.replace(`## ${BEHAVIOR_SECTION}`, "## Behaviours") }), 'missing section "## Behaviors (SynthJS)"');
+});
+
+test("fails on a malformed, duplicated, unimplemented or invalid behavior", () => {
+  assertError(errorsWith(withJson((c) => delete c.components.button.behaviors[0].target)), "components.button.behaviors must be a list of");
+  assertError(errorsWith(withJson((c) => (c.components.button.behaviors[0].accessibility = "focus returns"))), "behaviors must be a list of");
+  assertError(errorsWith(withJson((c) => (c.components.alert.behaviors[0].aliases = ["data-synth-close"]))), "behaviors must be a list of");
+  const dup = withBehaviors((c) => (c.components.button.behaviors[1].attribute = "data-synth-open"));
+  assertError(errorsWith(dup), "attribute is listed more than once");
+  const badName = withBehaviors((c) => (c.components.button.behaviors[1].attribute = "data-toggle"));
+  assertError(errorsWith(badName), "attribute must be data-synth-<name>");
+  const unused = withBehaviors((c) => (c.components.button.behaviors[1].requiredMarkup = '<button type="button" class="button">Filters</button>'));
+  assertError(errorsWith(unused), "requiredMarkup must use data-synth-toggle");
+  const invented = withBehaviors((c) => (c.components.alert.behaviors[0].requiredMarkup = c.components.alert.behaviors[0].requiredMarkup.replace('class="alert', 'class="alert-dismissible alert')));
+  assertError(errorsWith(invented), "uses .alert-dismissible, which is not a SynthCSS class");
+  const synthJs = files.synthJs.replaceAll("data-synth-tabs", "data-synth-tablist");
+  assertError(errorsWith({ synthJs }), "src/js/synth.js does not implement data-synth-tabs");
+});
+
+test("--write replaces only the behavior section", () => {
+  const md = replaceSection(files.md, BEHAVIOR_SECTION, "\nnew body\n");
+  assert.ok(md.includes(`## ${BEHAVIOR_SECTION}\n\nnew body\n\n## Composition Rules\n`));
+  assert.equal(replaceSection(md, BEHAVIOR_SECTION, renderBehaviors(contract)), files.md);
 });
