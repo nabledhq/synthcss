@@ -1,6 +1,6 @@
 {
   "synthcssVersion": "0.8.0",
-  "contractVersion": "1.2.0",
+  "contractVersion": "1.3.0",
   "tokens": {
     "--color-background": "page background",
     "--color-surface": "subtle background for panels, table heads, footers",
@@ -112,7 +112,31 @@
         "button-sm": "smaller button",
         "button-lg": "larger button",
         "button-icon": "square icon-only button; needs aria-label"
-      }
+      },
+      "behaviors": [
+        {
+          "intent": "open a modal dialog",
+          "attribute": "data-synth-open",
+          "target": "the id of a <dialog> element",
+          "requiredMarkup": "<button type=\"button\" class=\"button button-danger\" data-synth-open=\"confirm-delete\">Delete project</button>\n<dialog id=\"confirm-delete\" aria-labelledby=\"confirm-delete-title\">\n  <div class=\"stack\">\n    <h2 id=\"confirm-delete-title\">Delete project?</h2>\n    <div class=\"cluster-sm\">\n      <button type=\"button\" class=\"button button-danger\">Delete</button>\n      <button type=\"button\" class=\"button\" data-synth-dismiss>Cancel</button>\n    </div>\n  </div>\n</dialog>",
+          "accessibility": [
+            "showModal(): the page behind is inert and Escape closes the dialog natively",
+            "focus returns to the opening button when the dialog closes",
+            "label the <dialog> with aria-labelledby pointing at its heading"
+          ]
+        },
+        {
+          "intent": "show or hide a section (collapse, disclosure, show more)",
+          "attribute": "data-synth-toggle",
+          "target": "the id of any element; its hidden attribute is the state",
+          "requiredMarkup": "<button type=\"button\" class=\"button\" data-synth-toggle=\"filters\">Filters</button>\n<div id=\"filters\" class=\"panel\" hidden>…</div>",
+          "accessibility": [
+            "aria-expanded on the button follows the target's hidden state, starting from the markup",
+            "aria-controls is added to the button when missing",
+            "the target stays in the DOM; hidden removes it from the accessibility tree"
+          ]
+        }
+      ]
     },
     "field": {
       "intent": "one labeled form control with help or error text",
@@ -164,7 +188,20 @@
         "alert-success": "action succeeded",
         "alert-warning": "needs attention",
         "alert-danger": "error"
-      }
+      },
+      "behaviors": [
+        {
+          "intent": "dismiss a message, or close the dialog it is in",
+          "attribute": "data-synth-dismiss",
+          "target": "none: the closest <dialog>, otherwise the closest [data-synth-dismissible] ancestor",
+          "requiredMarkup": "<div class=\"alert alert-success\" role=\"status\" data-synth-dismissible>\n  <p>Settings saved.</p>\n  <button type=\"button\" class=\"button button-sm\" data-synth-dismiss>Dismiss</button>\n</div>",
+          "accessibility": [
+            "a dismissible element gets the hidden attribute and stays in the DOM",
+            "the button needs a visible text label, or aria-label when it shows only an icon",
+            "inside a <dialog> it closes the dialog and focus returns to the opener"
+          ]
+        }
+      ]
     },
     "panel": {
       "intent": "flat bordered group of secondary content",
@@ -194,14 +231,40 @@
       "parts": {
         "nav-link": "an <a href> in .nav, optional leading <svg>; current page: aria-current=\"page\""
       },
-      "variants": {}
+      "variants": {},
+      "behaviors": [
+        {
+          "intent": "dropdown of links behind a button (account menu, overflow actions)",
+          "attribute": "data-synth-dropdown",
+          "target": "a wrapper holding the trigger ([data-synth-dropdown-trigger], else the first <button>) and the menu ([data-synth-dropdown-menu], else [role=\"menu\"])",
+          "requiredMarkup": "<div data-synth-dropdown>\n  <button type=\"button\" class=\"button\" data-synth-dropdown-trigger>Account</button>\n  <ul class=\"nav stack-sm\" role=\"list\" data-synth-dropdown-menu hidden>\n    <li><a class=\"nav-link\" href=\"/profile\">Profile</a></li>\n    <li><a class=\"nav-link\" href=\"/logout\">Sign out</a></li>\n  </ul>\n</div>",
+          "accessibility": [
+            "aria-expanded on the trigger follows the menu's hidden state",
+            "a click outside or Escape closes the menu; Escape returns focus to the trigger",
+            "a disclosure list of links: no role=\"menu\", which promises arrow-key navigation SynthJS does not add"
+          ]
+        }
+      ]
     },
     "tabs": {
-      "intent": "tab list or segmented filter; role=\"tablist\" + aria-label; wraps when narrow. CSS only: arrow keys and panel switching are your script",
+      "intent": "tab list or segmented filter; role=\"tablist\" + aria-label; wraps when narrow. Arrow keys and panel switching: data-synth-tabs (SynthJS, see behaviors)",
       "parts": {
         "tabs-item": "<button role=\"tab\">; selected: aria-selected=\"true\", others aria-selected=\"false\""
       },
-      "variants": {}
+      "variants": {},
+      "behaviors": [
+        {
+          "intent": "switch between panels of content",
+          "attribute": "data-synth-tabs",
+          "target": "a container of the .tabs tablist and its role=\"tabpanel\" elements; each tab names its panel with aria-controls",
+          "requiredMarkup": "<div class=\"stack\" data-synth-tabs>\n  <div class=\"tabs\" role=\"tablist\" aria-label=\"Range\">\n    <button type=\"button\" class=\"tabs-item\" role=\"tab\" id=\"tab-week\" aria-controls=\"panel-week\" aria-selected=\"true\">Week</button>\n    <button type=\"button\" class=\"tabs-item\" role=\"tab\" id=\"tab-month\" aria-controls=\"panel-month\" aria-selected=\"false\">Month</button>\n  </div>\n  <div role=\"tabpanel\" id=\"panel-week\" aria-labelledby=\"tab-week\">…</div>\n  <div role=\"tabpanel\" id=\"panel-month\" aria-labelledby=\"tab-month\" hidden>…</div>\n</div>",
+          "accessibility": [
+            "click, ArrowLeft / ArrowRight (wrapping), Home and End select a tab and move focus to it",
+            "the selected tab gets aria-selected=\"true\" and tabindex=\"0\", the others aria-selected=\"false\" and tabindex=\"-1\"",
+            "panels of unselected tabs get hidden; label each panel with aria-labelledby"
+          ]
+        }
+      ]
     },
     "avatar": {
       "intent": "fixed square for initials, a photo or an icon, on <span>, <div> or <img>",
@@ -244,7 +307,12 @@
     { "intent": "Navigation links", "use": ".nav + .nav-link" },
     { "intent": "Tabs or segmented filter", "use": ".tabs + .tabs-item" },
     { "intent": "Person initials or photo", "use": ".avatar / .avatar-round" },
-    { "intent": "Icon on a tinted tile", "use": ".avatar + .avatar-primary / -success / -warning / -danger / -info / -accent" }
+    { "intent": "Icon on a tinted tile", "use": ".avatar + .avatar-primary / -success / -warning / -danger / -info / -accent" },
+    { "intent": "Tabs that switch panels", "use": "data-synth-tabs around .tabs + role=\"tabpanel\" panels (SynthJS)" },
+    { "intent": "Modal dialog", "use": "<dialog> opened by a .button with data-synth-open (SynthJS)" },
+    { "intent": "Show or hide a section", "use": ".button with data-synth-toggle (SynthJS)" },
+    { "intent": "Dropdown of links", "use": "data-synth-dropdown around a .button and a .nav list (SynthJS)" },
+    { "intent": "Dismissible message", "use": ".alert with data-synth-dismissible and a data-synth-dismiss .button (SynthJS)" }
   ],
   "compositionRules": {
     "recommended": [

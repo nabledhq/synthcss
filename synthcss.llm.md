@@ -1,6 +1,6 @@
 # SynthCSS AI Contract
 
-Version: SynthCSS 0.8.0 · contract 1.2.0 · machine-readable twin: synthcss.ai.json
+Version: SynthCSS 0.8.0 · contract 1.3.0 · machine-readable twin: synthcss.ai.json
 
 The complete public vocabulary of SynthCSS. Use only the classes and tokens listed here; anything else does not exist.
 Load: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.8.0/dist/synthcss.min.css">`
@@ -140,7 +140,7 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
 - `.empty-state` — nothing to show yet: icon, heading, text, action
 - `.nav` — list reset for navigation links on `<ul>`; add `.stack-sm` (vertical) or `.cluster-sm` (horizontal)
   - part `.nav-link` — an `<a href>` in `.nav`, optional leading `<svg>`; current page: `aria-current="page"`
-- `.tabs` — tab list or segmented filter; `role="tablist"` + `aria-label`; wraps when narrow. CSS only: arrow keys and panel switching are your script
+- `.tabs` — tab list or segmented filter; `role="tablist"` + `aria-label`; wraps when narrow. Arrow keys and panel switching: `data-synth-tabs` (SynthJS, see Behaviors)
   - part `.tabs-item` — `<button role="tab">`; selected: `aria-selected="true"`, others `aria-selected="false"`
 - `.avatar` — fixed square for initials, a photo or an icon, on `<span>`, `<div>` or `<img>`
   - variant `.avatar-round` — circle; usual for people
@@ -182,6 +182,109 @@ One state attribute each: current nav link `aria-current="page"`; selected tab `
 | Tabs or segmented filter | `.tabs` + `.tabs-item` |
 | Person initials or photo | `.avatar` / `.avatar-round` |
 | Icon on a tinted tile | `.avatar` + `.avatar-primary` / -success / -warning / -danger / -info / -accent |
+| Tabs that switch panels | `data-synth-tabs` around `.tabs` + `role="tabpanel"` panels (SynthJS) |
+| Modal dialog | `<dialog>` opened by a `.button` with `data-synth-open` (SynthJS) |
+| Show or hide a section | `.button` with `data-synth-toggle` (SynthJS) |
+| Dropdown of links | `data-synth-dropdown` around a `.button` and a `.nav` list (SynthJS) |
+| Dismissible message | `.alert` with `data-synth-dismissible` and a `data-synth-dismiss` `.button` (SynthJS) |
+
+## Behaviors (SynthJS)
+
+<!-- Generated from the components' "behaviors" in synthcss.ai.json by `npm run contract:write`. Edit the JSON, not this section. -->
+
+Optional SynthJS script, loaded after the stylesheet: `<script src="https://cdn.jsdelivr.net/gh/nabledhq/synthcss@0.8.0/dist/synth.js" defer></script>`.
+Declare interactivity with exactly one `data-synth-*` attribute per intent, as below: no aliases, no `data-synth-collapse`, no event handlers of your own. Triggers are `<button type="button">`; state lives in `hidden` and ARIA attributes, which SynthJS keeps in sync. Without the script the page still renders; only these behaviors are inactive. After inserting markup later, call `Synth.init(element)`.
+
+### `data-synth-open` — open a modal dialog
+
+- Component: `.button`
+- Target: the id of a `<dialog>` element
+- Accessibility:
+  - showModal(): the page behind is inert and Escape closes the dialog natively
+  - focus returns to the opening button when the dialog closes
+  - label the `<dialog>` with aria-labelledby pointing at its heading
+
+```html
+<button type="button" class="button button-danger" data-synth-open="confirm-delete">Delete project</button>
+<dialog id="confirm-delete" aria-labelledby="confirm-delete-title">
+  <div class="stack">
+    <h2 id="confirm-delete-title">Delete project?</h2>
+    <div class="cluster-sm">
+      <button type="button" class="button button-danger">Delete</button>
+      <button type="button" class="button" data-synth-dismiss>Cancel</button>
+    </div>
+  </div>
+</dialog>
+```
+
+### `data-synth-toggle` — show or hide a section (collapse, disclosure, show more)
+
+- Component: `.button`
+- Target: the id of any element; its hidden attribute is the state
+- Accessibility:
+  - aria-expanded on the button follows the target's hidden state, starting from the markup
+  - aria-controls is added to the button when missing
+  - the target stays in the DOM; hidden removes it from the accessibility tree
+
+```html
+<button type="button" class="button" data-synth-toggle="filters">Filters</button>
+<div id="filters" class="panel" hidden>…</div>
+```
+
+### `data-synth-dismiss` — dismiss a message, or close the dialog it is in
+
+- Component: `.alert`
+- Target: none: the closest `<dialog>`, otherwise the closest `[data-synth-dismissible]` ancestor
+- Accessibility:
+  - a dismissible element gets the hidden attribute and stays in the DOM
+  - the button needs a visible text label, or aria-label when it shows only an icon
+  - inside a `<dialog>` it closes the dialog and focus returns to the opener
+
+```html
+<div class="alert alert-success" role="status" data-synth-dismissible>
+  <p>Settings saved.</p>
+  <button type="button" class="button button-sm" data-synth-dismiss>Dismiss</button>
+</div>
+```
+
+### `data-synth-dropdown` — dropdown of links behind a button (account menu, overflow actions)
+
+- Component: `.nav`
+- Target: a wrapper holding the trigger (`[data-synth-dropdown-trigger]`, else the first `<button>`) and the menu (`[data-synth-dropdown-menu]`, else `[role="menu"]`)
+- Accessibility:
+  - aria-expanded on the trigger follows the menu's hidden state
+  - a click outside or Escape closes the menu; Escape returns focus to the trigger
+  - a disclosure list of links: no `role="menu"`, which promises arrow-key navigation SynthJS does not add
+
+```html
+<div data-synth-dropdown>
+  <button type="button" class="button" data-synth-dropdown-trigger>Account</button>
+  <ul class="nav stack-sm" role="list" data-synth-dropdown-menu hidden>
+    <li><a class="nav-link" href="/profile">Profile</a></li>
+    <li><a class="nav-link" href="/logout">Sign out</a></li>
+  </ul>
+</div>
+```
+
+### `data-synth-tabs` — switch between panels of content
+
+- Component: `.tabs`
+- Target: a container of the `.tabs` tablist and its `role="tabpanel"` elements; each tab names its panel with aria-controls
+- Accessibility:
+  - click, ArrowLeft / ArrowRight (wrapping), Home and End select a tab and move focus to it
+  - the selected tab gets `aria-selected="true"` and `tabindex="0"`, the others `aria-selected="false"` and `tabindex="-1"`
+  - panels of unselected tabs get hidden; label each panel with aria-labelledby
+
+```html
+<div class="stack" data-synth-tabs>
+  <div class="tabs" role="tablist" aria-label="Range">
+    <button type="button" class="tabs-item" role="tab" id="tab-week" aria-controls="panel-week" aria-selected="true">Week</button>
+    <button type="button" class="tabs-item" role="tab" id="tab-month" aria-controls="panel-month" aria-selected="false">Month</button>
+  </div>
+  <div role="tabpanel" id="panel-week" aria-labelledby="tab-week">…</div>
+  <div role="tabpanel" id="panel-month" aria-labelledby="tab-month" hidden>…</div>
+</div>
+```
 
 ## Composition Rules
 

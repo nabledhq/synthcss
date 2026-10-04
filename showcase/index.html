@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../src/synthcss.css">
   <link rel="stylesheet" href="showcase.css">
   <script src="showcase.js" defer></script>
+  <!-- SynthJS, the optional behaviors runtime (dist/synth.js once built). -->
+  <script src="../src/js/synth.js" defer></script>
 </head>
 <body class="sc-page">
   <!--
@@ -29,6 +31,7 @@
             <li><a href="#layouts">Layouts</a></li>
             <li><a href="#responsive">Responsive</a></li>
             <li><a href="#components">Components</a></li>
+            <li><a href="#behaviors">Behaviors</a></li>
             <li><a href="#composed">Composed</a></li>
             <li><a href="#ai-examples">AI examples</a></li>
             <li><a href="#ai-contract">AI contract</a></li>
@@ -797,7 +800,7 @@
 
           <article class="sc-card stack" aria-labelledby="component-tabs">
             <h3 id="component-tabs"><code>.tabs</code></h3>
-            <p>A tab list or segmented filter. The selected item is <code>aria-selected="true"</code> with <code>role="tab"</code>; switching panels is up to your script.</p>
+            <p>A tab list or segmented filter. The selected item is <code>aria-selected="true"</code> with <code>role="tab"</code>; for keyboard support and panel switching, see <a href="#behavior-tabs"><code>data-synth-tabs</code></a>.</p>
             <div class="sc-demo">
               <div class="stack">
                 <div class="tabs" role="tablist" aria-label="Demo member filter">
@@ -849,6 +852,135 @@
 &lt;/div&gt;
 &lt;img class="avatar avatar-round avatar-lg" src="/people/ben.jpg" alt="Ben Kim"&gt;
 &lt;span class="avatar avatar-accent"&gt;&lt;svg aria-hidden="true" viewBox="0 0 24 24"&gt;…&lt;/svg&gt;&lt;/span&gt;</code></pre></div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="behaviors" class="sc-band" aria-labelledby="behaviors-title">
+      <div class="container stack-lg">
+        <div class="stack-sm">
+          <h2 id="behaviors-title">Behaviors (SynthJS)</h2>
+          <p class="sc-muted">
+            Optional and dependency-free: load <code>dist/synth.js</code> after the stylesheet and
+            declare interactivity with one <code>data-synth-*</code> attribute per intent. SynthJS
+            adds the events and keeps <code>hidden</code>, <code>aria-expanded</code>,
+            <code>aria-selected</code> and <code>tabindex</code> in sync. Without it every component
+            still renders. This page loads <code>../src/js/synth.js</code>.
+          </p>
+        </div>
+        <div class="grid-lg" style="--grid-min: 22rem">
+
+          <article class="sc-card stack" aria-labelledby="behavior-open">
+            <h3 id="behavior-open"><code>data-synth-open</code></h3>
+            <p>Opens a native <code>&lt;dialog&gt;</code> as a modal. <kbd>Escape</kbd> or a <code>data-synth-dismiss</code> button closes it, and focus returns to the button that opened it.</p>
+            <div class="sc-demo">
+              <button type="button" class="button button-danger" data-synth-open="demo-confirm">Delete project</button>
+              <dialog id="demo-confirm" class="sc-dialog" aria-labelledby="demo-confirm-title">
+                <div class="stack">
+                  <h3 id="demo-confirm-title">Delete project?</h3>
+                  <p>Atlas and its 12 environments will be removed.</p>
+                  <div class="cluster-sm">
+                    <button type="button" class="button button-danger" data-synth-dismiss>Delete</button>
+                    <button type="button" class="button" data-synth-dismiss>Cancel</button>
+                  </div>
+                </div>
+              </dialog>
+            </div>
+            <div class="sc-code"><pre><code>&lt;button type="button" class="button button-danger" data-synth-open="confirm"&gt;Delete project&lt;/button&gt;
+&lt;dialog id="confirm" aria-labelledby="confirm-title"&gt;
+  &lt;div class="stack"&gt;
+    &lt;h2 id="confirm-title"&gt;Delete project?&lt;/h2&gt;
+    &lt;div class="cluster-sm"&gt;
+      &lt;button type="button" class="button button-danger"&gt;Delete&lt;/button&gt;
+      &lt;button type="button" class="button" data-synth-dismiss&gt;Cancel&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/dialog&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="behavior-toggle">
+            <h3 id="behavior-toggle"><code>data-synth-toggle</code></h3>
+            <p>Shows and hides the element with that id through its <code>hidden</code> attribute. The button's <code>aria-expanded</code> follows, from the initial markup on. Use it for any collapse or "show more".</p>
+            <div class="sc-demo">
+              <div class="stack-sm">
+                <div class="cluster-sm"><button type="button" class="button" data-synth-toggle="demo-filters">Filters</button></div>
+                <div id="demo-filters" class="panel" hidden>
+                  <div class="panel-body stack-sm">
+                    <label class="switch"><input type="checkbox" role="switch" checked> Active projects only</label>
+                    <label class="switch"><input type="checkbox" role="switch"> Include archived</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;button type="button" class="button" data-synth-toggle="filters"&gt;Filters&lt;/button&gt;
+&lt;div id="filters" class="panel" hidden&gt;…&lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="behavior-tabs">
+            <h3 id="behavior-tabs"><code>data-synth-tabs</code></h3>
+            <p>Turns <code>.tabs</code> into working tabs: click, <kbd>←</kbd> <kbd>→</kbd> (wrapping), <kbd>Home</kbd> and <kbd>End</kbd> set <code>aria-selected</code>, a roving <code>tabindex</code> and <code>hidden</code> on the other panels.</p>
+            <div class="sc-demo">
+              <div class="stack" data-synth-tabs>
+                <div class="tabs" role="tablist" aria-label="Demo report range">
+                  <button type="button" class="tabs-item" role="tab" id="demo-tab-day" aria-controls="demo-panel-day" aria-selected="false">Day</button>
+                  <button type="button" class="tabs-item" role="tab" id="demo-tab-week" aria-controls="demo-panel-week" aria-selected="true">Week</button>
+                  <button type="button" class="tabs-item" role="tab" id="demo-tab-month" aria-controls="demo-panel-month" aria-selected="false">Month</button>
+                </div>
+                <div role="tabpanel" id="demo-panel-day" aria-labelledby="demo-tab-day" hidden><p>Today: 3 deploys, 0 incidents.</p></div>
+                <div role="tabpanel" id="demo-panel-week" aria-labelledby="demo-tab-week"><p>This week: 18 deploys, 1 incident.</p></div>
+                <div role="tabpanel" id="demo-panel-month" aria-labelledby="demo-tab-month" hidden><p>This month: 74 deploys, 2 incidents.</p></div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="stack" data-synth-tabs&gt;
+  &lt;div class="tabs" role="tablist" aria-label="Range"&gt;
+    &lt;button type="button" class="tabs-item" role="tab" id="tab-week" aria-controls="panel-week" aria-selected="true"&gt;Week&lt;/button&gt;
+    &lt;button type="button" class="tabs-item" role="tab" id="tab-month" aria-controls="panel-month" aria-selected="false"&gt;Month&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div role="tabpanel" id="panel-week" aria-labelledby="tab-week"&gt;…&lt;/div&gt;
+  &lt;div role="tabpanel" id="panel-month" aria-labelledby="tab-month" hidden&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="behavior-dropdown">
+            <h3 id="behavior-dropdown"><code>data-synth-dropdown</code></h3>
+            <p>A trigger button and a <code>.nav</code> list of links. The trigger toggles the list and its <code>aria-expanded</code>; a click outside or <kbd>Escape</kbd> closes it, and <kbd>Escape</kbd> returns focus to the trigger.</p>
+            <div class="sc-demo">
+              <div class="stack-sm" data-synth-dropdown>
+                <div class="cluster-sm"><button type="button" class="button" data-synth-dropdown-trigger>Account</button></div>
+                <ul class="nav stack-sm" role="list" data-synth-dropdown-menu hidden>
+                  <li><a class="nav-link" href="#behavior-dropdown">Profile</a></li>
+                  <li><a class="nav-link" href="#behavior-dropdown">Billing</a></li>
+                  <li><a class="nav-link" href="#behavior-dropdown">Sign out</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div data-synth-dropdown&gt;
+  &lt;button type="button" class="button" data-synth-dropdown-trigger&gt;Account&lt;/button&gt;
+  &lt;ul class="nav stack-sm" role="list" data-synth-dropdown-menu hidden&gt;
+    &lt;li&gt;&lt;a class="nav-link" href="/profile"&gt;Profile&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a class="nav-link" href="/logout"&gt;Sign out&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;</code></pre></div>
+          </article>
+
+          <article class="sc-card stack" aria-labelledby="behavior-dismiss">
+            <h3 id="behavior-dismiss"><code>data-synth-dismiss</code></h3>
+            <p>Closes the <code>&lt;dialog&gt;</code> it is in, otherwise hides its closest <code>data-synth-dismissible</code> ancestor, such as an <code>.alert</code>, with <code>hidden</code>. The element stays in the page.</p>
+            <div class="sc-demo">
+              <div class="stack-sm">
+                <div id="demo-saved" class="alert alert-success" role="status" data-synth-dismissible>
+                  <p>Settings saved.</p>
+                  <button type="button" class="button button-sm" data-synth-dismiss>Dismiss</button>
+                </div>
+                <div class="cluster-sm"><button type="button" class="button button-sm" data-sc-restore="demo-saved">Show the alert again</button></div>
+              </div>
+            </div>
+            <div class="sc-code"><pre><code>&lt;div class="alert alert-success" role="status" data-synth-dismissible&gt;
+  &lt;p&gt;Settings saved.&lt;/p&gt;
+  &lt;button type="button" class="button button-sm" data-synth-dismiss&gt;Dismiss&lt;/button&gt;
+&lt;/div&gt;</code></pre></div>
           </article>
 
         </div>
@@ -1077,8 +1209,8 @@
           <p class="sc-muted">
             One compact file teaches a model the whole public vocabulary of SynthCSS: every
             token, layout primitive, component, part and variant, an intent table, composition
-            rules, ten generation rules, one extension rule for patterns the vocabulary lacks
-            and valid and invalid examples. Paste
+            rules, ten generation rules, the SynthJS behaviors, one extension rule for patterns
+            the vocabulary lacks and valid and invalid examples. Paste
             <code>synthcss.llm.md</code> into a prompt, or read the same contract as structured
             data from <code>synthcss.ai.json</code>. Both are versioned with the framework and
             checked against the CSS on every change.
@@ -1088,10 +1220,10 @@
           <a class="sc-button" href="../synthcss.llm.md">View synthcss.llm.md</a>
           <a class="sc-button sc-button-secondary" href="../synthcss.ai.json" download>Download synthcss.ai.json</a>
           <a href="https://github.com/nabledhq/synthcss/blob/main/synthcss.llm.md">Read it on GitHub</a>
-          <span class="badge badge-info">≈ 5,700 tokens</span>
+          <span class="badge badge-info">≈ 7,000 tokens</span>
         </div>
         <p class="sc-muted">
-          Size estimated as characters ÷ 4 (about 22,700 characters), small enough for one
+          Size estimated as characters ÷ 4 (about 27,900 characters), small enough for one
           context window with room to spare.
         </p>
         <article class="sc-card sidebar-lg">

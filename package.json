@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -20,6 +20,11 @@
     "check:showcase": "node scripts/check-showcase.mjs",
     "check:showcase:browser": "node scripts/check-showcase-browser.mjs",
     "check:ai-contract": "node scripts/verify-ai-contract.mjs",
-    "test": "node scripts/check-tokens.mjs && node scripts/check-base.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node scripts/verify-ai-contract.mjs && node --test scripts/build.test.mjs scripts/bump-version.test.mjs scripts/check-tokens.test.mjs scripts/check-base.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs scripts/verify-ai-contract.test.mjs"
+    "contract:write": "node scripts/verify-ai-contract.mjs --write",
+    "test:js": "node --test scripts/synth-js.test.mjs",
+    "test": "node scripts/check-tokens.mjs && node scripts/check-base.mjs && node scripts/check-layout.mjs && node scripts/check-components.mjs && node scripts/check-showcase.mjs && node scripts/verify-ai-contract.mjs && node --test scripts/build.test.mjs scripts/bump-version.test.mjs scripts/check-tokens.test.mjs scripts/check-base.test.mjs scripts/check-layout.test.mjs scripts/check-components.test.mjs scripts/check-showcase.test.mjs scripts/verify-ai-contract.test.mjs scripts/synth-js.test.mjs"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.14.5"
   }
 }

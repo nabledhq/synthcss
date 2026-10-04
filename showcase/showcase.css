@@ -316,3 +316,15 @@
 /* The copy button sits on the dark code block, so its ring uses the light
    background color to stay visible. */
 .sc-copy:focus-visible { outline-color: var(--color-background); }
+
+/* The SynthJS dialog demo: SynthCSS ships no dialog styles, the native
+   <dialog> element and its ::backdrop do the work. */
+.sc-dialog {
+  max-inline-size: var(--content-width);
+  padding: var(--space-5);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}

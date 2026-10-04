@@ -10,7 +10,10 @@ import { parseBlocks, parseDeclarations, parseTokens } from "./check-tokens.mjs"
 import { PRIMITIVES, VARIANTS, HELPER_CLASSES } from "./check-layout.mjs";
 import { COMPONENTS, COMPONENT_CLASSES } from "./check-components.mjs";
 
-export const SECTIONS = ["hero", "why", "tokens", "layouts", "responsive", "components", "composed", "ai-examples", "ai-contract"];
+export const SECTIONS = ["hero", "why", "tokens", "layouts", "responsive", "components", "behaviors", "composed", "ai-examples", "ai-contract"];
+// SynthJS behaviors with a live demo: data-synth-<name>.
+export const BEHAVIORS = ["open", "toggle", "tabs", "dropdown", "dismiss"];
+export const SYNTH_JS = "../src/js/synth.js";
 // The composed interface must use at least this many different components.
 export const MIN_COMPOSED_COMPONENTS = 6;
 export const RESPONSIVE = ["grid", "sidebar", "cluster", "split"];
@@ -68,6 +71,9 @@ export function checkHtml(html, tokens, showcaseClasses) {
     if (!["../src/synthcss.css", "showcase.css"].includes(m[1])) errors.push(`index.html loads an extra stylesheet: ${m[1]}`);
   }
   if (/<style\b/i.test(html)) errors.push("index.html must not contain <style> blocks; put showcase styles in showcase.css");
+  if (!new RegExp(`<script src="${SYNTH_JS.replace(/\./g, "\\.")}" defer></script>`).test(html)) {
+    errors.push(`index.html must load SynthJS with <script src="${SYNTH_JS}" defer></script>`);
+  }
   if (/<script\b[^>]*\bsrc="(?:https?:)?\/\//i.test(html)) errors.push("index.html must not load third-party scripts");
   if (THIRD_PARTY.test(html)) errors.push("index.html references a third-party CSS framework");
 
@@ -149,6 +155,23 @@ export function checkHtml(html, tokens, showcaseClasses) {
     const snippet = snippetsIn(article)[0];
     if (!snippet || !new RegExp(`class="([^"]*\\s)?${name}(\\s[^"]*)?"`).test(snippet)) {
       errors.push(`components: .${name} example needs an HTML snippet that uses .${name}`);
+    }
+  }
+
+  // One article per SynthJS behavior, each with a live demo and a snippet using its attribute.
+  const behaviors = sectionHtml(html, "behaviors") ?? "";
+  const behaviorArticles = behaviors.split(/<article\b/).slice(1);
+  for (const name of BEHAVIORS) {
+    const attribute = `data-synth-${name}`;
+    const article = behaviorArticles.find((a) => a.includes(`id="behavior-${name}"`));
+    if (!article) {
+      errors.push(`behaviors: missing example for ${attribute}`);
+      continue;
+    }
+    const demo = article.split('class="sc-code"')[0].split('class="sc-demo"')[1] ?? "";
+    if (!new RegExp(`\\s${attribute}[\\s=>]`).test(demo)) errors.push(`behaviors: ${attribute} example has no live demo using it`);
+    if (!snippetsIn(article).some((s) => new RegExp(`\\s${attribute}[\\s=>]`).test(s))) {
+      errors.push(`behaviors: ${attribute} example needs an HTML snippet that uses it`);
     }
   }
 
